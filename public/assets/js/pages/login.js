@@ -11,8 +11,17 @@ $('#signup').onclick = e => {
 };
 const flag = (id, msg, inp) => { $('#' + id).textContent = msg; inp.setAttribute('aria-invalid', !!msg); return !msg; };
 const busy = on => { $('#go').disabled = $('#google').disabled = on; $('#go').textContent = on ? 'Please wait…' : up ? 'Create account' : 'Sign in'; };
-const run = async fn => { const ef = $('#eForm'); ef.textContent = ''; ef.style.color = ''; busy(true); try { const r = await fn(); if (r?.verify) { ef.style.color = 'var(--resolved)'; ef.textContent = 'Account created. We sent a verification link to your UB email. Verify it, then sign in.'; return busy(false); } location.href = 'dashboard.html'; } catch (x) { $('#eForm').textContent = UB.authMsg(x); busy(false); } };
-$('#google').onclick = () => run(() => UB.google(role));
+const run = async fn => { const ef = $('#eForm'); ef.textContent = ''; ef.style.color = ''; $('#resend').hidden = true; busy(true); try { const r = await fn(); if (r?.verify) { ef.style.color = 'var(--resolved)'; ef.textContent = 'Account created. We sent a verification link to your UB email. Verify it, then sign in.'; $('#resend').hidden = false; return busy(false); } location.href = 'dashboard.html'; } catch (x) { $('#eForm').textContent = UB.authMsg(x); $('#resend').hidden = x.code !== 'ub/unverified'; busy(false); } };
+const roleName = { student: 'Student', faculty: 'Faculty' };
+$('#google').onclick = () => run(() => UB.google(role, (r, mail) => UB.confirm('Create a new account?', `${mail} has no UBridge account yet. Create a ${roleName[r] || r} account? Your role can’t be changed afterwards.`, 'Create account')));
+$('#resend').onclick = async () => {
+  const ef = $('#eForm'), em = $('#email').value.trim().toLowerCase(), pw = $('#pw').value;
+  if (!UB.DOMAIN.test(em) || !pw) { ef.style.color = ''; return (ef.textContent = 'Enter your UB email and password above, then resend.'); }
+  $('#resend').disabled = true;
+  try { await UB.resendVerification(em, pw); ef.style.color = 'var(--resolved)'; ef.textContent = 'Verification email sent. Check your UB inbox (and spam), then sign in.'; }
+  catch (x) { ef.style.color = ''; ef.textContent = UB.authMsg(x); }
+  $('#resend').disabled = false;
+};
 $('#f').onsubmit = e => {
   e.preventDefault(); const em = $('#email'), pw = $('#pw'), nm = $('#name'), v = em.value.trim().toLowerCase();
   const n = !up || flag('eName', nm.value.trim().length < 2 ? 'Enter your full name' : '', nm);

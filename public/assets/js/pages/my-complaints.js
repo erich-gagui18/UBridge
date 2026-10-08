@@ -11,7 +11,7 @@ import { UB } from '../app.js';
   UB.ORDER.forEach((s) => $('#st').insertAdjacentHTML('beforeend', `<option value="${s}">${UB.STATUS[s]}</option>`));
 
   let data = [], offenses = {}, loaded = false;
-  let cur = null; // the open case dialog: {id, m, dirty, history, stopHistory}
+  let cur = null; // the open case dialog: {id, m, dirty, history, audit, stopHistory, stopAudit}
   UB.loadOffenses().then((l) => { offenses = Object.fromEntries(l.map((o) => [o.id, o])); }).catch(() => {});
 
   const stats = () => {
@@ -33,8 +33,9 @@ import { UB } from '../app.js';
     return c.files.map((x) => (x.path ? `<button class="link" data-f="${esc(x.path)}">${esc(x.name)}</button>` : `${esc(x.name)} <small class="muted">(name only, file not stored)</small>`)).join(' ');
   };
   const timeline = (c, hist) => {
-    const who = (n) => (staff ? esc(n) : 'SAEP Staff');
-    const items = [`<li><b>Filed</b><small>${esc(c.filedByName)} · ${UB.fmtTs(c.createdAt)}</small></li>`, ...hist.map((h) => `<li><b>${UB.STATUS[h.from]} → ${UB.STATUS[h.to]}</b><small>${who(h.byName)} · ${UB.fmtTs(h.at)}</small>${h.remark ? `<p>${esc(h.remark)}</p>` : ''}</li>`)];
+    // Staff see who made each change (from the staff-only audit entries; entries written before the split keep byName).
+    const who = (h) => (staff ? esc(cur?.audit?.[h.id] || h.byName || 'SAEP Staff') : 'SAEP Staff');
+    const items = [`<li><b>Filed</b><small>${esc(c.filedByName)} · ${UB.fmtTs(c.createdAt)}</small></li>`, ...hist.map((h) => `<li><b>${UB.STATUS[h.from]} → ${UB.STATUS[h.to]}</b><small>${who(h)} · ${UB.fmtTs(h.at)}</small>${h.remark ? `<p>${esc(h.remark)}</p>` : ''}</li>`)];
     return `<ol class="hist" aria-label="Status history">${items.join('')}</ol>`;
   };
   const modalHtml = (c) => {
@@ -43,7 +44,7 @@ import { UB } from '../app.js';
       <div class="field"><label for="ns">Status</label><select id="ns">${UB.ORDER.map((s) => `<option value="${s}" ${s === c.status ? 'selected' : ''}>${UB.STATUS[s]}</option>`).join('')}</select></div>
       <div class="field" id="hdF" ${c.status === 'hearing' ? '' : 'hidden'}><label for="hd" class="req">Hearing date</label><input id="hd" type="date" value="${esc(c.hearingDate || '')}"></div>
       <div class="field" id="rsF" ${c.status === 'resolved' ? '' : 'hidden'}><label for="rs" class="req">Resolution note</label><textarea id="rs" maxlength="2000" style="min-height:90px">${esc(c.resolution || '')}</textarea></div>
-      <div class="field"><label for="rm">Remark for the history (optional)</label><input id="rm" maxlength="500" placeholder="e.g. Both parties notified"></div></div>` : '';
+      <div class="field"><label for="rm">Remark for the history</label><input id="rm" maxlength="500" placeholder="e.g. Both parties notified" aria-describedby="rmHint"><small class="muted" id="rmHint">Optional, but required (5+ characters) when moving a case back to an earlier status.</small></div></div>` : '';
     return `<h2>${esc(c.id)} <button class="link" type="button" data-copy="${esc(c.id)}">Copy</button></h2><p class="muted">${esc(c.type)}</p>
       <div class="steps" aria-label="Progress: ${UB.STATUS[c.status]}">${UB.ORDER.map((s, k) => `<span class="${k <= i ? 'done' : ''}">${UB.STATUS[s]}</span>`).join('')}</div>
       <dl><dt>Student</dt><dd>${esc(c.student)} (${esc(c.sid)})</dd><dt>Program</dt><dd>${esc(c.program)} ${esc(c.section)}</dd>
@@ -69,6 +70,9 @@ import { UB } from '../app.js';
     const status = v('#ns'), hearingDate = status === 'hearing' ? v('#hd') : (c.hearingDate || ''), resolution = status === 'resolved' ? v('#rs').trim() : (c.resolution || ''), remark = v('#rm').trim();
     if (status === 'hearing' && !hearingDate) return UB.toast('Choose the hearing date.', 'bad');
     if (status === 'resolved' && resolution.length < 5) return UB.toast('Add a resolution note (at least 5 characters).', 'bad');
+    // Reopening or stepping back is allowed (mistakes happen) but must be explained in the history.
+    if (UB.ORDER.indexOf(status) < UB.ORDER.indexOf(c.status) && remark.length < 5)
+      return UB.toast('Add a remark (at least 5 characters) explaining why the case is moving back.', 'bad');
     if (status === c.status && hearingDate === (c.hearingDate || '') && resolution === (c.resolution || '') && !remark) return UB.toast('Nothing has changed');
     if (!(await UB.confirm('Save changes?', `${c.id}: “${UB.STATUS[c.status]}” → “${UB.STATUS[status]}”. The filer will be notified in the app.`, 'Save'))) return;
     try {
@@ -81,9 +85,11 @@ import { UB } from '../app.js';
 
   const open = (id) => {
     const c = data.find((x) => x.id === id); if (!c) return;
-    cur = { id, dirty: false, history: [], seen: c.hCount || 0 };
-    cur.m = UB.modal(modalHtml(c), 'Complaint ' + id, () => { cur.stopHistory?.(); cur = null; });
+    cur = { id, dirty: false, history: [], audit: {}, seen: c.hCount || 0 };
+    cur.m = UB.modal(modalHtml(c), 'Complaint ' + id, () => { cur.stopHistory?.(); cur.stopAudit?.(); cur = null; });
     cur.stopHistory = UB.watchHistory(id, (h) => { if (!cur) return; cur.history = h; if (!cur.dirty) paintModal(); }, () => {});
+    // Only staff may read the audit entries; students never subscribe.
+    if (staff) cur.stopAudit = UB.watchAudit(id, (a) => { if (!cur) return; cur.audit = a; if (!cur.dirty) paintModal(); }, () => {});
     const el = cur.m.el;
     el.addEventListener('input', () => { if (cur) cur.dirty = true; });
     el.addEventListener('change', (e) => {

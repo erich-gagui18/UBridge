@@ -70,7 +70,7 @@ export async function signUp(name, email, pw, role) {
  * Google sign-in / sign-up. The role the person picked is used when the account is new
  * (this was the "Faculty becomes Student" bug: the role was dropped and 'student' was always written).
  */
-export async function google(role) {
+export async function google(role, confirmNew) {
   const g = new GoogleAuthProvider();
   g.setCustomParameters({ hd: 'ub.edu.ph' });
   const { user } = await signInWithPopup(auth, g);
@@ -80,11 +80,24 @@ export async function google(role) {
   }
   const existing = await getProfile(user);
   if (existing) return checkRole(existing, role);
+  // A new account's role cannot be changed from the browser, so never create one without asking first.
   try {
+    if (!SELF_SERVE.includes(role)) throw fail('ub/nostaff');
+    if (confirmNew && !(await confirmNew(role, user.email))) throw fail('ub/cancelled');
     await createProfile(user, role);
   } catch (e) {
     await signOut(auth);
     throw e;
+  }
+}
+
+/** Send the verification email again. Needs the same email and password, and always signs out afterwards. */
+export async function resendVerification(email, pw) {
+  const { user } = await signInWithEmailAndPassword(auth, email, pw);
+  try {
+    if (!user.emailVerified) await sendEmailVerification(user);
+  } finally {
+    await signOut(auth);
   }
 }
 
@@ -104,6 +117,7 @@ const MESSAGES = {
   'ub/domain': 'Use your @ub.edu.ph Google account.',
   'ub/nostaff': 'SAEP Staff accounts are assigned by the office. Choose Student or Faculty to create an account.',
   'ub/noprofile': 'This account has no profile yet. Sign up first.',
+  'ub/cancelled': 'Sign-in cancelled. No account was created.',
 };
 export const authMsg = (e) =>
   e.code === 'ub/role'

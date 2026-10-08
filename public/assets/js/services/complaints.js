@@ -14,7 +14,8 @@ import { ref, uploadBytes, getDownloadURL } from '../sdk/storage.js';
 import { todayPH, yearPH } from '../lib/dates.js';
 import { PRIVACY_VERSION, STATUS } from '../data.js';
 
-const byNewest = (a, b) => b.filed.localeCompare(a.filed) || b.id.localeCompare(a.id);
+// Older complaints may lack a field; never let one odd document break the whole list.
+const byNewest = (a, b) => String(b.filed || '').localeCompare(String(a.filed || '')) || b.id.localeCompare(a.id);
 
 /**
  * Real-time list of cases. Students/faculty only receive their own; staff receive all.
@@ -35,6 +36,15 @@ export function watchHistory(caseId, onData, onError) {
   return onSnapshot(
     collection(db, 'complaints', caseId, 'history'),
     (snap) => onData(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => Number(a.id) - Number(b.id))),
+    onError,
+  );
+}
+
+/** Who made each change, oldest first, as {id: byName}. Staff only (the rules deny everyone else). */
+export function watchAudit(caseId, onData, onError) {
+  return onSnapshot(
+    collection(db, 'complaints', caseId, 'audit'),
+    (snap) => onData(Object.fromEntries(snap.docs.map((d) => [d.id, d.data().byName || '']))),
     onError,
   );
 }
@@ -83,8 +93,9 @@ export async function createComplaint(me, v, files) {
 }
 
 /**
- * Staff update. One batch writes the case change, a history entry and an in-app notification,
- * so they succeed or fail together (the Firestore rules require all three).
+ * Staff update. One batch writes the case change, a history entry (what changed, visible to the filer),
+ * an audit entry (who changed it, staff only) and an in-app notification, so they succeed or fail together
+ * (the Firestore rules require them).
  */
 export async function updateCase(me, c, { status, remark = '', hearingDate = '', resolution = '' }) {
   const n = (c.hCount || 0) + 1;
@@ -98,11 +109,14 @@ export async function updateCase(me, c, { status, remark = '', hearingDate = '',
     hCount: n,
   });
   b.set(doc(db, 'complaints', c.id, 'history', String(n)), {
-    by: me.uid,
-    byName: me.name,
     from: c.status,
     to: status,
     remark,
+    at: serverTimestamp(),
+  });
+  b.set(doc(db, 'complaints', c.id, 'audit', String(n)), {
+    by: me.uid,
+    byName: me.name,
     at: serverTimestamp(),
   });
   const note =

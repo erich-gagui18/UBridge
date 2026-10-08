@@ -38,6 +38,15 @@
             "value": "camera=(), microphone=(), geolocation=()"
           }
         ]
+      },
+      {
+        "source": "**/*.@(html|js|json|css)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
       }
     ]
   },

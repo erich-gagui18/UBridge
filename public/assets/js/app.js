@@ -74,10 +74,11 @@ export const UB = (() => {
     // config flags
     CONTACT, PRIVACY_VERSION, USE_STORAGE,
     // auth
-    DOMAIN: authSvc.DOMAIN, signIn: authSvc.signIn, signUp: authSvc.signUp, google: authSvc.google, authMsg: authSvc.authMsg,
+    DOMAIN: authSvc.DOMAIN, signIn: authSvc.signIn, signUp: authSvc.signUp, google: authSvc.google, resendVerification: authSvc.resendVerification, authMsg: authSvc.authMsg,
     // data
     watchCases: (onData, onError) => cases.watchCases(me, onData, onError),
     watchHistory: cases.watchHistory,
+    watchAudit: cases.watchAudit,
     create: (v, files) => cases.createComplaint(me, v, files),
     updateCase: (c, change) => cases.updateCase(me, c, change),
     evidenceUrl: cases.evidenceUrl,

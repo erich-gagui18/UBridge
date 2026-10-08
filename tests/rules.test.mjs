@@ -4,9 +4,12 @@ import { before, beforeEach, after, describe, it } from 'node:test';
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
 import { doc, getDoc, setDoc, updateDoc, deleteDoc, writeBatch, collection, getDocs, query, where, serverTimestamp } from 'firebase/firestore';
 
-const YEAR = new Date().getFullYear();
-const ID = (n) => `SAEP-${YEAR}-${String(n).padStart(3, '0')}`;
-const TODAY = new Date().toISOString().slice(0, 10);
+// The rules take "today" from the server clock in Philippine time (UTC+8), so the tests must too.
+const phDate = (d = new Date()) =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+const TODAY = phDate();
+const YEAR = Number(TODAY.slice(0, 4));
+const ID = (n, y = YEAR) => `SAEP-${y}-${String(n).padStart(3, '0')}`;
 const UB = (u) => ({ email: `${u}@ub.edu.ph`, email_verified: true });
 
 let env;
@@ -47,11 +50,12 @@ const file = (db, n, over = {}, first = n === 1) => {
   b.set(doc(db, 'complaints', ID(n)), complaint(over));
   return b.commit();
 };
-// Staff edit = update + history entry (+ notification), one batch.
-const staffEdit = (db, n, changes, { history = true, to = changes.status, hCount = 1 } = {}) => {
+// Staff edit = update + history entry (what changed) + audit entry (who changed it), one batch.
+const staffEdit = (db, n, changes, { history = true, audit = true, to = changes.status, from = 'submitted', remark = '', hCount = 1 } = {}) => {
   const b = writeBatch(db);
   b.update(doc(db, 'complaints', ID(n)), { hearingDate: '', resolution: '', ...changes, updatedAt: serverTimestamp(), updatedBy: 'staff1', hCount });
-  if (history) b.set(doc(db, 'complaints', ID(n), 'history', String(hCount)), { by: 'staff1', byName: 'Staff One', from: 'submitted', to, remark: '', at: serverTimestamp() });
+  if (history) b.set(doc(db, 'complaints', ID(n), 'history', String(hCount)), { from, to, remark, at: serverTimestamp() });
+  if (audit) b.set(doc(db, 'complaints', ID(n), 'audit', String(hCount)), { by: 'staff1', byName: 'Staff One', at: serverTimestamp() });
   return b.commit();
 };
 const seedCase = () => env.withSecurityRulesDisabled((ctx) => file(ctx.firestore(), 1));
@@ -72,6 +76,14 @@ describe('creating complaints (integrity)', () => {
   it('rejects a spoofed role', async () => assertFails(file(as('stu1'), 1, { filedByRole: 'faculty' })));
   it('rejects a status other than submitted', async () => assertFails(file(as('stu1'), 1, { status: 'resolved' })));
   it('rejects an incident date after the filing date', async () => assertFails(file(as('stu1'), 1, { date: '2999-01-01' })));
+  it('rejects a backdated filing date', async () => assertFails(file(as('stu1'), 1, { date: '2020-01-01', filed: '2020-01-02' })));
+  it('rejects a case number from another year', async () => {
+    const db = as('stu1');
+    const b = writeBatch(db);
+    b.set(doc(db, 'counters', String(YEAR - 1)), { n: 1 });
+    b.set(doc(db, 'complaints', ID(1, YEAR - 1)), complaint());
+    await assertFails(b.commit());
+  });
   it('rejects a short description', async () => assertFails(file(as('stu1'), 1, { desc: 'too short' })));
   it('rejects extra fields', async () => assertFails(file(as('stu1'), 1, { isAdmin: true })));
   it('rejects a case number that does not match the counter', async () => {
@@ -120,7 +132,51 @@ describe('updating cases (accountability and non-repudiation)', () => {
     await assertSucceeds(getDoc(doc(as('stu1'), 'complaints', ID(1), 'history', '1')));
     await assertFails(getDoc(doc(as('stu2'), 'complaints', ID(1), 'history', '1')));
   });
-  it('a student cannot write history', async () => assertFails(setDoc(doc(as('stu1'), 'complaints', ID(1), 'history', '1'), { by: 'stu1', byName: 'x', from: 'submitted', to: 'review', remark: '', at: serverTimestamp() })));
+  it('a student cannot write history', async () => assertFails(setDoc(doc(as('stu1'), 'complaints', ID(1), 'history', '1'), { from: 'submitted', to: 'review', remark: '', at: serverTimestamp() })));
+  it('a history entry needs its audit entry', async () => assertFails(staffEdit(as('staff1'), 1, { status: 'review' }, { audit: false })));
+  it('a history entry cannot carry staff identity', async () => {
+    const db = as('staff1');
+    const b = writeBatch(db);
+    b.update(doc(db, 'complaints', ID(1)), { status: 'review', hearingDate: '', resolution: '', updatedAt: serverTimestamp(), updatedBy: 'staff1', hCount: 1 });
+    b.set(doc(db, 'complaints', ID(1), 'history', '1'), { by: 'staff1', byName: 'Staff One', from: 'submitted', to: 'review', remark: '', at: serverTimestamp() });
+    b.set(doc(db, 'complaints', ID(1), 'audit', '1'), { by: 'staff1', byName: 'Staff One', at: serverTimestamp() });
+    await assertFails(b.commit());
+  });
+  it('the audit entry must name the staff member who wrote it', async () => {
+    const db = as('staff1');
+    const b = writeBatch(db);
+    b.update(doc(db, 'complaints', ID(1)), { status: 'review', hearingDate: '', resolution: '', updatedAt: serverTimestamp(), updatedBy: 'staff1', hCount: 1 });
+    b.set(doc(db, 'complaints', ID(1), 'history', '1'), { from: 'submitted', to: 'review', remark: '', at: serverTimestamp() });
+    b.set(doc(db, 'complaints', ID(1), 'audit', '1'), { by: 'someone-else', byName: 'Staff One', at: serverTimestamp() });
+    await assertFails(b.commit());
+  });
+  it('only staff can read the audit entries; the filer cannot', async () => {
+    await staffEdit(as('staff1'), 1, { status: 'review' });
+    await assertSucceeds(getDoc(doc(as('staff1'), 'complaints', ID(1), 'audit', '1')));
+    await assertFails(getDoc(doc(as('stu1'), 'complaints', ID(1), 'audit', '1')));
+  });
+  it('audit entries cannot be edited or deleted', async () => {
+    await staffEdit(as('staff1'), 1, { status: 'review' });
+    await assertFails(updateDoc(doc(as('staff1'), 'complaints', ID(1), 'audit', '1'), { byName: 'edited' }));
+    await assertFails(deleteDoc(doc(as('staff1'), 'complaints', ID(1), 'audit', '1')));
+  });
+  it('moving a case back needs a remark', async () => {
+    await staffEdit(as('staff1'), 1, { status: 'review' });
+    await assertFails(staffEdit(as('staff1'), 1, { status: 'submitted' }, { from: 'review', hCount: 2 }));
+    await assertSucceeds(staffEdit(as('staff1'), 1, { status: 'submitted' }, { from: 'review', hCount: 2, remark: 'Opened by mistake' }));
+  });
+});
+
+describe('evidence entries (filer attaching files)', () => {
+  beforeEach(seedCase);
+  const entry = (over = {}) => ({ name: 'photo.png', path: `evidence/stu1/${ID(1)}/1-photo.png`, ...over });
+  const attach = (db, files) => updateDoc(doc(db, 'complaints', ID(1)), { files });
+  it('the filer can attach a well-formed entry', async () => assertSucceeds(attach(as('stu1'), [entry()])));
+  it('rejects a path in someone else’s folder', async () => assertFails(attach(as('stu1'), [entry({ path: `evidence/stu2/${ID(1)}/1-photo.png` })])));
+  it('rejects a path for a different case', async () => assertFails(attach(as('stu1'), [entry({ path: `evidence/stu1/${ID(2)}/1-photo.png` })])));
+  it('rejects extra keys in an entry', async () => assertFails(attach(as('stu1'), [entry({ url: 'https://example.com' })])));
+  it('rejects more than five entries', async () => assertFails(attach(as('stu1'), Array.from({ length: 6 }, (_, i) => entry({ path: `evidence/stu1/${ID(1)}/${i}-photo.png` })))));
+  it('another student cannot attach files', async () => assertFails(attach(as('stu2'), [entry()])));
 });
 
 describe('notifications', () => {

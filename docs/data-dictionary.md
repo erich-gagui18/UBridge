@@ -26,7 +26,7 @@ Read by any signed-in UB user; written only by staff. Seeded from `public/assets
 | student, sid, program, section | string | Student involved (sid is 7 digits) |
 | offenseId, type, offense | string | Catalog id, its type and category. Rules check they match the catalog |
 | date | string YYYY-MM-DD | Incident date, not after `filed` |
-| filed | string YYYY-MM-DD | Filing date in Philippine time |
+| filed | string YYYY-MM-DD | Filing date in Philippine time. Rules require it to equal today's date on the server clock (UTC+8), so it cannot be backdated |
 | location, desc | string | desc is 30–5000 characters |
 | status | string | `submitted`, `review`, `hearing`, `resolved` |
 | filedBy, filedByName, filedByRole, filedByEmail | string | Who filed it, shown to staff |
@@ -34,19 +34,26 @@ Read by any signed-in UB user; written only by staff. Seeded from `public/assets
 | hearingDate | string YYYY-MM-DD or "" | Required when status is `hearing` |
 | resolution | string (≤2000) | Required (5+ characters) when status is `resolved` |
 | hCount | number | Number of staff changes so far; links to the latest history entry |
-| files | list | Evidence `{name, path}`; empty while Storage is off |
+| files | list | Evidence `{name, path}` (max 5). Rules require each path to be `evidence/<filer uid>/<caseId>/<file>`. Empty while Storage is off |
 | createdAt, updatedAt | timestamp | Server time |
 | updatedBy | string | uid of the last staff editor |
 
-### complaints/{caseId}/history/{n}  (append-only)
+### complaints/{caseId}/history/{n}  (append-only, readable by the filer and staff)
 | Field | Type | Notes |
 |---|---|---|
-| by, byName | string | Staff uid and name |
 | from, to | string | Status before and after |
-| remark | string (≤500) | Optional note |
+| remark | string (≤500) | Optional, but 5+ characters are required when `to` is earlier in the workflow than `from` (reopening a case) |
 | at | timestamp | Server time |
 
-The document id is the case's `hCount` at that change. Rules require it to be written in the same batch as the complaint update, and never allow edits or deletes.
+Holds no staff identity, so the filer can read it without learning who handled the case. Older entries written before this split may still carry `by` and `byName`.
+
+### complaints/{caseId}/audit/{n}  (append-only, staff only)
+| Field | Type | Notes |
+|---|---|---|
+| by, byName | string | Staff uid and name who made change `n` |
+| at | timestamp | Server time |
+
+The document id is the case's `hCount` at that change, the same id as the history entry. Rules require history and audit entries to be written together with the complaint update in one batch, and never allow edits or deletes.
 
 ## notifications/{id}
 | Field | Type | Notes |

@@ -10,6 +10,14 @@ service cloud.firestore {
     function isStaff() { return signedIn() && userDoc().role == 'staff'; }
     function caseId(y, n) { return 'SAEP-' + y + '-' + (n < 10 ? '00' + string(n) : (n < 100 ? '0' + string(n) : string(n))); }
     function isDate(s) { return s is string && s.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); }
+    function pad2(n) { return n < 10 ? '0' + string(n) : string(n); }
+    // Today's date in Philippine time (UTC+8), computed from the SERVER clock, so a filer cannot backdate a complaint.
+    function phToday() {
+      let t = request.time + duration.time(8, 0, 0, 0);
+      return string(t.year()) + '-' + pad2(t.month()) + '-' + pad2(t.day());
+    }
+    // Order of the workflow. Moving a case to an earlier status needs a remark (see the history rule).
+    function rank(s) { return s == 'submitted' ? 0 : (s == 'review' ? 1 : (s == 'hearing' ? 2 : 3)); }
 
     // The offense type and category must match an entry of the catalog (offenses/{offenseId}), so the
     // category always comes from the handbook list and cannot be edited in the browser.
@@ -29,7 +37,7 @@ service cloud.firestore {
         && d.offense in ['Minor', 'Major', 'Grave']
         && d.type is string && d.type.size() >= 2 && d.type.size() <= 80
         && offenseOk(d)
-        && isDate(d.date) && isDate(d.filed) && d.date <= d.filed
+        && isDate(d.date) && d.filed == phToday() && d.date <= d.filed
         && d.location is string && d.location.size() >= 1 && d.location.size() <= 200
         && d.desc is string && d.desc.size() >= 30 && d.desc.size() <= 5000
         && d.status == 'submitted'
@@ -72,6 +80,7 @@ service cloud.firestore {
       // The case number must be exactly the counter value written in the same transaction.
       allow create: if signedIn() && validNew(request.resource.data)
         && id.matches('^SAEP-[0-9]{4}-[0-9]{3,}$')
+        && id.split('-')[1] == phToday().split('-')[0]
         && id == caseId(id.split('-')[1], getAfter(/databases/$(db)/documents/counters/$(id.split('-')[1])).data.n);
 
       // Staff change status / hearing date / resolution note. Every change must come with a history entry
@@ -89,27 +98,52 @@ service cloud.firestore {
           && n.resolution is string && n.resolution.size() <= 2000
           && (n.status != 'resolved' || n.resolution.size() >= 5);
       }
+      // Each evidence entry is {name, path} and the path must point into the filer's own folder for this case.
+      function fileOk(f) {
+        return f is map && f.keys().hasOnly(['name', 'path'])
+          && f.name is string && f.name.size() > 0 && f.name.size() <= 120
+          && f.path is string && f.path.matches('^evidence/' + request.auth.uid + '/' + id + '/[^/]+$');
+      }
+      function filesOk(l) {
+        return l is list && l.size() <= 5
+          && (l.size() < 1 || fileOk(l[0])) && (l.size() < 2 || fileOk(l[1])) && (l.size() < 3 || fileOk(l[2]))
+          && (l.size() < 4 || fileOk(l[3])) && (l.size() < 5 || fileOk(l[4]));
+      }
       // The filer can attach evidence (max 5) while the case is still 'submitted'.
       function filerAttach() {
         return resource.data.filedBy == request.auth.uid && resource.data.status == 'submitted'
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['files'])
-          && request.resource.data.files is list && request.resource.data.files.size() <= 5;
+          && filesOk(request.resource.data.files);
       }
       allow update: if signedIn() && (staffEdit() || filerAttach());
       allow delete: if false;
 
-      // Append-only audit trail of status changes: who, when, from, to, remark.
+      // Append-only status history that the filer can read: from, to, remark, when. It deliberately holds NO staff
+      // identity; that lives in the staff-only audit entry with the same id, written in the same batch.
       match /history/{hid} {
         allow read: if signedIn() && (get(/databases/$(db)/documents/complaints/$(id)).data.filedBy == request.auth.uid || isStaff());
         allow create: if isStaff()
-          && request.resource.data.keys().hasOnly(['by', 'byName', 'from', 'to', 'remark', 'at'])
-          && request.resource.data.by == request.auth.uid
-          && request.resource.data.byName is string && request.resource.data.byName.size() <= 120
+          && request.resource.data.keys().hasOnly(['from', 'to', 'remark', 'at'])
           && request.resource.data.from == get(/databases/$(db)/documents/complaints/$(id)).data.status
           && request.resource.data.to == getAfter(/databases/$(db)/documents/complaints/$(id)).data.status
           && hid == string(getAfter(/databases/$(db)/documents/complaints/$(id)).data.hCount)
           && request.resource.data.remark is string && request.resource.data.remark.size() <= 500
-          && request.resource.data.at == request.time;
+          && (rank(request.resource.data.to) >= rank(request.resource.data.from) || request.resource.data.remark.size() >= 5)
+          && request.resource.data.at == request.time
+          && existsAfter(/databases/$(db)/documents/complaints/$(id)/audit/$(hid));
+        allow update, delete: if false;
+      }
+
+      // Staff-only record of WHO made each change (same id as the history entry). Append-only.
+      match /audit/{hid} {
+        allow read: if isStaff();
+        allow create: if isStaff()
+          && request.resource.data.keys().hasOnly(['by', 'byName', 'at'])
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.byName is string && request.resource.data.byName.size() <= 120
+          && hid == string(getAfter(/databases/$(db)/documents/complaints/$(id)).data.hCount)
+          && request.resource.data.at == request.time
+          && existsAfter(/databases/$(db)/documents/complaints/$(id)/history/$(hid));
         allow update, delete: if false;
       }
     }

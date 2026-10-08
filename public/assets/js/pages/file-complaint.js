@@ -133,10 +133,16 @@ import { UB } from '../app.js';
     try {
       const v = data();
       c = await UB.create({ student: v.student, sid: v.sid, program: v.program, section: v.section, date: v.date, location: v.location, desc: v.desc, offenseId: o.id, type: o.type, offense: o.category }, files);
-    } catch {
+    } catch (e) {
       btn.disabled = false;
       btn.textContent = 'Submit complaint';
-      return UB.toast('Couldn’t submit. Check your connection and try again.', 'bad');
+      // The server checks the filing date against its own clock, so a wrong device date or time is rejected.
+      return UB.toast(
+        e?.code === 'permission-denied'
+          ? 'Couldn’t submit. Check that your device date and time are correct, then try again.'
+          : 'Couldn’t submit. Check your connection and try again.',
+        'bad',
+      );
     }
     UB.drop('draft');
     if (c.uploadFailed) UB.toast('Submitted, but some evidence didn’t upload. Tell SAEP or re-send it.', 'bad');

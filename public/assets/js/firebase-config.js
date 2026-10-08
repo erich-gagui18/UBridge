@@ -22,4 +22,4 @@ export const RECAPTCHA_SITE_KEY = '';
 
 // Gemini model used by the AI Guide through Firebase AI Logic. Check the model list in Firebase console > AI Logic
 // and change it here if this one has been retired.
-export const GEMINI_MODEL = 'gemini-2.5-flash';
+export const GEMINI_MODEL = 'gemini-3.5-flash';

@@ -24,8 +24,8 @@ Cite the automated tests in `tests/rules.test.mjs` (run with `npm run test:rules
 | Characteristic | What the tests show |
 |---|---|
 | Confidentiality | Only the filer and staff can read a complaint or its history; other students are denied; unverified or non-UB accounts are denied |
-| Integrity | Category must match the handbook catalog; invalid, spoofed or extra fields are rejected; case numbers must match the counter; nobody can delete complaints |
-| Non-repudiation | Every staff change needs an append-only history entry with the staff uid and server time; entries cannot be edited or deleted |
+| Integrity | The filing date must equal the server's Philippine date (no backdating); evidence entries must point into the filer's own folder; category must match the handbook catalog; invalid, spoofed or extra fields are rejected; case numbers must match the counter; nobody can delete complaints |
+| Non-repudiation | Every staff change needs an append-only history entry (what changed) and a staff-only audit entry (who changed it, with server time); neither can be edited or deleted. Moving a case back needs a written remark |
 | Accountability | `updatedBy`, `hCount` and the history trail identify who changed a case |
 | Authenticity | Roles cannot be self-assigned or changed from the browser; staff is set only in the console |
 
