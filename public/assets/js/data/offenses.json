@@ -1,0 +1,10 @@
+{
+  "_note": "PROVISIONAL. Categories, sanctions and section numbers below are placeholders, NOT copied from the handbook. Replace every entry with the real list from Section VII of the UB Student Handbook (2026, Revision No. 8), set provisional to false, then use 'Sync offense list' on the SAEP All cases page to publish it to Firestore.",
+  "offenses": [
+    { "id": "cheating-dishonesty", "type": "Cheating / Dishonesty", "category": "Major", "sanction": "", "section": "Section VII", "provisional": true },
+    { "id": "disrespectful-conduct", "type": "Disrespectful Conduct", "category": "Minor", "sanction": "", "section": "Section VII", "provisional": true },
+    { "id": "dress-code-violation", "type": "Dress Code Violation", "category": "Minor", "sanction": "", "section": "Section VII", "provisional": true },
+    { "id": "vandalism", "type": "Vandalism", "category": "Major", "sanction": "", "section": "Section VII", "provisional": true },
+    { "id": "other", "type": "Other", "category": "Minor", "sanction": "", "section": "Section VII", "provisional": true }
+  ]
+}

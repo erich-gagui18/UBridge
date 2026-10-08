@@ -1,0 +1,21 @@
+{
+  "name": "ubridge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "UBridge, SAEP online complaint management system for UB-Lipa (Firebase Hosting + Auth + Firestore)",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/retrieval.test.mjs",
+    "test:rules": "firebase emulators:exec --only firestore --project ubridge-rules-test \"node --test tests/rules.test.mjs\"",
+    "emulators": "firebase emulators:start --only firestore",
+    "chunk": "node scripts/chunk-handbook.mjs handbook/section-VII.txt handbook/section-IX.txt",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "latest",
+    "firebase": "^13.0.0",
+    "firebase-tools": "latest",
+    "prettier": "^3.0.0"
+  }
+}

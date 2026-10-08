@@ -1,0 +1,5 @@
+{
+  "_note": "Chunks of Section VII (offenses and sanctions) and Section IX of the UB Student Handbook (2026, Revision No. 8). Generate this file with: node scripts/chunk-handbook.mjs handbook/section-VII.txt handbook/section-IX.txt. Each chunk needs a unique id, the section label shown to the user, and the verbatim handbook text. Do not paraphrase the handbook text here.",
+  "version": "2026-rev8",
+  "chunks": []
+}

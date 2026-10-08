@@ -12,7 +12,7 @@ $('#signup').onclick = e => {
 const flag = (id, msg, inp) => { $('#' + id).textContent = msg; inp.setAttribute('aria-invalid', !!msg); return !msg; };
 const busy = on => { $('#go').disabled = $('#google').disabled = on; $('#go').textContent = on ? 'Please wait…' : up ? 'Create account' : 'Sign in'; };
 const run = async fn => { const ef = $('#eForm'); ef.textContent = ''; ef.style.color = ''; busy(true); try { const r = await fn(); if (r?.verify) { ef.style.color = 'var(--resolved)'; ef.textContent = 'Account created. We sent a verification link to your UB email. Verify it, then sign in.'; return busy(false); } location.href = 'dashboard.html'; } catch (x) { $('#eForm').textContent = UB.authMsg(x); busy(false); } };
-$('#google').onclick = () => run(() => UB.google(up ? 'student' : role));
+$('#google').onclick = () => run(() => UB.google(role));
 $('#f').onsubmit = e => {
   e.preventDefault(); const em = $('#email'), pw = $('#pw'), nm = $('#name'), v = em.value.trim().toLowerCase();
   const n = !up || flag('eName', nm.value.trim().length < 2 ? 'Enter your full name' : '', nm);

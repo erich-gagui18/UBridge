@@ -8,14 +8,15 @@
 <div class="field"><label class="req" for="program">Program / course</label><input id="program" maxlength="60" placeholder="BSIT"><p class="err"></p></div>
 <div class="field"><label class="req" for="section">Year &amp; section</label><input id="section" maxlength="30" placeholder="3-A"><p class="err"></p></div></div></section>
 <section class="card sec"><h2><span class="step">2</span>Incident details</h2><div class="cols"><div>
-<div class="field"><span class="lbl req" id="offL">Offense category</span><div class="seg" role="radiogroup" aria-labelledby="offL">
-<input type="radio" name="offense" id="o1" value="Minor"><label for="o1">Minor</label><input type="radio" name="offense" id="o2" value="Major"><label for="o2">Major</label><input type="radio" name="offense" id="o3" value="Grave"><label for="o3">Grave</label></div>
-<p class="hint">Not sure? <a href="ai-guide.html">Ask the AI Guide</a>. SAEP can recategorize during review.</p><p class="err" id="eOff"></p></div>
-<div class="field"><label class="req" for="type">Type of offense</label><select id="type"><option value="">Select…</option></select><p class="err"></p></div>
+<p class="notice" id="noCatalog" hidden>The offense list hasn’t been published yet, so complaints can’t be filed right now. Please tell the SAEP Office.</p>
+<div class="field"><label class="req" for="type">Type of offense</label><select id="type"><option value="">Select…</option></select><div id="offInfo" class="offinfo" hidden aria-live="polite"></div><p class="err"></p></div>
 <div class="field"><label class="req" for="date">Date of incident</label><input id="date" type="date"><p class="err"></p></div>
 <div class="field"><label class="req" for="location">Location</label><input id="location" maxlength="200" placeholder="Room 204, A Building"><p class="err"></p></div></div>
 <div class="field"><label class="req" for="desc">Description of incident</label><textarea id="desc" maxlength="5000" style="min-height:300px" placeholder="Describe what happened in detail. Include what was said or done, and any witnesses present."></textarea><p class="hint count" id="cnt">0 / 30 minimum</p><p class="err"></p></div></div></section>
-<section class="card sec"><h2><span class="step">3</span>Evidence <small class="muted" style="font-weight:500">Optional but recommended</small></h2>
-<label class="drop" id="drop"><input type="file" id="file" multiple accept=".png,.jpg,.jpeg,.pdf"><b>Click to upload</b> or drag photos or documents here<br><small class="muted">PNG, JPG or PDF · up to 10 MB each · max 5 files</small></label><ul class="files" id="files"></ul></section>
+<section class="card sec"><h2><span class="step">3</span>Evidence</h2>
+<div id="evOff" hidden><p class="notice"><b>Evidence uploads are not available yet.</b> Files can’t be stored in this version of UBridge, so nothing you attach here would be saved. Describe the evidence in the description (what it is, who has it) and bring the originals to the SAEP Office, quoting your case number.</p></div>
+<div id="evOn" hidden><small class="muted" style="display:block;margin-bottom:8px">Optional but recommended</small><label class="drop" id="drop"><input type="file" id="file" multiple accept=".png,.jpg,.jpeg,.pdf"><b>Click to upload</b> or drag photos or documents here<br><small class="muted">PNG, JPG or PDF · up to 10 MB each · max 5 files</small></label><ul class="files" id="files"></ul></div></section>
+<section class="card sec"><h2><span class="step">4</span>Privacy</h2>
+<div class="field check"><input type="checkbox" id="consent"><label for="consent" class="req">I have read the <a href="privacy.html" target="_blank" rel="noopener">Privacy Notice</a> and I consent to UBridge collecting and processing this complaint, including the personal information of the student named, for SAEP case handling.</label><p class="err" id="eConsent"></p></div></section>
 <div class="actions"><button type="button" class="btn" id="draft">Save as draft</button><button class="btn primary">Submit complaint</button></div></form>
 </main></div><script type="module" src="../assets/js/pages/file-complaint.js"></script></body></html>

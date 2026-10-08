@@ -5,25 +5,41 @@ service cloud.firestore {
     function domainOk() { return request.auth != null && request.auth.token.email.matches('.*@ub\\.edu\\.ph'); }
     // signedIn: UB account with a VERIFIED email. Required for everything involving complaints.
     function signedIn() { return domainOk() && request.auth.token.email_verified == true; }
+    function userDoc() { return get(/databases/$(db)/documents/users/$(request.auth.uid)).data; }
     // Staff role can only be granted by an admin in the Firebase console (users docs are immutable from clients).
-    function isStaff() { return signedIn() && get(/databases/$(db)/documents/users/$(request.auth.uid)).data.role == 'staff'; }
+    function isStaff() { return signedIn() && userDoc().role == 'staff'; }
     function caseId(y, n) { return 'SAEP-' + y + '-' + (n < 10 ? '00' + string(n) : (n < 100 ? '0' + string(n) : string(n))); }
+    function isDate(s) { return s is string && s.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); }
+
+    // The offense type and category must match an entry of the catalog (offenses/{offenseId}), so the
+    // category always comes from the handbook list and cannot be edited in the browser.
+    function offenseOk(d) {
+      return d.offenseId is string && d.offenseId.matches('^[a-z0-9-]{2,60}$')
+        && exists(/databases/$(db)/documents/offenses/$(d.offenseId))
+        && get(/databases/$(db)/documents/offenses/$(d.offenseId)).data.type == d.type
+        && get(/databases/$(db)/documents/offenses/$(d.offenseId)).data.category == d.offense;
+    }
 
     function validNew(d) {
-      return d.keys().hasOnly(['student','sid','program','section','offense','type','date','location','desc','filed','status','filedBy','filedByName','files','createdAt'])
+      return d.keys().hasOnly(['student','sid','program','section','offenseId','offense','type','date','location','desc','filed','status','filedBy','filedByName','filedByRole','filedByEmail','privacyConsent','privacyVersion','hCount','files','createdAt'])
         && d.student is string && d.student.size() >= 2 && d.student.size() <= 120
         && d.sid is string && d.sid.matches('^[0-9]{7}$')
         && d.program is string && d.program.size() >= 1 && d.program.size() <= 60
         && d.section is string && d.section.size() >= 1 && d.section.size() <= 30
         && d.offense in ['Minor', 'Major', 'Grave']
-        && d.type in ['Cheating / Dishonesty','Disrespectful Conduct','Dress Code Violation','Vandalism','Other']
-        && d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
-        && d.filed is string && d.filed.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.type is string && d.type.size() >= 2 && d.type.size() <= 80
+        && offenseOk(d)
+        && isDate(d.date) && isDate(d.filed) && d.date <= d.filed
         && d.location is string && d.location.size() >= 1 && d.location.size() <= 200
         && d.desc is string && d.desc.size() >= 30 && d.desc.size() <= 5000
         && d.status == 'submitted'
         && d.filedBy == request.auth.uid
         && d.filedByName is string && d.filedByName.size() <= 120
+        && d.filedByRole in ['student', 'faculty'] && d.filedByRole == userDoc().role
+        && d.filedByEmail == request.auth.token.email
+        && d.privacyConsent == true
+        && d.privacyVersion is string && d.privacyVersion.size() <= 20
+        && d.hCount == 0
         && d.files is list && d.files.size() == 0
         && d.createdAt == request.time;
     }
@@ -39,19 +55,79 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Offense catalog taken from handbook Section VII. Everyone signed in can read it; only staff edit it.
+    match /offenses/{oid} {
+      allow read: if signedIn();
+      allow create, update: if isStaff() && oid.matches('^[a-z0-9-]{2,60}$')
+        && request.resource.data.keys().hasOnly(['type', 'category', 'sanction', 'section'])
+        && request.resource.data.type is string && request.resource.data.type.size() >= 2 && request.resource.data.type.size() <= 80
+        && request.resource.data.category in ['Minor', 'Major', 'Grave']
+        && request.resource.data.sanction is string && request.resource.data.sanction.size() <= 1000
+        && request.resource.data.section is string && request.resource.data.section.size() <= 60;
+      allow delete: if isStaff();
+    }
+
     match /complaints/{id} {
       allow read: if signedIn() && (resource.data.filedBy == request.auth.uid || isStaff());
       // The case number must be exactly the counter value written in the same transaction.
       allow create: if signedIn() && validNew(request.resource.data)
         && id.matches('^SAEP-[0-9]{4}-[0-9]{3,}$')
         && id == caseId(id.split('-')[1], getAfter(/databases/$(db)/documents/counters/$(id.split('-')[1])).data.n);
-      // Staff change status only. The filer can attach evidence (max 5) while the case is still 'submitted'.
-      allow update: if signedIn() && (
-        (isStaff() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])
-          && request.resource.data.status in ['submitted', 'review', 'hearing', 'resolved'])
-        || (resource.data.filedBy == request.auth.uid && resource.data.status == 'submitted'
+
+      // Staff change status / hearing date / resolution note. Every change must come with a history entry
+      // (history/{hCount}) written in the same batch, and hCount goes up by exactly one.
+      function staffEdit() {
+        let n = request.resource.data;
+        return isStaff()
+          && n.diff(resource.data).affectedKeys().hasOnly(['status', 'hearingDate', 'resolution', 'updatedAt', 'updatedBy', 'hCount'])
+          && n.status in ['submitted', 'review', 'hearing', 'resolved']
+          && n.updatedAt == request.time && n.updatedBy == request.auth.uid
+          && n.hCount == resource.data.get('hCount', 0) + 1
+          && existsAfter(/databases/$(db)/documents/complaints/$(id)/history/$(string(n.hCount)))
+          && n.hearingDate is string && (n.hearingDate == '' || isDate(n.hearingDate))
+          && (n.status != 'hearing' || n.hearingDate != '')
+          && n.resolution is string && n.resolution.size() <= 2000
+          && (n.status != 'resolved' || n.resolution.size() >= 5);
+      }
+      // The filer can attach evidence (max 5) while the case is still 'submitted'.
+      function filerAttach() {
+        return resource.data.filedBy == request.auth.uid && resource.data.status == 'submitted'
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['files'])
-          && request.resource.data.files is list && request.resource.data.files.size() <= 5));
+          && request.resource.data.files is list && request.resource.data.files.size() <= 5;
+      }
+      allow update: if signedIn() && (staffEdit() || filerAttach());
+      allow delete: if false;
+
+      // Append-only audit trail of status changes: who, when, from, to, remark.
+      match /history/{hid} {
+        allow read: if signedIn() && (get(/databases/$(db)/documents/complaints/$(id)).data.filedBy == request.auth.uid || isStaff());
+        allow create: if isStaff()
+          && request.resource.data.keys().hasOnly(['by', 'byName', 'from', 'to', 'remark', 'at'])
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.byName is string && request.resource.data.byName.size() <= 120
+          && request.resource.data.from == get(/databases/$(db)/documents/complaints/$(id)).data.status
+          && request.resource.data.to == getAfter(/databases/$(db)/documents/complaints/$(id)).data.status
+          && hid == string(getAfter(/databases/$(db)/documents/complaints/$(id)).data.hCount)
+          && request.resource.data.remark is string && request.resource.data.remark.size() <= 500
+          && request.resource.data.at == request.time;
+        allow update, delete: if false;
+      }
+    }
+
+    // In-app notifications (free-plan substitute for email). Staff write one for the filer when a case changes;
+    // the recipient can read their own and mark them read.
+    match /notifications/{nid} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow create: if isStaff()
+        && request.resource.data.keys().hasOnly(['uid', 'caseId', 'message', 'read', 'createdAt'])
+        && request.resource.data.caseId is string && request.resource.data.caseId.matches('^SAEP-[0-9]{4}-[0-9]{3,}$')
+        && request.resource.data.uid == get(/databases/$(db)/documents/complaints/$(request.resource.data.caseId)).data.filedBy
+        && request.resource.data.message is string && request.resource.data.message.size() <= 200
+        && request.resource.data.read == false
+        && request.resource.data.createdAt == request.time;
+      allow update: if signedIn() && resource.data.uid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
+        && request.resource.data.read == true;
       allow delete: if false;
     }
 

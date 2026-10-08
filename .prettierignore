@@ -1,0 +1,7 @@
+node_modules/
+.firebase/
+public/assets/css/styles.css
+public/pages/*.html
+public/*.html
+handbook/
+package-lock.json
