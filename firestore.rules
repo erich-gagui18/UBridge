@@ -29,11 +29,18 @@ service cloud.firestore {
     }
 
     function validNew(d) {
-      return d.keys().hasOnly(['student','sid','program','section','offenseId','offense','type','date','location','desc','filed','status','filedBy','filedByName','filedByRole','filedByEmail','privacyConsent','privacyVersion','hCount','files','createdAt'])
+      return d.keys().hasOnly(['student','sid','program','rDept','rEmail','rContact','cSid','cCourse','cDept','cContact','signature','offenseId','offense','type','date','location','desc','filed','status','filedBy','filedByName','filedByRole','filedByEmail','privacyConsent','privacyVersion','hCount','files','createdAt'])
         && d.student is string && d.student.size() >= 2 && d.student.size() <= 120
         && d.sid is string && d.sid.matches('^[0-9]{7}$')
         && d.program is string && d.program.size() >= 1 && d.program.size() <= 60
-        && d.section is string && d.section.size() >= 1 && d.section.size() <= 30
+        && d.rDept is string && d.rDept.size() >= 1 && d.rDept.size() <= 80
+        && d.rEmail is string && d.rEmail.size() <= 120 && (d.rEmail == '' || d.rEmail.matches('^[^@ ]+@[^@ ]+[.][^@ ]+$'))
+        && d.rContact is string && (d.rContact == '' || d.rContact.matches('^[0-9+() -]{7,20}$'))
+        && d.cSid is string && (d.filedByRole == 'student' ? d.cSid.matches('^[0-9]{7}$') : d.cSid.size() <= 20)
+        && d.cCourse is string && d.cCourse.size() <= 60 && (d.filedByRole != 'student' || d.cCourse.size() >= 1)
+        && d.cDept is string && d.cDept.size() >= 1 && d.cDept.size() <= 80
+        && d.cContact is string && d.cContact.matches('^[0-9+() -]{7,20}$')
+        && d.signature is string && d.signature.size() >= 2 && d.signature.size() <= 120
         && d.offense in ['Minor', 'Major', 'Grave']
         && d.type is string && d.type.size() >= 2 && d.type.size() <= 80
         && offenseOk(d)

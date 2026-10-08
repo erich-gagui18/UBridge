@@ -36,7 +36,8 @@ beforeEach(async () => {
 
 const as = (uid, claims = UB(uid)) => env.authenticatedContext(uid, claims).firestore();
 const complaint = (over = {}) => ({
-  student: 'Dela Cruz, Juan', sid: '2407880', program: 'BSIT', section: '3-A',
+  student: 'Dela Cruz, Juan', sid: '2407880', program: 'BSIT', rDept: 'College of Computer Studies', rEmail: '', rContact: '',
+  cSid: '2407881', cCourse: 'BSIT', cDept: 'College of Computer Studies', cContact: '09171234567', signature: 'Stu One',
   offenseId: 'dress-code-violation', offense: 'Minor', type: 'Dress Code Violation',
   date: TODAY, filed: TODAY, location: 'Room 204', desc: 'Student was not wearing the prescribed uniform inside the room.',
   status: 'submitted', filedBy: 'stu1', filedByName: 'Stu One', filedByRole: 'student', filedByEmail: 'stu1@ub.edu.ph',
@@ -76,6 +77,20 @@ describe('creating complaints (integrity)', () => {
   it('rejects a spoofed role', async () => assertFails(file(as('stu1'), 1, { filedByRole: 'faculty' })));
   it('rejects a status other than submitted', async () => assertFails(file(as('stu1'), 1, { status: 'resolved' })));
   it('rejects an incident date after the filing date', async () => assertFails(file(as('stu1'), 1, { date: '2999-01-01' })));
+  it('lets faculty leave the student number and course empty', async () => assertSucceeds(file(as('fac1'), 1, { filedBy: 'fac1', filedByRole: 'faculty', filedByName: 'Fac One', filedByEmail: 'fac1@ub.edu.ph', cSid: '', cCourse: '', signature: 'Fac One' })));
+  it('rejects a student complainant without a valid student number', async () => assertFails(file(as('stu1'), 1, { cSid: '' })));
+  it('rejects a missing complainant department', async () => assertFails(file(as('stu1'), 1, { cDept: '' })));
+  it('rejects a missing or invalid complainant contact number', async () => {
+    await assertFails(file(as('stu1'), 1, { cContact: '' }));
+    await assertFails(file(as('stu1'), 1, { cContact: 'call me maybe' }));
+  });
+  it('rejects a missing respondent department', async () => assertFails(file(as('stu1'), 1, { rDept: '' })));
+  it('accepts a respondent email and contact number', async () => {
+    await assertSucceeds(file(as('stu1'), 1, { rEmail: 'juan@ub.edu.ph', rContact: '0917 765 4321' }));
+  });
+  it('rejects a malformed respondent email', async () => assertFails(file(as('stu1'), 1, { rEmail: 'not-an-email' })));
+  it('rejects a missing signature', async () => assertFails(file(as('stu1'), 1, { signature: '' })));
+  it('rejects the old section field', async () => assertFails(file(as('stu1'), 1, { section: '3-A' })));
   it('rejects a backdated filing date', async () => assertFails(file(as('stu1'), 1, { date: '2020-01-01', filed: '2020-01-02' })));
   it('rejects a case number from another year', async () => {
     const db = as('stu1');

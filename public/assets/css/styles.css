@@ -188,3 +188,8 @@ body:not(.ready):not(.auth) main{visibility:hidden}
 .legal h1{margin-bottom:6px}.legal h2{margin:26px 0 8px}.legal p,.legal li{margin-bottom:8px}.legal ul{padding-left:22px}
 .legal .todo{background:var(--gold-soft);padding:1px 6px;border-radius:4px}
 h3{font-size:15px;font-weight:700;margin:14px 0 6px}
+
+/* F-SAEP-07 form */
+.formnote{margin:-6px 0 14px}
+input[readonly]{background:var(--bg,transparent);color:var(--muted);cursor:default}
+.consent{margin:0 0 14px;padding:12px 14px;border-left:4px solid var(--gold);background:var(--gold-soft);border-radius:0 8px 8px 0;font-size:14px;line-height:1.55}

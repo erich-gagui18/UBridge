@@ -2,10 +2,27 @@ import { UB } from '../app.js';
 (async () => {
   await UB.ready;
   const { $, esc } = UB, f = $('#f');
-  const F = ['student', 'sid', 'program', 'section', 'type', 'date', 'location', 'desc'];
+  const F = ['cSid', 'cCourse', 'cDept', 'cContact', 'student', 'sid', 'program', 'rEmail', 'rDept', 'rContact', 'type', 'date', 'location', 'desc', 'signature'];
   let files = [], offenses = [];
 
   // Evidence: only offered when Cloud Storage is on. Otherwise say plainly that nothing would be stored.
+  // Complainant: name and email come from the signed-in account and cannot be edited here.
+  const me = UB.me, student = me.role === 'student';
+  $('#cName').value = me.name;
+  $('#cEmail').value = me.email;
+  $('#filedDate').value = UB.todayPH();
+  if (!student) {
+    // Faculty have no student number or course, so those two lines are optional for them.
+    $('#cSidL').textContent = 'Employee no. (optional)';
+    $('#cCourseL').textContent = 'Course (optional)';
+    $('#cSidL').classList.remove('req');
+    $('#cCourseL').classList.remove('req');
+    $('#cSid').placeholder = '';
+    $('#cCourse').placeholder = 'Not applicable';
+  }
+  const norm = (x) => x.replace(/\s+/g, ' ').trim().toLowerCase();
+  const PHONE = /^[0-9+() -]{7,20}$/;
+
   const evidenceOn = UB.USE_STORAGE;
   $('#evOn').hidden = !evidenceOn;
   $('#evOff').hidden = evidenceOn;
@@ -39,14 +56,21 @@ import { UB } from '../app.js';
     return m;
   };
   const rules = {
-    student: (v) => !v && 'Enter the student’s full name',
-    sid: (v) => !/^\d{7}$/.test(v) && 'Student ID is 7 digits, e.g. 2407880',
-    program: (v) => !v && 'Enter the program, e.g. BSIT',
-    section: (v) => !v && 'Enter the year and section, e.g. 3-A',
+    cSid: (v) => (student ? !/^\d{7}$/.test(v) && 'Student no. is 7 digits, e.g. 2407880' : v !== '' && !/^[\w-]{3,20}$/.test(v) && 'Use letters, numbers or hyphens only'),
+    cCourse: (v) => student && !v && 'Enter your course, e.g. BSIT',
+    cDept: (v) => !v && 'Enter your department',
+    cContact: (v) => !PHONE.test(v) && 'Enter a contact number SAEP can reach, e.g. 0917 123 4567',
+    student: (v) => !v && 'Enter the respondent’s full name',
+    sid: (v) => !/^\d{7}$/.test(v) && 'Student no. is 7 digits, e.g. 2407880',
+    program: (v) => !v && 'Enter the course, e.g. BSIT',
+    rEmail: (v) => v !== '' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v) && 'Enter a valid email address or leave it blank',
+    rDept: (v) => !v && 'Enter the respondent’s department',
+    rContact: (v) => v !== '' && !PHONE.test(v) && 'Enter a valid contact number or leave it blank',
     type: (v) => !v && 'Select the type of offense',
     date: (v) => (!v ? 'Choose the date it happened' : v > today && 'The date can’t be in the future'),
     location: (v) => !v && 'Enter where it happened',
     desc: (v) => v.length < 30 && 'Add at least 30 characters so SAEP can review it',
+    signature: (v) => (!v ? 'Type your full name to sign' : norm(v) !== norm(me.name) && 'Type your name exactly as shown under Complainant'),
   };
   const data = () => Object.fromEntries(F.map((k) => [k, $('#' + k).value.trim()]));
   const store = () => UB.save('draft', data());
@@ -132,7 +156,8 @@ import { UB } from '../app.js';
     let c;
     try {
       const v = data();
-      c = await UB.create({ student: v.student, sid: v.sid, program: v.program, section: v.section, date: v.date, location: v.location, desc: v.desc, offenseId: o.id, type: o.type, offense: o.category }, files);
+      const { type: _t, ...rest } = v; // everything on the form except the offense type, which comes from the catalog
+      c = await UB.create({ ...rest, offenseId: o.id, type: o.type, offense: o.category }, files);
     } catch (e) {
       btn.disabled = false;
       btn.textContent = 'Submit complaint';

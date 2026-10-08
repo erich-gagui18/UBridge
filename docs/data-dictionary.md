@@ -23,7 +23,13 @@ Read by any signed-in UB user; written only by staff. Seeded from `public/assets
 ## complaints/{caseId}  (caseId like SAEP-2026-001)
 | Field | Type | Notes |
 |---|---|---|
-| student, sid, program, section | string | Student involved (sid is 7 digits) |
+| student, sid, program | string | Respondent name, student no. (7 digits) and course (F-SAEP-07) |
+| rDept | string (≤80) | Respondent department (required) |
+| rEmail, rContact | string | Respondent email and contact no.; both optional (empty string when unknown) |
+| cSid, cCourse | string | Complainant student no. (7 digits) and course; required for students, may be empty for faculty |
+| cDept, cContact | string | Complainant department (required) and contact no. (required, 7–20 digits/`+()-`/spaces) |
+| signature | string (2–120) | Typed full name used as the complainant's e-signature (the form checks it matches the account name) |
+| section | string | Legacy field on complaints filed before F-SAEP-07; no longer written |
 | offenseId, type, offense | string | Catalog id, its type and category. Rules check they match the catalog |
 | date | string YYYY-MM-DD | Incident date, not after `filed` |
 | filed | string YYYY-MM-DD | Filing date in Philippine time. Rules require it to equal today's date on the server clock (UTC+8), so it cannot be backdated |

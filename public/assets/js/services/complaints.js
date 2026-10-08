@@ -49,7 +49,10 @@ export function watchAudit(caseId, onData, onError) {
   );
 }
 
-/** v: {student, sid, program, section, offenseId, type, offense, date, location, desc} */
+/**
+ * v: the F-SAEP-07 fields. Respondent: student, sid, program, rDept, rEmail, rContact. Complainant: cSid, cCourse,
+ * cDept, cContact (name and email come from the account). Plus offenseId, type, offense, date, location, desc, signature.
+ */
 export async function createComplaint(me, v, files) {
   const year = yearPH();
   const cr = doc(db, 'counters', String(year));

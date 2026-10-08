@@ -1,22 +1,36 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>File a complaint · UBridge</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%236b1a1c'/%3E%3Ctext x='16' y='22' font-size='15' font-weight='800' text-anchor='middle' fill='%23d9bd45' font-family='Arial'%3EUB%3C/text%3E%3C/svg%3E"><link rel="stylesheet" href="../assets/css/styles.css"></head>
 <body data-page="file-complaint"><div id="app"><main id="main">
-<div class="head"><div><h1>File a complaint</h1><p class="sub">Complete the required fields. Your report goes directly to the SAEP Office.</p></div></div>
+<div class="head"><div><h1>College Discipline Complaint Form</h1><p class="sub">Form F-SAEP-07 · University of Batangas, Student Affairs &amp; External Programs. Your report goes directly to the SAEP Office.</p></div></div>
 <form id="f" novalidate>
-<section class="card sec"><h2><span class="step">1</span>Student involved</h2><div class="cols">
-<div class="field"><label class="req" for="student">Full name</label><input id="student" maxlength="120" placeholder="Dela Cruz, Juan M." autocomplete="off"><p class="err"></p></div>
-<div class="field"><label class="req" for="sid">Student ID number</label><input id="sid" maxlength="7" inputmode="numeric" placeholder="2407880"><p class="err"></p></div>
-<div class="field"><label class="req" for="program">Program / course</label><input id="program" maxlength="60" placeholder="BSIT"><p class="err"></p></div>
-<div class="field"><label class="req" for="section">Year &amp; section</label><input id="section" maxlength="30" placeholder="3-A"><p class="err"></p></div></div></section>
-<section class="card sec"><h2><span class="step">2</span>Incident details</h2><div class="cols"><div>
+<section class="card sec"><h2><span class="step">1</span>Complainant</h2><p class="hint formnote" id="cNote">Your name and email come from your UBridge account.</p><div class="cols">
+<div class="field"><label for="cName">Name</label><input id="cName" readonly><p class="err"></p></div>
+<div class="field"><label for="cEmail">Email address</label><input id="cEmail" readonly><p class="err"></p></div>
+<div class="field"><label class="req" for="cSid" id="cSidL">Student no.</label><input id="cSid" maxlength="20" inputmode="numeric" placeholder="2407880" autocomplete="off"><p class="err"></p></div>
+<div class="field"><label class="req" for="cCourse" id="cCourseL">Course</label><input id="cCourse" maxlength="60" placeholder="BSIT" autocomplete="off"><p class="err"></p></div>
+<div class="field"><label class="req" for="cDept">Department</label><input id="cDept" maxlength="80" placeholder="College of Computer Studies" autocomplete="off"><p class="err"></p></div>
+<div class="field"><label class="req" for="cContact">Contact no.</label><input id="cContact" type="tel" maxlength="20" placeholder="09XX XXX XXXX" autocomplete="tel"><p class="err"></p></div></div></section>
+<section class="card sec"><h2><span class="step">2</span>Respondent</h2><p class="hint formnote">The student the complaint is against. Email and contact no. are optional if you don’t know them.</p><div class="cols">
+<div class="field"><label class="req" for="student">Name</label><input id="student" maxlength="120" placeholder="Dela Cruz, Juan M." autocomplete="off"><p class="err"></p></div>
+<div class="field"><label class="req" for="sid">Student no.</label><input id="sid" maxlength="7" inputmode="numeric" placeholder="2407880" autocomplete="off"><p class="err"></p></div>
+<div class="field"><label class="req" for="program">Course</label><input id="program" maxlength="60" placeholder="BSIT" autocomplete="off"><p class="err"></p></div>
+<div class="field"><label for="rEmail">Email address</label><input id="rEmail" type="email" maxlength="120" autocomplete="off"><p class="err"></p></div>
+<div class="field"><label class="req" for="rDept">Department</label><input id="rDept" maxlength="80" placeholder="College of Computer Studies" autocomplete="off"><p class="err"></p></div>
+<div class="field"><label for="rContact">Contact no.</label><input id="rContact" type="tel" maxlength="20" autocomplete="off"><p class="err"></p></div></div></section>
+<section class="card sec"><h2><span class="step">3</span>Details of the complaint</h2><div class="cols"><div>
 <p class="notice" id="noCatalog" hidden>The offense list hasn’t been published yet, so complaints can’t be filed right now. Please tell the SAEP Office.</p>
 <div class="field"><label class="req" for="type">Type of offense</label><select id="type"><option value="">Select…</option></select><div id="offInfo" class="offinfo" hidden aria-live="polite"></div><p class="err"></p></div>
 <div class="field"><label class="req" for="date">Date of incident</label><input id="date" type="date"><p class="err"></p></div>
 <div class="field"><label class="req" for="location">Location</label><input id="location" maxlength="200" placeholder="Room 204, A Building"><p class="err"></p></div></div>
-<div class="field"><label class="req" for="desc">Description of incident</label><textarea id="desc" maxlength="5000" style="min-height:300px" placeholder="Describe what happened in detail. Include what was said or done, and any witnesses present."></textarea><p class="hint count" id="cnt">0 / 30 minimum</p><p class="err"></p></div></div></section>
-<section class="card sec"><h2><span class="step">3</span>Evidence</h2>
-<div id="evOff" hidden><p class="notice"><b>Evidence uploads are not available yet.</b> Files can’t be stored in this version of UBridge, so nothing you attach here would be saved. Describe the evidence in the description (what it is, who has it) and bring the originals to the SAEP Office, quoting your case number.</p></div>
+<div class="field"><label class="req" for="desc">Details of the complaint</label><textarea id="desc" maxlength="5000" style="min-height:300px" placeholder="Describe what happened in detail. Include what was said or done, and any witnesses present."></textarea><p class="hint count" id="cnt">0 / 30 minimum</p><p class="err"></p></div></div></section>
+<section class="card sec"><h2><span class="step">4</span>Evidence</h2>
+<div id="evOff" hidden><p class="notice"><b>Evidence uploads are not available yet.</b> Files can’t be stored in this version of UBridge, so nothing you attach here would be saved. Describe the evidence in the details (what it is, who has it) and bring the originals to the SAEP Office, quoting your case number.</p></div>
 <div id="evOn" hidden><small class="muted" style="display:block;margin-bottom:8px">Optional but recommended</small><label class="drop" id="drop"><input type="file" id="file" multiple accept=".png,.jpg,.jpeg,.pdf"><b>Click to upload</b> or drag photos or documents here<br><small class="muted">PNG, JPG or PDF · up to 10 MB each · max 5 files</small></label><ul class="files" id="files"></ul></div></section>
-<section class="card sec"><h2><span class="step">4</span>Privacy</h2>
-<div class="field check"><input type="checkbox" id="consent"><label for="consent" class="req">I have read the <a href="privacy.html" target="_blank" rel="noopener">Privacy Notice</a> and I consent to UBridge collecting and processing this complaint, including the personal information of the student named, for SAEP case handling.</label><p class="err" id="eConsent"></p></div></section>
-<div class="actions"><button type="button" class="btn" id="draft">Save as draft</button><button class="btn primary">Submit complaint</button></div></form>
+<section class="card sec"><h2><span class="step">5</span>Privacy &amp; signature</h2>
+<blockquote class="consent">By accomplishing the form, I, as the data subject, hereby give my consent and authorize University of Batangas specifically the SAEP Office to use my information solely for this activity. This consent and authorization remain valid and subsisting for one (1) year and consistent with the purposes above or until I revoked or cancelled my consent / authorization in writing.</blockquote>
+<div class="field check"><input type="checkbox" id="consent"><label for="consent" class="req">I have read the <a href="privacy.html" target="_blank" rel="noopener">Privacy Notice</a> and I agree to the consent above. I understand that this complaint includes the respondent’s personal information, which SAEP will use for case handling.</label><p class="err" id="eConsent"></p></div>
+<div class="cols" style="margin-top:14px">
+<div class="field"><label class="req" for="signature">Signature of the complainant</label><input id="signature" maxlength="120" autocomplete="off" placeholder="Type your full name to sign"><p class="hint">Typing your name here is your electronic signature.</p><p class="err"></p></div>
+<div class="field"><label for="filedDate">Date submitted</label><input id="filedDate" readonly><p class="hint">Set automatically (Philippine time).</p></div></div></section>
+<div class="actions"><button type="button" class="btn" id="draft">Save as draft</button><button class="btn primary">Submit complaint</button></div>
+<p class="hint" style="text-align:center;margin-top:14px">F-SAEP-07 · Revision No. 0 · Issue date: August 08, 2023</p></form>
 </main></div><script type="module" src="../assets/js/pages/file-complaint.js"></script></body></html>

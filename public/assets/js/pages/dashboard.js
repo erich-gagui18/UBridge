@@ -64,8 +64,8 @@ import { UB } from '../app.js';
         return `"${s.replace(/"/g, '""')}"`;
       };
       const rows = [
-        ['Case', 'Student', 'Student ID', 'Program', 'Section', 'Offense', 'Type', 'Incident date', 'Filed', 'Status', 'Hearing date', 'Filed by', 'Filer email'],
-        ...list.map((c) => [c.id, c.student, c.sid, c.program, c.section, c.offense, c.type, c.date, c.filed, UB.STATUS[c.status], c.hearingDate || '', c.filedByName, c.filedByEmail || '']),
+        ['Case', 'Respondent', 'Respondent student no.', 'Respondent course', 'Respondent department', 'Respondent email', 'Respondent contact', 'Offense', 'Type', 'Incident date', 'Filed', 'Status', 'Hearing date', 'Complainant', 'Complainant email', 'Complainant student no.', 'Complainant course', 'Complainant department', 'Complainant contact'],
+        ...list.map((c) => [c.id, c.student, c.sid, c.program, c.rDept || '', c.rEmail || '', c.rContact || '', c.offense, c.type, c.date, c.filed, UB.STATUS[c.status], c.hearingDate || '', c.filedByName, c.filedByEmail || '', c.cSid || '', c.cCourse || '', c.cDept || '', c.cContact || '']),
       ];
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob(['\uFEFF' + rows.map((r) => r.map(cell).join(',')).join('\n')], { type: 'text/csv;charset=utf-8' }));
