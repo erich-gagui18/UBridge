@@ -1,0 +1,21 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>File a complaint · UBridge</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%236b1a1c'/%3E%3Ctext x='16' y='22' font-size='15' font-weight='800' text-anchor='middle' fill='%23d9bd45' font-family='Arial'%3EUB%3C/text%3E%3C/svg%3E"><link rel="stylesheet" href="../assets/css/styles.css"></head>
+<body data-page="file-complaint"><div id="app"><main id="main">
+<div class="head"><div><h1>File a complaint</h1><p class="sub">Complete the required fields. Your report goes directly to the SAEP Office.</p></div></div>
+<form id="f" novalidate>
+<section class="card sec"><h2><span class="step">1</span>Student involved</h2><div class="cols">
+<div class="field"><label class="req" for="student">Full name</label><input id="student" maxlength="120" placeholder="Dela Cruz, Juan M." autocomplete="off"><p class="err"></p></div>
+<div class="field"><label class="req" for="sid">Student ID number</label><input id="sid" maxlength="7" inputmode="numeric" placeholder="2407880"><p class="err"></p></div>
+<div class="field"><label class="req" for="program">Program / course</label><input id="program" maxlength="60" placeholder="BSIT"><p class="err"></p></div>
+<div class="field"><label class="req" for="section">Year &amp; section</label><input id="section" maxlength="30" placeholder="3-A"><p class="err"></p></div></div></section>
+<section class="card sec"><h2><span class="step">2</span>Incident details</h2><div class="cols"><div>
+<div class="field"><span class="lbl req" id="offL">Offense category</span><div class="seg" role="radiogroup" aria-labelledby="offL">
+<input type="radio" name="offense" id="o1" value="Minor"><label for="o1">Minor</label><input type="radio" name="offense" id="o2" value="Major"><label for="o2">Major</label><input type="radio" name="offense" id="o3" value="Grave"><label for="o3">Grave</label></div>
+<p class="hint">Not sure? <a href="ai-guide.html">Ask the AI Guide</a>. SAEP can recategorize during review.</p><p class="err" id="eOff"></p></div>
+<div class="field"><label class="req" for="type">Type of offense</label><select id="type"><option value="">Select…</option></select><p class="err"></p></div>
+<div class="field"><label class="req" for="date">Date of incident</label><input id="date" type="date"><p class="err"></p></div>
+<div class="field"><label class="req" for="location">Location</label><input id="location" maxlength="200" placeholder="Room 204, A Building"><p class="err"></p></div></div>
+<div class="field"><label class="req" for="desc">Description of incident</label><textarea id="desc" maxlength="5000" style="min-height:300px" placeholder="Describe what happened in detail. Include what was said or done, and any witnesses present."></textarea><p class="hint count" id="cnt">0 / 30 minimum</p><p class="err"></p></div></div></section>
+<section class="card sec"><h2><span class="step">3</span>Evidence <small class="muted" style="font-weight:500">Optional but recommended</small></h2>
+<label class="drop" id="drop"><input type="file" id="file" multiple accept=".png,.jpg,.jpeg,.pdf"><b>Click to upload</b> or drag photos or documents here<br><small class="muted">PNG, JPG or PDF · up to 10 MB each · max 5 files</small></label><ul class="files" id="files"></ul></section>
+<div class="actions"><button type="button" class="btn" id="draft">Save as draft</button><button class="btn primary">Submit complaint</button></div></form>
+</main></div><script type="module" src="../assets/js/pages/file-complaint.js"></script></body></html>
