@@ -19,19 +19,19 @@ Pushing to `main` also deploys Hosting through the GitHub workflow. **Rules are 
 ## First deploy after the workflow update (do these in order)
 1. `firebase deploy --only firestore:rules`
 2. Make a SAEP staff account (below), sign in as staff, open **All cases**, and press **Sync offense list**. Students can't file until the `offenses` collection exists.
-3. Before real use, replace the provisional entries in `public/assets/js/data/offenses.json` with the real list from handbook Section VII, set `"provisional": false`, redeploy Hosting and press **Sync offense list** again.
-4. Generate the AI Guide's handbook text (see "AI Guide").
+3. `public/assets/js/data/offenses.json` now holds the 45 offenses of the College Discipline Board Manual (Student Handbook Revision No. 7, First/Second/Third Degree). Confirm with the SAEP Office that the list is still current (see `docs/cdb-alignment.md`), then press **Sync offense list**. Sync also removes catalog entries that are no longer in the file, such as the old placeholders.
+4. `handbook.json` is already generated from the manual; run `npm run chunk` again only if `handbook/cdb-manual.txt` changes (see "AI Guide").
 
 ## Make a SAEP Staff account
 Sign up as a student, then in Firestore open `users/<uid>` and change `role` to `staff`. Staff can't be self-assigned; the rules only allow student or faculty at sign-up.
 
 ## Leftovers
-- Set `CONTACT.email` in `public/assets/js/data.js` once you have the SAEP Office email, then redeploy hosting. Until then the floating button opens the FAQ.
+- `CONTACT.email` in `public/assets/js/data.js` is set to the UB Lipa SAEP address listed in Handbook Revision No. 8. Confirm it with the SAEP Office. CDB complaint forms are emailed to `cdb@ub.edu.ph` (CDB Manual § 5.1.1.2).
 - Once the first push succeeds, ask your teammates to clone the repo so there is more than one copy.
 
-## AI Guide (RAG over handbook Sections VII and IX)
-1. Put plain-text copies of the sections in `handbook/section-VII.txt` and `handbook/section-IX.txt` (the file name sets the section label).
-2. `npm run chunk` writes `public/assets/js/data/handbook.json`. Open it and compare a few chunks with the printed handbook.
+## AI Guide (RAG over the College Discipline Board Manual)
+1. The source text is `handbook/cdb-manual.txt`, copied word for word from the manual in Student Handbook Revision No. 7 (pages 1 to 15 of the manual). The file name sets the label shown to users ("CDB Manual"). Other files named `section-VII.txt` style are labelled "Section VII".
+2. `npm run chunk` writes `public/assets/js/data/handbook.json` (41 chunks). Open it and compare a few chunks with the printed manual.
 3. Firebase console > Build > AI Logic: enable it with the **Gemini Developer API** (the no-cost tier works on Spark). Check the model name in `GEMINI_MODEL` (firebase-config.js) against the console.
 4. App Check: create a reCAPTCHA v3 site key, register it under App Check > Apps > Web, paste the **site** key into `RECAPTCHA_SITE_KEY`, redeploy. Watch App Check metrics for a few days, then press **Enforce** for Firestore and AI Logic. Add the `localhost` debug token shown in the console if you test locally.
 

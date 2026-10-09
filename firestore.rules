@@ -41,7 +41,7 @@ service cloud.firestore {
         && d.cDept is string && d.cDept.size() >= 1 && d.cDept.size() <= 80
         && d.cContact is string && d.cContact.matches('^[0-9+() -]{7,20}$')
         && d.signature is string && d.signature.size() >= 2 && d.signature.size() <= 120
-        && d.offense in ['Minor', 'Major', 'Grave']
+        && d.offense in ['First Degree', 'Second Degree', 'Third Degree']
         && d.type is string && d.type.size() >= 2 && d.type.size() <= 80
         && offenseOk(d)
         && isDate(d.date) && d.filed == phToday() && d.date <= d.filed
@@ -70,13 +70,13 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // Offense catalog taken from handbook Section VII. Everyone signed in can read it; only staff edit it.
+    // Offense catalog taken from the College Discipline Board Manual (Student Handbook Revision No. 7, sections 4.1 to 4.6). Everyone signed in can read it; only staff edit it.
     match /offenses/{oid} {
       allow read: if signedIn();
       allow create, update: if isStaff() && oid.matches('^[a-z0-9-]{2,60}$')
         && request.resource.data.keys().hasOnly(['type', 'category', 'sanction', 'section'])
         && request.resource.data.type is string && request.resource.data.type.size() >= 2 && request.resource.data.type.size() <= 80
-        && request.resource.data.category in ['Minor', 'Major', 'Grave']
+        && request.resource.data.category in ['First Degree', 'Second Degree', 'Third Degree']
         && request.resource.data.sanction is string && request.resource.data.sanction.size() <= 1000
         && request.resource.data.section is string && request.resource.data.section.size() <= 60;
       allow delete: if isStaff();

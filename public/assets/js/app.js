@@ -11,7 +11,7 @@ import { toast, modal, confirmDlg, copy } from './lib/ui.js';
 import { shell, applyTheme, bindTheme } from './lib/layout.js';
 import * as authSvc from './services/auth.js';
 import * as cases from './services/complaints.js';
-import { loadOffenses, syncOffenses } from './services/offenses.js';
+import { loadOffenses, syncOffenses, degClass, DEGREES } from './services/offenses.js';
 
 export const UB = (() => {
   let me = null;
@@ -82,6 +82,6 @@ export const UB = (() => {
     create: (v, files) => cases.createComplaint(me, v, files),
     updateCase: (c, change) => cases.updateCase(me, c, change),
     evidenceUrl: cases.evidenceUrl,
-    loadOffenses, syncOffenses,
+    loadOffenses, syncOffenses, degClass, DEGREES,
   };
 })();

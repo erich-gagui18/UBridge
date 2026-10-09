@@ -27,3 +27,16 @@ test('stop words alone return nothing', () => {
   assert.deepEqual(tokens('what is the'), []);
   assert.deepEqual(search(index, 'what is the'), []);
 });
+
+// The shipped handbook.json is the College Discipline Board Manual (Revision No. 7); make sure the guide can find the degrees.
+import { readFileSync } from 'node:fs';
+test('shipped handbook finds plagiarism under Third Degree offenses', () => {
+  const { chunks } = JSON.parse(readFileSync(new URL('../public/assets/js/data/handbook.json', import.meta.url), 'utf8'));
+  const hits = search(buildIndex(chunks), 'What is the penalty for plagiarism?');
+  assert.ok(hits.some((h) => h.title.includes('THIRD DEGREE OFFENSES')));
+});
+test('shipped handbook finds the appeal rule', () => {
+  const { chunks } = JSON.parse(readFileSync(new URL('../public/assets/js/data/handbook.json', import.meta.url), 'utf8'));
+  const hits = search(buildIndex(chunks), 'Can I appeal the decision?');
+  assert.ok(hits.some((h) => /appeal/i.test(h.text)));
+});

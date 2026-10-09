@@ -10,13 +10,13 @@ Cloud Firestore is a document database, so this replaces the ERD in Chapter 3. T
 | role | string | `student`, `faculty` or `staff`. Clients can only create `student` or `faculty`; `staff` is set in the console. Immutable from clients |
 | createdAt | timestamp | Server time |
 
-## offenses/{offenseId}  (catalog from handbook Section VII)
+## offenses/{offenseId}  (catalog from the College Discipline Board Manual, Handbook Revision No. 7)
 | Field | Type | Notes |
 |---|---|---|
 | type | string (2–80) | Offense name shown in the form |
-| category | string | `Minor`, `Major` or `Grave` |
+| category | string | `First Degree`, `Second Degree` or `Third Degree` (CDB Manual sections 4.1, 4.3, 4.5). Complaints filed before this change may still hold `Minor`, `Major` or `Grave` in `offense`; they stay readable |
 | sanction | string (≤1000) | Sanction text as written in the handbook |
-| section | string (≤60) | Handbook reference |
+| section | string (≤60) | Manual reference, e.g. `CDB Manual § 4.3.13`. Ids look like `cdb-4-3-13` |
 
 Read by any signed-in UB user; written only by staff. Seeded from `public/assets/js/data/offenses.json`.
 

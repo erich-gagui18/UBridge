@@ -59,7 +59,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--maroon);outline:none;
 .chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;font-size:13px;font-weight:700;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);white-space:nowrap}
 .chip::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c)}
 .chip.submitted{--c:var(--submitted)}.chip.review{--c:var(--review)}.chip.hearing{--c:var(--hearing)}.chip.resolved{--c:var(--resolved)}
-.chip.Minor{--c:var(--minor)}.chip.Major{--c:var(--major)}.chip.Grave{--c:var(--bad)}
+.chip.deg1{--c:var(--minor)}.chip.deg2{--c:var(--major)}.chip.deg3{--c:var(--bad)}
 /* dashboard */
 .grid2{display:grid;grid-template-columns:1.5fr 1fr;gap:18px}@media(max-width:960px){.grid2{grid-template-columns:1fr}}
 .panel{padding:0;overflow:hidden}.panel>header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}

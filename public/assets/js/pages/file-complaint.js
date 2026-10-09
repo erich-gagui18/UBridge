@@ -33,7 +33,11 @@ import { UB } from '../app.js';
   } catch {
     offenses = [];
   }
-  offenses.forEach((o) => $('#type').insertAdjacentHTML('beforeend', `<option value="${esc(o.id)}">${esc(o.type)}</option>`));
+  // One <optgroup> per degree so 45 offenses stay easy to scan.
+  UB.DEGREES.forEach((deg) => {
+    const list = offenses.filter((o) => o.category === deg);
+    if (list.length) $('#type').insertAdjacentHTML('beforeend', `<optgroup label="${esc(deg)}">${list.map((o) => `<option value="${esc(o.id)}">${esc(o.type)}</option>`).join('')}</optgroup>`);
+  });
   if (!offenses.length) {
     $('#noCatalog').hidden = false;
     f.querySelector('.btn.primary').disabled = true;
@@ -43,7 +47,7 @@ import { UB } from '../app.js';
     const o = chosen();
     $('#offInfo').hidden = !o;
     if (!o) return;
-    $('#offInfo').innerHTML = `<b>Category: <span class="chip ${esc(o.category)}">${esc(o.category)}</span></b>${o.section ? ` <small class="muted">${esc(o.section)}</small>` : ''}${o.sanction ? `<p class="hint">Sanction in the handbook: ${esc(o.sanction)}</p>` : ''}<p class="hint">SAEP reviews the category during assessment. Not sure? <a href="ai-guide.html">Ask the AI Guide</a>.</p>`;
+    $('#offInfo').innerHTML = `<b>Category: <span class="chip ${UB.degClass(o.category)}">${esc(o.category)}</span></b>${o.section ? ` <small class="muted">${esc(o.section)}</small>` : ''}${o.sanction ? `<p class="hint">Sanction in the handbook: ${esc(o.sanction)}</p>` : ''}${o.category === 'First Degree' ? '<p class="notice">The CDB Manual (§ 5.1.1) says First Degree offenses are handled first by the respondent’s department and and the SAEP Office and the College Discipline Board take it on the third commission.</p>' : ''}<p class="hint">SAEP reviews the category during assessment. Not sure? <a href="ai-guide.html">Ask the AI Guide</a>.</p>`;
   };
   $('#type').addEventListener('change', showOffense);
 

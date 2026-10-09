@@ -8,7 +8,7 @@ UBridge is a static web application served from Firebase Hosting. The browser ru
 1. **Presentation:** HTML pages and one JavaScript module per page, styled with a custom stylesheet that follows the university colours, supports a dark theme and meets keyboard and screen-reader basics (skip link, labelled controls, focus handling). The interface is our own design and is not an implementation of Material Design 3.
 2. **Application logic:** JavaScript services in the browser (authentication, complaints, offense catalog, notifications, AI Guide retrieval).
 3. **Data and security:** Firebase Authentication (email/password and Google, limited to @ub.edu.ph with verified email), Cloud Firestore for records, and Firestore Security Rules that enforce roles, ownership, validation and audit-trail integrity on the server side. Firebase App Check limits use of the backend to this site.
-4. **AI service:** Firebase AI Logic calling a Gemini model. Retrieval runs in the browser over chunks of Sections VII and IX of the Student Handbook (Revision No. 8); only the retrieved chunks are sent to the model, which is instructed to answer only from them. The interface shows the section used.
+4. **AI service:** Firebase AI Logic calling a Gemini model. Retrieval runs in the browser over chunks of the College Discipline Board Manual printed in the Student Handbook (Revision No. 7, 2023); only the retrieved chunks are sent to the model, which is instructed to answer only from them. The interface shows the section used. The offense catalog uses the manual's classification (First, Second and Third Degree offenses, 45 in total) and its interventions.
 
 State clearly in the limitations that Cloud Storage and email notification depend on the Blaze plan; currently in-app notifications are used and evidence upload is switched off (see `docs/decisions.md`).
 
@@ -24,7 +24,7 @@ Cite the automated tests in `tests/rules.test.mjs` (run with `npm run test:rules
 | Characteristic | What the tests show |
 |---|---|
 | Confidentiality | Only the filer and staff can read a complaint or its history; other students are denied; unverified or non-UB accounts are denied |
-| Integrity | The filing date must equal the server's Philippine date (no backdating); evidence entries must point into the filer's own folder; category must match the handbook catalog; invalid, spoofed or extra fields are rejected; case numbers must match the counter; nobody can delete complaints |
+| Integrity | The filing date must equal the server's Philippine date (no backdating); evidence entries must point into the filer's own folder; category must match the offense catalog (First, Second or Third Degree from the College Discipline Board Manual); invalid, spoofed or extra fields are rejected; case numbers must match the counter; nobody can delete complaints |
 | Non-repudiation | Every staff change needs an append-only history entry (what changed) and a staff-only audit entry (who changed it, with server time); neither can be edited or deleted. Moving a case back needs a written remark |
 | Accountability | `updatedBy`, `hCount` and the history trail identify who changed a case |
 | Authenticity | Roles cannot be self-assigned or changed from the browser; staff is set only in the console |

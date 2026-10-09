@@ -1,5 +1,251 @@
 {
-  "_note": "Chunks of Section VII (offenses and sanctions) and Section IX of the UB Student Handbook (2026, Revision No. 8). Generate this file with: node scripts/chunk-handbook.mjs handbook/section-VII.txt handbook/section-IX.txt. Each chunk needs a unique id, the section label shown to the user, and the verbatim handbook text. Do not paraphrase the handbook text here.",
-  "version": "2026-rev8",
-  "chunks": []
+  "version": "cdb-rev7-2023",
+  "chunks": [
+    {
+      "id": "CDB-01",
+      "section": "CDB Manual",
+      "title": "1.1 VISION",
+      "text": "The University of Batangas Student Affairs and Services Division is envisioned to be the leading resource center for dynamic, relevant and experiential student welfare and development services aimed at producing prolific members of society who are honed to be transformational leaders."
+    },
+    {
+      "id": "CDB-02",
+      "section": "CDB Manual",
+      "title": "1.2 MISSION",
+      "text": "The Student Affairs and Services Division provides a set of student-centered programs and services specifically aligned towards the acquisition of life skills and values through a hand-in-hand coordination with the University's academic arm to facilitate a holistic and well-rounded student development."
+    },
+    {
+      "id": "CDB-03",
+      "section": "CDB Manual",
+      "title": "1.3 OBJECTIVES",
+      "text": "1. Intensify collaboration with the Academic Affairs in delivering engaging, responsive and effective programs and services that support the diverse developmental needs of students.\n2. Provide healthy and nurturing environment in the delivery of the manifold programs and services beneficial to students’ continuous growth\n3. Ensure the rights of students in accessing quality and relevant services toward global competitiveness\n4. Provide support to the professional developmental growth and opportunities of Student Affairs personnel\n5. Implement standardized feedback mechanism for the continuous improvement of service to SA stakeholders\n6. Commit to intensify the university’s research agenda\n7. Forge meaningful, mutually beneficial partnerships with local and international partners"
+    },
+    {
+      "id": "CDB-04",
+      "section": "CDB Manual",
+      "title": "2.1 COMPOSITION",
+      "text": "There shall be a College Discipline Board (CDB) composed of the Vice President for Student Affairs (VPSA) or the Chief of Office of Student Affairs and External Programs (SAEP) as chairman, three (3) faculty members to serve for a term of two (2) years all of whom shall be appointed by the University President, and one (1) representative from the Executive Committee of the Student Government."
+    },
+    {
+      "id": "CDB-05",
+      "section": "CDB Manual",
+      "title": "2.2 DUTIES AND RESPONSIBILITIES",
+      "text": "It is the duty of the CDB to investigate, hold disciplinary conferences and decide appropriate interventions. It may require the attendance and testimony of any student, faculty member or school personnel and the production of any document, subject to existing laws during the disciplinary conference. The CDB shall not be bound by technical rules of procedure on evidence but shall always be guided by fairness and due process in all its proceedings. The CDB shall determine if violation of the code has occurred, and if so, determine proper intervention to be applied. Unless decided by the CDB in exceptional circumstances, disciplinary conference before it may be summary in nature and cross-examination may be disallowed."
+    },
+    {
+      "id": "CDB-06",
+      "section": "CDB Manual",
+      "title": "3.0 CODE OF STUDENT RIGHTS AND RESPONSIBILITIES",
+      "text": "A student, by voluntarily joining the university community, assumes responsibility for abiding by the standards that have been instituted by the university. Students and student organizations are advised to read this code carefully so all are aware of the policies, which guide the university in its dealing with them. The Code of Student responsibility was developed by the Office of the Vice President for Student Affairs & Services to give formal recognition to the rights and responsibilities of students at the University of Batangas as granted by law and is based on the following principles:"
+    },
+    {
+      "id": "CDB-07",
+      "section": "CDB Manual",
+      "title": "3.1 GENERAL STUDENT RIGHTS",
+      "text": "Pursuant to Sec. 9 of the Education Act of 1982, and as hereby adopted by this institution, a student has the following rights:\n3.1.1 The right to receive, primarily through competent instruction, relevant quality education in line with national goals and conducive to their full development as person with human dignity.\nIt includes for this purpose, the right to be given a copy of the course syllabus by their professors during the first class meeting of the semester. A student has also the right to receive a copy of the College Student Handbook upon admission to the University.\n3.1.2 The right to freely choose their field of study subject to existing curricula and to continue their course therein up to graduation, except in cases of academic deficiency, or violation of disciplinary regulations."
+    },
+    {
+      "id": "CDB-08",
+      "section": "CDB Manual",
+      "title": "3.1 GENERAL STUDENT RIGHTS",
+      "text": "3.1.3 The right to school guidance and counseling services for decisions and selecting the alternatives in fields of work suited to his potential.\n3.1.4 The right of access to his school records, the confidentiality of which the school shall maintain and preserve.\n3.1.5 The right to the issuance of official certificates, diplomas, transcript of records, grades, transfer credentials and other similar documents within thirty days from request.\n3.1.6 The right to publish a student newspaper and similar publications as well as the right to invite resource persons during assemblies, symposia, and other activities of similar nature.\n3.1.7 The right to free expression of opinions and suggestions, and to effective channels of communication with appropriate academic channels and administrative bodies of the school or institution."
+    },
+    {
+      "id": "CDB-09",
+      "section": "CDB Manual",
+      "title": "3.1 GENERAL STUDENT RIGHTS",
+      "text": "3.1.8 The right to form, establish, join and participate in organizations and societies recognized by the school to foster their intellectual, cultural, spiritual and physical growth an development, or to form, establish, join and maintain organizations an societies for purposes not contrary to law.\nRelevant to this, organizations are free to systematize their own group-management/ leadership structure/ makeup, aims and objectives upon consultation with the SAEP Office.\n3.1.9 The right to be free from involuntary contributions, except those approved by their own organizations or societies."
+    },
+    {
+      "id": "CDB-10",
+      "section": "CDB Manual",
+      "title": "3.2 GENERAL RESPONSIBILITIES OF THE STUDENTS",
+      "text": "On the other hand, Sec. 15 of the Education Act of 1982, which is hereby adopted by this institution, enumerates the duties and responsibilities of students as follows:\n3.2.1 Exert his utmost develop his potentialities for service, particularly by undergoing an education suited to his abilities, in order that he may become an asset to his family and to society.\n3.2.2 Uphold the academic integrity of the school, endeavor to achieve academic excellence and abide by the rules and regulations governing his academic responsibilities and moral integrity.\n3.2.3 Promote and maintain the peace and tranquility of the school by observing the rules and discipline, and by exerting efforts to attain harmonious relationships with fellow students, the teaching and academic staff and other school personnel."
+    },
+    {
+      "id": "CDB-11",
+      "section": "CDB Manual",
+      "title": "3.2 GENERAL RESPONSIBILITIES OF THE STUDENTS",
+      "text": "3.2.4 Participate actively in civic affairs and in the promotion of the general welfare, particularly in the social, economic and cultural development of his community and in the attainment of a just, compassionate and orderly society.\n3.2.5 Exercise his rights responsibly in the knowledge that he is answerable for any infringement or violation of the public welfare and of the rights of others.\nIn addition, a student shall at all times, look after the welfare of the school and the community he is a part of by upholding all school rules and regulations as well as all community laws and ordinances as may be promulgated from time to time. Never will he do anything that may tarnish the name of the school or the reputation of his Alma Mater."
+    },
+    {
+      "id": "CDB-12",
+      "section": "CDB Manual",
+      "title": "3.3 INFORMATION ACCESS",
+      "text": "3.3.1 The right to be informed formally of their academic standing in class by the midpoint of each semester. He has the right to consult his professor regarding his grades\nand be given an explanation for arriving at such before taking the final examinations.\n3.3.2 The right to access his school records, the confidentiality of which the school shall maintain and preserve. Requests to inspect education records shall be in writing and directed to the Registrar’s Office. Any such request shall identify the records the student wishes to inspect.\n3.3.3 The right to the issuance of official certificates, diplomas, transcript of records, grades, transfers of credentials and other similar documents within thirty days from request."
+    },
+    {
+      "id": "CDB-13",
+      "section": "CDB Manual",
+      "title": "3.4 MINIMUM STANDARDS OF PROCEDURAL DUE PROCESS IN STUDENT DISCIPLINE CONFERENCE",
+      "text": "3.4.1 The student shall be informed in writing of the nature and cause of any complaint made against him / her;\n3.4.2 He/ She shall have the right to defend himself/ herself, or by a representative preferably a parent/ guardian;\n3.4.3 He/ She shall be informed of the evidence against him/ her;\n3.4.4 He/ She shall have the right to adduce evidence in his/ her own behalf;\n3.4.5 The evidence or pieces of evidence must be considered by the CDB;\n3.4.6 The student and his/her parents (if student is below 18 years old) shall be informed in writing of the decision made in his/ her case, and;\n3.4.7 If he or she is found responsible of the offense charged, the intervention to be applied shall be commensurate with the nature and gravity of the offense."
+    },
+    {
+      "id": "CDB-14",
+      "section": "CDB Manual",
+      "title": "3.4 MINIMUM STANDARDS OF PROCEDURAL DUE PROCESS IN STUDENT DISCIPLINE CONFERENCE",
+      "text": "3.4.8 The CDB shall employ reasonable measures to protect the information of the parties involved in accordance with the Data Privacy Act of 2012, its Implementing Rules and Regulations, and related issuances from the National Privacy Commission. Personal information may be processed both by way of computer media and on paper, and may be retained or stored for as long as the purposes for which they are being processed have not been satisfied.\n3.4.9 By accomplishing the Complaint Form, complainant is hereby giving consent and authorization to process personal information provided.\n3.4.10 Consent of the respondent/s and other parties involved are collected via the Notice of Complaint & Request\nfor Written Explanation Form and/or the Discipline Conference Attendance Sheet."
+    },
+    {
+      "id": "CDB-15",
+      "section": "CDB Manual",
+      "title": "4.0 DISCIPLINARY OFFENSES AND DISCIPLINARY ACTIONS",
+      "text": "The following cases cover offenses committed within the university premises, online classrooms, any other place where the university activities (face-to-face or online) are taking place and other similar acts that may negatively affect the good reputation of the school, regardless of the place of its commission.\nThe University classifies the following disciplinary offenses as:"
+    },
+    {
+      "id": "CDB-16",
+      "section": "CDB Manual",
+      "title": "4.1 FIRST DEGREE OFFENSES",
+      "text": "The following offenses are to be handled by the department from which the respondent belongs to. Third commission of any first degree offense will be handled by the College Discipline Board.\n4.1.1 Shouting, loud voices, boisterous conduct or any action that causes disturbances;\n4.1.2 Using sound amplification equipment such as bullhorn on campus or in a campus building without written permission of the Vice-President for Student Affairs & Services or the VPSEA’s designee;\n4.1.3 Writing, drawing or posting of any printed medium for malicious purposes;\n4.1.4 Attending classes not wearing the prescribed uniform, wearing incomplete uniform, wearing the uniform improperly;\n4.1.5 Smoking inside the campus;\n4.1.6 Use of indecent or malicious words/ act against fellow students;"
+    },
+    {
+      "id": "CDB-17",
+      "section": "CDB Manual",
+      "title": "4.1 FIRST DEGREE OFFENSES",
+      "text": "4.1.7 Possessing, displaying, distributing pornographic materials (pictures, posters, slides, CDs, VCDs, DVDs or similar materials), writing pornographic literature, accessing pornographic materials through school facilities (i.e. internet access in the library, study area), including personal devices such as cell phones, iPods, iPads, tablets, laptops, PSP, etc.;\n4.1.8 Discourteous and disruptive use of cellular phones during classes;\n4.1.9 Misuse or tampering identification card;\n4.1.10 Willfully refusing to, or falsely identifying oneself, willfully failing to comply with a proper order or summons when requested by an authorized university official;\n4.1.11 Violating other university, college, department and organization regulations which have been posted or publicized;"
+    },
+    {
+      "id": "CDB-18",
+      "section": "CDB Manual",
+      "title": "4.1 FIRST DEGREE OFFENSES",
+      "text": "4.1.12 Unauthorized entry upon the playing performance area or the spectators area of any academic, cultural or athletic contest, exhibition or other event;\n4.1.13 Littering anywhere in the campus and the school premises;\n4.1.14 Loitering along corridors during class hours;\n4.1.15 Violation of the school canteen’s Clean As You Go (CLAYGO) policy;\n4.1.16 Posting of unauthorized notice and/ or announcements on bulletin boards & UB official social media accounts or posting of tarpaulins, streamers in the school area; (Note: The Corporate Communications Office of the university generally regulates posting of announcements)\n4.1.17 For male students: wearing earrings, headgear and/ or other accessories inappropriate for school wear unless authorized for specific function/ activities;"
+    },
+    {
+      "id": "CDB-19",
+      "section": "CDB Manual",
+      "title": "4.1 FIRST DEGREE OFFENSES",
+      "text": "4.1.18 For female students: wearing more than one (1) set of earrings and/ or other accessories inappropriate for school wear;\n4.1.19 For students in general: haircut, hairstyle and/or hair color inappropriate for school wear, including excessive use of jewelry and body piercings. Tattoos must not be visible when wearing a school uniform.\nCommission of any first – degree offenses whether of a similar nature or otherwise may be elevated as a major offense depending on the nature of the offense and the guilt of the offender."
+    },
+    {
+      "id": "CDB-20",
+      "section": "CDB Manual",
+      "title": "4.2 FIRST DEGREE INTERVENTIONS",
+      "text": "4.2.1 Disciplinary reprimand\n4.2.2 University censure\n4.2.3 Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.\nNote: Disciplinary conferences administered by the department shall be properly documented and a copy of the decision shall be forwarded to the College Discipline Board."
+    },
+    {
+      "id": "CDB-21",
+      "section": "CDB Manual",
+      "title": "4.3 SECOND DEGREE OFFENSES",
+      "text": "4.3.1 Brawl inside the campus or within the vicinity of the University;\n4.3.2 Gambling inside the campus;\n4.3.3 Carrying of deadly weapons or explosives inside the campus;\n4.3.4 Showing disrespect, threatening or endangering the health, safety or welfare of faculty members or other school personnel (physical, verbal, written or posted online);\n4.3.5 Vandalism (destroying school properties such as fire alarm, firefighting equipment, doors, windows, desks, tables, etc);\n4.3.6 Intentionally making a false report of a bomb, fire, natural disaster or other emergency to a University official or an emergency service agency;\n4.3.7 Altering, forging, misusing university records or documents;\n4.3.8 Submission of false records of academic achievement to obtain grades, honors, awards or professional endorsement;\n4.3.9 Acquiring or using testing materials without faculty permission;"
+    },
+    {
+      "id": "CDB-22",
+      "section": "CDB Manual",
+      "title": "4.3 SECOND DEGREE OFFENSES",
+      "text": "4.3.10 Wrongful or unauthorized use of University properties or facilities;\n4.3.11 Unlawful taking, wrongful sale or gift of property belonging to the University to a member of the University community, guest, or anybody;\n4.3.12 Commission of any three first-degree offenses whether of a similar nature or otherwise may be elevated as a major offense depending on the nature of the offense and the guild of the offender;\n4.3.13 Any forms of bullying (verbal, physical or cyber) committed by a student against another student, faculty member or any school personnel;\n4.3.14 Public displays of affection inside the campus or outside the campus whenever such inappropriate act is done while wearing the school uniform, ID or any such garment or accessory which will identify the erring student as a student of this university;"
+    },
+    {
+      "id": "CDB-23",
+      "section": "CDB Manual",
+      "title": "4.3 SECOND DEGREE OFFENSES",
+      "text": "Public displays of affection are acts of physical intimacy in the view of others. These include physical contact that may make others in close proximity uncomfortable or serve as distractions for them as well as innocent onlookers. These\nmay include, but not limited to, cuddling, intimate touching, kissing, fondling, caressing, petting, excessive hugging, necking, etc.\n4.3.15 Instigating or participating in concerted activities resulting to the disruption or stoppage of classes, preventing or threatening any member of academic community from discharging their duties or from attending classes or entering the school premises;\n4.3.16 Unauthorized soliciting or collecting of money, checks and contributions and/ or selling tickets for any cause or purpose without the approval of the school administration;"
+    },
+    {
+      "id": "CDB-24",
+      "section": "CDB Manual",
+      "title": "4.3 SECOND DEGREE OFFENSES",
+      "text": "4.3.17 Gross disrespect, in words and/ or in deeds, which tends to ridicule or mock any member of the school community and guests.\n4.3.18 Threatening fellow students verbally or in writing or through the use of social media.\nCommission of any second – degree offenses whether of a similar nature or otherwise may be elevated as a major offense depending on the nature of the offense and the guilt of the offender."
+    },
+    {
+      "id": "CDB-25",
+      "section": "CDB Manual",
+      "title": "4.4 SECOND DEGREE INTERVENTIONS",
+      "text": "4.4.1 University Censure\n4.4.2 Disciplinary Probation\n4.4.3 In case of vandalism, payment sufficient to restore the property to original state shall be required. Payment shall be assessed by MAGS Office to be paid to the Cashier’s Office.\n4.4.4 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge.\n4.4.5 Community Service\n4.4.6 Exclusion"
+    },
+    {
+      "id": "CDB-26",
+      "section": "CDB Manual",
+      "title": "4.5 THIRD DEGREE OFFENSES",
+      "text": "4.5.1 Academic Dishonesty including but not limited to plagiarism, fabrication of data, deception, and sabotage of the work of others;\n4.5.2 Unauthorized bringing, possession or use of liquor or illegal drugs;\n4.5.3 Attending classes or school activities under the influence of alcohol and/ or illegal drugs;\n4.5.4 Physically assaulting faculty members and or other school personnel whether in or off the campus;\n4.5.5 Participation in hazing whether as the person joining an organization or the one conducting the hazing (other\nstudents who are also present at hazing/ initiation are also liable whether or not they actually participate in hazing/ initiation;\n4.5.6 Sexual harassment, sexual misconduct and other similar immoral acts that may negatively affect the good reputation of the school;"
+    },
+    {
+      "id": "CDB-27",
+      "section": "CDB Manual",
+      "title": "4.5 THIRD DEGREE OFFENSES",
+      "text": "4.5.7 Acting to obtain goods, services or funds from University fraudulently by deceit, by unauthorized procedures, by bad checks or by misrepresentation;\n4.5.8 Acts of subversion or insurgency for the purpose of propagating and/ or engaging in unlawful and immoral acts, beliefs and/ or any act punishable under the revised penal code or any other pertinent laws."
+    },
+    {
+      "id": "CDB-28",
+      "section": "CDB Manual",
+      "title": "4.6 THIRD DEGREE INTERVENTIONS",
+      "text": "4.6.1 Community Service\n4.6.2 Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB\n4.6.3 Expulsion\n4.6.4 Exclusion\nThe University will submit to disciplinary review any student alleged to have engaged in any of the above behaviors. Any such action taken by the University will proceed in accordance with disciplinary listed hereunder."
+    },
+    {
+      "id": "CDB-29",
+      "section": "CDB Manual",
+      "title": "4.7 OFF-CAMPUS AND ONLINE OFFENSES",
+      "text": "The University may exercise jurisdiction for an offense committed off-campus and online when:\n4.7.1 The victim of such offense is a member of the campus community (student, faculty or staff);\n4.7.2 The offense occurred at a college or university sponsored-event;\n4.7.3 The accused student used his or her status as a member of the University community to assist in the commission of the offense; or\n4.7.4 The offense seriously impairs the pursuit of the University’s objectives.\n4.7.5 The offense tarnishes the good name of the school.\nThe university’s adjudication of any violation of this code may proceed independently of any action taken by public prosecutors. The university reserves the right to refer incidents of misconduct to proper police authorities."
+    },
+    {
+      "id": "CDB-30",
+      "section": "CDB Manual",
+      "title": "4.7 OFF-CAMPUS AND ONLINE OFFENSES",
+      "text": "This code is designed to protect the right of all members of the university community so they can prosper academically, socially and personally. In order for this code to work effectively, however students must take responsibility for confronting behaviors exhibit by their peers that negatively impact their experiences and violate established standards of behavior. It is imperative that students work in partnership with university faculty and staff members to protect the rights that haven been afforded by them. The university reserves the right to change policies or procedures maintained herein at any time during a student’s enrollment period provided such changes are announced throughout the university community via official bulletin boards, office publication or student newspaper."
+    },
+    {
+      "id": "CDB-31",
+      "section": "CDB Manual",
+      "title": "4.7 OFF-CAMPUS AND ONLINE OFFENSES",
+      "text": "Students and student organizations are advised to read this code carefully so all are aware of the policies that guide the university in its dealings with them."
+    },
+    {
+      "id": "CDB-32",
+      "section": "CDB Manual",
+      "title": "5.1 RULES OF PROCEDURE",
+      "text": "5.1.1 Filing of Complaint. The complainant must accomplish a Complaint Form wherein details such as date, time, and place of commission of offense are specified. The form may be downloaded from My UB/ SAEP Forms. The complaint must be filed with the:\n5.1.1.1 Department to which the respondent belongs to – For first degree offenses\n5.1.1.2 Student Affairs and External Programs Office – For second-degree offense, third degree offense, and third commission of a first-degree offense. Completed form shall be submitted to the SAEP Office or emailed to cdb@ub.edu.ph."
+    },
+    {
+      "id": "CDB-33",
+      "section": "CDB Manual",
+      "title": "5.1 RULES OF PROCEDURE",
+      "text": "5.1.2 Notice of Complaint and Explanation. The student against whom the complainant was filed shall be notified in writing of the complaint against him. The notice shall include, among others, a copy of the complaint together with the statement of the complainant and witnesses if there be any, the time within which to answer which shall not be less than three (3) days and with then information that he can avail of the assistance of counsel if he so desires. The respondent shall file the explanation within the period provided to the SAEP Office or emailed to\ncdb@ub.edu.ph . Failure to do so, an entry of general denial shall be entered in favor of the respondent."
+    },
+    {
+      "id": "CDB-34",
+      "section": "CDB Manual",
+      "title": "5.1 RULES OF PROCEDURE",
+      "text": "5.1.3 Notice to Parents or Guardians. The parents or guardians of the respondent who is below 18 years old will be notified of such complaint against their ward. Parents of students who are above 18 years old may be notified upon the consent of the student.\n5.1.4 Disciplinary Conference ( Face-to-Face or Online)\n5.1.4.1 Schedule of Disciplinary Conference\n5.1.4.2 Presence of the parties\n5.1.4.3 Presentation of evidences or pieces of evidence\n5.1.4.4 Hearing proper\n5.1.4.5 Decision\nFailure to attend for two (2) consecutive disciplinary conferences means waiving of his / her rights and the Board will automatically render a decision.\n5.1.5 Imposition of Interventions. The following interventions may be imposed for commission of disciplinary offenses."
+    },
+    {
+      "id": "CDB-35",
+      "section": "CDB Manual",
+      "title": "5.1 RULES OF PROCEDURE",
+      "text": "5.1.5.1 Disciplinary Reprimand: A disciplinary reprimand may be given to student whose conduct violates an expectation of this code. Such a reprimand does not necessarily restrict the student in any way but does signify that he/she is being given the opportunity to conduct him/herself in a more appropriate manner and that any further violation will result in additional disciplinary sanctions. A written record of the reprimand will be placed in the student’s disciplinary file.\n5.1.5.2 University Censure: Censure indicates to the student that further violations will result in more serious consequences. University censure is usually given for a specified period of time not to exceed one year. This level of sanction may include restriction of activities."
+    },
+    {
+      "id": "CDB-36",
+      "section": "CDB Manual",
+      "title": "5.1 RULES OF PROCEDURE",
+      "text": "5.1.5.3 Disciplinary Probation: Disciplinary probation is a written statement to the student indicating that his/ her behavior is such a nature as to jeopardize continued enrollment at the university. Disciplinary probation can be for a specified period of time or for as long as the student is enrolled. Any behavioral infraction of this code\nduring the probationary period may caused the student to be removed from the university. This form of probation is generally imposed for repeated violations of policy or for serious behavioral infractions."
+    },
+    {
+      "id": "CDB-37",
+      "section": "CDB Manual",
+      "title": "5.1 RULES OF PROCEDURE",
+      "text": "5.1.5.4 Community Service: Community service is an act of rendering a particular work which is beneficial not only to the student community but to the entire university. It may be imposed as one sanction or as an addition to other sanctions imposed by the College Discipline Board. The conduct of this community service shall be coordinated with the External Programs Coordinator."
+    },
+    {
+      "id": "CDB-38",
+      "section": "CDB Manual",
+      "title": "5.1 RULES OF PROCEDURE",
+      "text": "5.1.5.5 Suspension: A suspended student must carry out a total and immediate separation from his/her classes (Face-to-Face* or Online) for required period of time. During the time of suspension, the student is to report daily to the SAEP Office. Conditions for readmission shall be stated in writing by the CDB. A sanction of suspense shall remain a part of the student’s permanent university record, regardless of whether or not he/she is successfully readmitted. At the end of the suspension period, the student will be allowed to re-enroll unless it is proven that he/she has violated additional expectations of the Code of Student Responsibility."
+    },
+    {
+      "id": "CDB-39",
+      "section": "CDB Manual",
+      "title": "5.1 RULES OF PROCEDURE",
+      "text": "5.1.5.6 Exclusion: Exclusion constitutes a permanent and immediate separation from the university. The imposition of this sanction shall become part of the student’s university record and is a permanent bar in his/her readmission to the University of Batangas.\n5.1.5.7 Expulsion: Expulsion is an extreme administrative sanction debarring offending student from all public and private schools in the Philippines. It may not be imposed without the approval of the Commission on Higher Education.\n5.1.6 Decision. The CDB shall decide the case within ten (10) days from the last disciplinary conference held. The decision shall be in writing, shall discuss the facts and the rules or laws applicable and shall be signed by the members upholding the decision. A vote of a least two (2) members will be required for the validity of the decision. Any member of the CDB may write his own separate"
+    },
+    {
+      "id": "CDB-40",
+      "section": "CDB Manual",
+      "title": "5.1 RULES OF PROCEDURE",
+      "text": "opinion, which shall be incorporated in the decision. The parties concerned the parent or guardian of the respondent and the President of the University shall be furnished with a copy of the decision of the CDB. As to the effectivity of the decision, except in cases of expulsion, the decision of the CDB shall be effective and executory within five (5) days from receipt by the party concerned of the decision, unless an appeal is seasonably filed. The appeal shall be filed with the University President in writing and shall clearly state the grounds relied upon. Except in cases of expulsion, the decision of the President shall be immediately executory."
+    },
+    {
+      "id": "CDB-41",
+      "section": "CDB Manual",
+      "title": "5.1 RULES OF PROCEDURE",
+      "text": "5.1.7 Withholding and Revocation of Awards, Privileges. Any privilege or award or the graduation of any student may be withheld pending investigation for any offense, and any privilege or award or the graduation made or given or conferred may be revoked when the student respondent is found responsible of the offense charged.\n5.1.8 Amendments. The proper school authorities may amend these rules and regulations from time to time.\n5.1.9 Effectivity. These rules shall be effective upon certification by the VPSAS that these have been properly published or circularized to students or posted in appropriate places within the campus, e-Brahman and/or LMS."
+    }
+  ]
 }

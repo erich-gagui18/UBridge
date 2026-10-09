@@ -30,7 +30,7 @@ beforeEach(async () => {
     await setDoc(doc(db, 'users/stu2'), { name: 'Stu Two', email: 'stu2@ub.edu.ph', role: 'student' });
     await setDoc(doc(db, 'users/fac1'), { name: 'Fac One', email: 'fac1@ub.edu.ph', role: 'faculty' });
     await setDoc(doc(db, 'users/staff1'), { name: 'Staff One', email: 'staff1@ub.edu.ph', role: 'staff' });
-    await setDoc(doc(db, 'offenses/dress-code-violation'), { type: 'Dress Code Violation', category: 'Minor', sanction: '', section: 'Section VII' });
+    await setDoc(doc(db, 'offenses/dress-code-violation'), { type: 'Dress Code Violation', category: 'First Degree', sanction: '', section: 'CDB Manual § 4.1.4' });
   });
 });
 
@@ -38,7 +38,7 @@ const as = (uid, claims = UB(uid)) => env.authenticatedContext(uid, claims).fire
 const complaint = (over = {}) => ({
   student: 'Dela Cruz, Juan', sid: '2407880', program: 'BSIT', rDept: 'College of Computer Studies', rEmail: '', rContact: '',
   cSid: '2407881', cCourse: 'BSIT', cDept: 'College of Computer Studies', cContact: '09171234567', signature: 'Stu One',
-  offenseId: 'dress-code-violation', offense: 'Minor', type: 'Dress Code Violation',
+  offenseId: 'dress-code-violation', offense: 'First Degree', type: 'Dress Code Violation',
   date: TODAY, filed: TODAY, location: 'Room 204', desc: 'Student was not wearing the prescribed uniform inside the room.',
   status: 'submitted', filedBy: 'stu1', filedByName: 'Stu One', filedByRole: 'student', filedByEmail: 'stu1@ub.edu.ph',
   privacyConsent: true, privacyVersion: '2026-10', hCount: 0, files: [], createdAt: serverTimestamp(), ...over,
@@ -70,7 +70,7 @@ describe('authentication', () => {
 describe('creating complaints (integrity)', () => {
   it('accepts a valid complaint', async () => assertSucceeds(file(as('stu1'), 1)));
   it('lets faculty file too', async () => assertSucceeds(file(as('fac1'), 1, { filedBy: 'fac1', filedByRole: 'faculty', filedByName: 'Fac One', filedByEmail: 'fac1@ub.edu.ph' })));
-  it('rejects a category that does not match the catalog', async () => assertFails(file(as('stu1'), 1, { offense: 'Grave' })));
+  it('rejects a category that does not match the catalog', async () => assertFails(file(as('stu1'), 1, { offense: 'Third Degree' })));
   it('rejects an offense that is not in the catalog', async () => assertFails(file(as('stu1'), 1, { offenseId: 'made-up', type: 'Made up' })));
   it('rejects a missing privacy consent', async () => assertFails(file(as('stu1'), 1, { privacyConsent: false })));
   it('rejects a spoofed filer', async () => assertFails(file(as('stu1'), 1, { filedBy: 'stu2' })));
@@ -229,9 +229,9 @@ describe('accounts and roles (authenticity)', () => {
 });
 
 describe('offense catalog', () => {
-  const entry = { type: 'Vandalism', category: 'Major', sanction: '', section: 'Section VII' };
+  const entry = { type: 'Vandalism', category: 'Second Degree', sanction: '', section: 'CDB Manual § 4.3.5' };
   it('everyone signed in can read it', async () => assertSucceeds(getDoc(doc(as('stu1'), 'offenses', 'dress-code-violation'))));
   it('students cannot change it', async () => assertFails(setDoc(doc(as('stu1'), 'offenses', 'vandalism'), entry)));
   it('staff can add an entry', async () => assertSucceeds(setDoc(doc(as('staff1'), 'offenses', 'vandalism'), entry)));
-  it('staff cannot add an invalid category', async () => assertFails(setDoc(doc(as('staff1'), 'offenses', 'vandalism'), { ...entry, category: 'Huge' })));
+  it('staff cannot add an invalid category', async () => assertFails(setDoc(doc(as('staff1'), 'offenses', 'vandalism'), { ...entry, category: 'Major' })));
 });

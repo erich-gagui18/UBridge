@@ -109,7 +109,7 @@ import { UB } from '../app.js';
   $('#q').oninput = render; $('#st').onchange = render;
   $('#rows').onclick = (e) => { const b = e.target.closest('[data-id]'); if (b) open(b.dataset.id); };
   if (staff) $('#sync').onclick = async () => {
-    if (!(await UB.confirm('Publish the offense list?', 'This writes data/offenses.json to Firestore so students can pick from it. Check that it matches handbook Section VII first.', 'Publish'))) return;
+    if (!(await UB.confirm('Publish the offense list?', 'This writes data/offenses.json to Firestore so students can pick from it. Check that it matches the College Discipline Board Manual first. Entries no longer in the file are removed.', 'Publish'))) return;
     try { const r = await UB.syncOffenses(); UB.toast(r.provisional ? `Published ${r.count} types, ${r.provisional} still marked provisional in offenses.json` : `Published ${r.count} offense types`, r.provisional ? 'bad' : ''); offenses = Object.fromEntries((await UB.loadOffenses()).map((o) => [o.id, o])); }
     catch { UB.toast('Couldn’t publish the offense list.', 'bad'); }
   };
