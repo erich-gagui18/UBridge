@@ -261,3 +261,10 @@ input[readonly]{background:var(--sunk);cursor:not-allowed}
 .mnt{display:contents}
 .proc{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}.proc summary{font-weight:700;cursor:pointer;margin-bottom:10px}
 .cols.tight{gap:0 12px}.ivs{border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:0 0 14px;display:grid;gap:6px}.ivs legend{font-size:13px;font-weight:700;padding:0 6px}.ivs label{display:flex;gap:8px;align-items:center;font-weight:500}
+
+/* email drafts (staff) */
+.mailbox{margin-top:14px}.mailbox .field{margin-bottom:10px}.mailh{margin:16px 0 6px;font-size:14px}
+.mails{list-style:none;padding:0;display:grid;gap:8px}.mails li{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.mails summary{cursor:pointer}.mails details p{margin:8px 0 4px}
+.mailbody{white-space:pre-wrap;word-break:break-word;font:inherit;font-size:13.5px;background:var(--sunk);border-radius:8px;padding:10px;margin-top:6px;max-height:260px;overflow:auto}
+.modal textarea#mBody{min-height:260px;font-family:inherit;line-height:1.5}

@@ -205,6 +205,24 @@ service cloud.firestore {
         allow update, delete: if false;
       }
 
+      // Record of emails that SAEP staff sent about a case (UBridge never sends mail itself; staff send from their own
+      // email app and confirm it). Append-only and staff only: the respondent's address and the message text are kept here.
+      match /emails/{eid} {
+        allow read: if isStaff();
+        allow create: if isStaff()
+          && exists(/databases/$(db)/documents/complaints/$(id))
+          && request.resource.data.keys().hasOnly(['kind', 'to', 'cc', 'subject', 'body', 'by', 'byName', 'at'])
+          && request.resource.data.kind in ['notice', 'followup', 'schedule', 'decision', 'department']
+          && request.resource.data.to is string && request.resource.data.to.size() >= 5 && request.resource.data.to.size() <= 300
+          && request.resource.data.cc is string && request.resource.data.cc.size() <= 300
+          && request.resource.data.subject is string && request.resource.data.subject.size() >= 1 && request.resource.data.subject.size() <= 200
+          && request.resource.data.body is string && request.resource.data.body.size() >= 20 && request.resource.data.body.size() <= 5000
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.byName is string && request.resource.data.byName.size() <= 120
+          && request.resource.data.at == request.time;
+        allow update, delete: if false;
+      }
+
       // Evidence kept in Firestore while Cloud Storage is off (free plan). Items 1 to 5, written once by the filer
       // while the case is still 'submitted'; the filer and staff can read them.
       match /evidence/{eid} {

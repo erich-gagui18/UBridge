@@ -10,6 +10,7 @@ import {
   updateDoc,
   setDoc,
   getDoc,
+  addDoc,
   serverTimestamp,
 } from '../sdk/firestore.js';
 import { ref, uploadBytes, getDownloadURL } from '../sdk/storage.js';
@@ -165,3 +166,19 @@ export async function loadEvidence(c, f) {
   const url = URL.createObjectURL(dataUrlToBlob(d.data));
   return { url, type: d.type, revoke: () => URL.revokeObjectURL(url) };
 }
+
+/** Emails the staff sent about a case, oldest first. Staff only (the rules deny everyone else). */
+export function watchEmails(caseId, onData, onError) {
+  const ms = (m) => m.at?.toMillis?.() ?? Date.now();
+  return onSnapshot(
+    collection(db, 'complaints', caseId, 'emails'),
+    (snap) => onData(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => ms(a) - ms(b))),
+    onError,
+  );
+}
+
+/** Record that a staff member sent an email about a case (what was sent, to whom, by whom, when). */
+export const logEmail = (me, caseId, { kind, to, cc, subject, body }) =>
+  addDoc(collection(db, 'complaints', caseId, 'emails'), {
+    kind, to, cc, subject, body, by: me.uid, byName: me.name, at: serverTimestamp(),
+  });

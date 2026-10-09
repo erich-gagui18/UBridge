@@ -1,5 +1,19 @@
 # Changelog
 
+## v6 (9 October 2026)
+
+### Added
+- **Email drafts for SAEP staff** in the case dialog: notice to the respondent, follow-up when no explanation arrives, conference schedule, conference summary and decision, and notice to the Dean and Program Head. Staff edit the draft, open it in their own email app and send it themselves. After sending, staff confirm and the case records the email.
+  - `public/assets/js/lib/mail.js`: templates, validation (address check, no unfinished [brackets], length limits) and the mailto link. Long drafts open without the body and the body is copied instead.
+  - `complaints/{id}/emails` subcollection, append-only and staff only (`firestore.rules`).
+  - `services/complaints.js`: `logEmail`, `watchEmails`; `app.js` exposes them with `UB.mail`.
+- Tests: `tests/mail.test.mjs` (10 tests, in `npm test`) and 10 new cases in `tests/rules.test.mjs`.
+
+### Notes
+- **Deploy the Firestore rules** as well as Hosting (`firebase deploy --only hosting,firestore:rules`). The workflow does not deploy rules.
+- UBridge cannot tell whether the message was delivered, only that the staff member confirmed sending it.
+- The rules tests were written but not run in this build (they need the Firebase emulator). Run `npm run test:rules` before deploying.
+
 ## v5 (9 October 2026)
 
 ### Changed

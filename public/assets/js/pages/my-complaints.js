@@ -43,6 +43,63 @@ import { UB } from '../app.js';
       ...(lag ? ['<li class="sync"><b>Updating…</b><small>Fetching the latest history</small></li>'] : [])];
     return `<ol class="hist" aria-label="Status history" aria-live="polite">${items.join('')}</ol>`;
   };
+  // Email drafts (staff only). UBridge does not send mail: staff edit the draft, open it in their own email app and confirm they sent it.
+  const emailLogHtml = () => {
+    const l = cur?.emails || [];
+    return l.length
+      ? `<ul class="mails">${l.map((m) => `<li><details><summary><b>${esc(UB.mail.KINDS[m.kind] || m.kind)}</b><small class="muted"> · To ${esc(m.to)} · ${esc(m.byName || '')} · ${UB.fmtTs(m.at)}</small></summary><p><b>Subject:</b> ${esc(m.subject)}</p><pre class="mailbody">${esc(m.body)}</pre></details></li>`).join('')}</ul>`
+      : '<p class="muted">No email recorded for this case yet.</p>';
+  };
+  const paintEmails = () => { const box = cur?.m.el.querySelector('#emailLog'); if (box) box.innerHTML = emailLogHtml(); };
+  const mailboxHtml = (c) => `<div class="staffbox mailbox"><h3>Email</h3>
+      <p class="muted">Pick a message, edit it, then open it in your email app and send it yourself. UBridge keeps a record once you confirm.</p>
+      <div class="field"><label for="mk">Message</label><select id="mk" data-nodirty>${Object.entries(UB.mail.KINDS).map(([k, l]) => `<option value="${k}" ${k === (UB.mail.KIND_FOR_STATUS[c.status] || 'notice') ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>${c.rEmail ? '' : '<small class="muted">No respondent email is on file. You can type one in the next step.</small>'}</div>
+      <button type="button" class="btn" id="mkBtn">Write email</button>
+      <h4 class="mailh">Emails recorded</h4><div id="emailLog">${emailLogHtml()}</div></div>`;
+
+  // The compose dialog: edit, then open in the email app, then confirm it was sent.
+  const compose = (c, kind) => {
+    const d = UB.mail.draft(kind, c, UB.me, { cc: UB.CONTACT.email || '' });
+    const field = (id, label, v, tag = 'input') => `<div class="field"><label for="${id}">${label}</label>${tag === 'textarea' ? `<textarea id="${id}" rows="14" maxlength="${UB.mail.LIMITS.body}">${esc(v)}</textarea>` : `<input id="${id}" value="${esc(v)}" autocomplete="off">`}</div>`;
+    const editHtml = () => `<h2>${esc(UB.mail.KINDS[kind])}</h2><p class="muted">${esc(c.id)}. Check the text, change anything you need and replace the [bracketed] parts. Nothing is sent from here.</p>
+      ${field('mTo', 'To', d.to)}${field('mCc', 'Cc', d.cc)}${field('mSubj', 'Subject', d.subject)}${field('mBody', 'Message', d.body, 'textarea')}
+      <p class="err" id="mErr" role="alert"></p>
+      <div class="actions"><button class="btn" data-close>Cancel</button><button class="btn" id="mCopy" type="button">Copy text</button><button class="btn primary" id="mOpen" type="button">Open in my email app</button></div>`;
+    const m = UB.modal(editHtml(), UB.mail.KINDS[kind]);
+    m.el.querySelector('.modal').classList.add('wide');
+    let sent = null;
+    const read = () => ({ kind, to: m.el.querySelector('#mTo').value.trim(), cc: m.el.querySelector('#mCc').value.trim(), subject: m.el.querySelector('#mSubj').value.trim(), body: m.el.querySelector('#mBody').value.trim() });
+    m.el.addEventListener('click', async (e) => {
+      if (e.target.closest('#mCopy')) {
+        const x = read();
+        try { await navigator.clipboard.writeText(`To: ${x.to}\nCc: ${x.cc}\nSubject: ${x.subject}\n\n${x.body}`); UB.toast('Email text copied'); } catch { UB.toast('Couldn’t copy. Select the text and copy it manually.', 'bad'); }
+      } else if (e.target.closest('#mOpen')) {
+        const x = read(), err = UB.mail.check(x);
+        m.el.querySelector('#mErr').textContent = err;
+        if (err) return;
+        let url = UB.mail.mailto(x);
+        if (url.length > UB.mail.MAILTO_LIMIT) { // too long for a link: open without the body and copy it instead
+          try { await navigator.clipboard.writeText(x.body); } catch { /* the person can still copy it from the box */ }
+          url = UB.mail.mailto({ ...x, body: '' });
+          UB.toast('The message is long, so it was copied. Paste it into the new email.');
+        }
+        sent = x;
+        const a = document.createElement('a'); a.href = url; a.click();
+        m.set(`<h2>Did you send it?</h2><p class="muted">Your email app should have opened with the message. Send it from there, then come back and confirm so the case keeps a record.</p>
+          <p class="err" id="mErr" role="alert"></p>
+          <div class="actions"><button class="btn" id="mBack" type="button">Not yet, go back</button><button class="btn primary" id="mSent" type="button">Yes, I sent it</button></div>`);
+      } else if (e.target.closest('#mBack')) {
+        m.set(editHtml());
+        const set = (id, v) => { m.el.querySelector(id).value = v; };
+        set('#mTo', sent.to); set('#mCc', sent.cc); set('#mSubj', sent.subject); set('#mBody', sent.body);
+      } else if (e.target.closest('#mSent')) {
+        const b = e.target.closest('#mSent'); b.disabled = true;
+        try { await UB.logEmail(c.id, sent); UB.toast('Email recorded'); m.close(); }
+        catch { b.disabled = false; m.el.querySelector('#mErr').textContent = 'Couldn’t record the email. Check your connection and try again.'; }
+      }
+    });
+  };
+
   const modalHtml = (c) => {
     const o = offenses[c.offenseId], hist = cur?.history || [];
     const form = staff ? `<div class="staffbox"><h3>Update this case</h3>
@@ -62,7 +119,7 @@ import { UB } from '../app.js';
       <dt>Incident</dt><dd>${UB.fmt(c.date)}</dd><dt>Filed</dt><dd>${UB.fmt(c.filed)}</dd><dt>Updated</dt><dd>${UB.fmtTs(c.updatedAt || c.createdAt)}</dd>
       ${c.resolution ? `<dt>Decision</dt><dd>${esc(c.resolution)}</dd>` : ''}
       <dt>Location</dt><dd>${esc(c.location)}</dd><dt>Description</dt><dd>${esc(c.desc)}</dd><dt>Evidence</dt><dd>${evidence(c)}</dd></dl></div>
-      <aside class="case-side"><h3>History</h3>${timeline(c, hist)}${form}</aside></div>
+      <aside class="case-side"><h3>History</h3>${timeline(c, hist)}${form}${staff ? mailboxHtml(c) : ''}</aside></div>
       <div class="actions"><button class="btn" data-close>Close</button>${staff ? '<button class="btn primary" id="sv">Save changes</button>' : ''}</div>`;
   };
   const paintModal = () => {
@@ -99,14 +156,15 @@ import { UB } from '../app.js';
 
   const open = (id) => {
     const c = data.find((x) => x.id === id); if (!c) return;
-    cur = { id, dirty: false, history: [], audit: {}, seen: c.hCount || 0, status: c.status };
-    cur.m = UB.modal(modalHtml(c), 'Complaint ' + id, () => { cur.stopHistory?.(); cur.stopAudit?.(); cur = null; });
+    cur = { id, dirty: false, history: [], audit: {}, emails: [], seen: c.hCount || 0, status: c.status };
+    cur.m = UB.modal(modalHtml(c), 'Complaint ' + id, () => { cur.stopHistory?.(); cur.stopAudit?.(); cur.stopEmails?.(); cur = null; });
     cur.stopHistory = UB.watchHistory(id, (h) => { if (!cur) return; cur.history = h; if (!cur.dirty) paintModal(); }, () => {});
     // Only staff may read the audit entries; students never subscribe.
     if (staff) cur.stopAudit = UB.watchAudit(id, (a) => { if (!cur) return; cur.audit = a; if (!cur.dirty) paintModal(); }, () => {});
+    if (staff) cur.stopEmails = UB.watchEmails(id, (l) => { if (!cur) return; cur.emails = l; paintEmails(); }, () => {});
     const el = cur.m.el;
     el.querySelector('.modal').classList.add('wide');
-    el.addEventListener('input', () => { if (cur) cur.dirty = true; });
+    el.addEventListener('input', (e) => { if (cur && !e.target.closest('[data-nodirty]')) cur.dirty = true; });
     el.addEventListener('change', (e) => {
       if (e.target.id === 'pNotice' && e.target.value) {
         const due = el.querySelector('#pDue'), min = UB.proc.addDays(e.target.value, UB.proc.ANSWER_DAYS);
@@ -119,6 +177,7 @@ import { UB } from '../app.js';
     });
     el.addEventListener('click', async (e) => {
       if (e.target.closest('#sv')) return save();
+      if (e.target.closest('#mkBtn')) { const c = data.find((x) => x.id === cur?.id); return c && compose(c, el.querySelector('#mk').value); }
       const b = e.target.closest('[data-ev]'); if (!b) return;
       const c = data.find((x) => x.id === cur?.id); if (!c) return;
       UB.openViewer(c.files.filter((x) => x.path), Number(b.dataset.ev), (f) => UB.loadEvidence(c, f));

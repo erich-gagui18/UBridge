@@ -5,7 +5,7 @@
   "description": "UBridge, SAEP online complaint management system for UB-Lipa (Firebase Hosting + Auth + Firestore)",
   "type": "module",
   "scripts": {
-    "test": "node --test tests/retrieval.test.mjs tests/academics.test.mjs",
+    "test": "node --test tests/retrieval.test.mjs tests/academics.test.mjs tests/mail.test.mjs",
     "test:rules": "firebase emulators:exec --only firestore --project ubridge-rules-test \"node --test tests/rules.test.mjs\"",
     "emulators": "firebase emulators:start --only firestore",
     "chunk": "node scripts/chunk-handbook.mjs handbook/cdb-manual.txt",

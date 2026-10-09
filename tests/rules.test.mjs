@@ -304,3 +304,32 @@ describe('offense catalog', () => {
   it('staff can add an entry', async () => assertSucceeds(setDoc(doc(as('staff1'), 'offenses', 'vandalism'), entry)));
   it('staff cannot add an invalid category', async () => assertFails(setDoc(doc(as('staff1'), 'offenses', 'vandalism'), { ...entry, category: 'Major' })));
 });
+
+describe('emails staff sent about a case (record keeping)', () => {
+  beforeEach(seedCase);
+  const mailDoc = (over = {}) => ({ kind: 'notice', to: 'resp@ub.edu.ph', cc: '', subject: 'Notice of complaint', body: 'Dear respondent, this is a notice about your case.', by: 'staff1', byName: 'Staff One', at: serverTimestamp(), ...over });
+  const mailRef = (db) => doc(db, 'complaints', ID(1), 'emails', 'e1');
+  it('staff can record a sent email', async () => assertSucceeds(setDoc(mailRef(as('staff1')), mailDoc())));
+  it('staff can read the record', async () => {
+    await assertSucceeds(setDoc(mailRef(as('staff1')), mailDoc()));
+    await assertSucceeds(getDoc(mailRef(as('staff1'))));
+  });
+  it('the filer cannot read the record', async () => {
+    await assertSucceeds(setDoc(mailRef(as('staff1')), mailDoc()));
+    await assertFails(getDoc(mailRef(as('stu1'))));
+  });
+  it('a student cannot write a record', async () => assertFails(setDoc(mailRef(as('stu1')), mailDoc({ by: 'stu1' }))));
+  it('the record must name the staff member who made it', async () => assertFails(setDoc(mailRef(as('staff1')), mailDoc({ by: 'stu1' }))));
+  it('rejects an unknown kind', async () => assertFails(setDoc(mailRef(as('staff1')), mailDoc({ kind: 'spam' }))));
+  it('rejects extra fields', async () => assertFails(setDoc(mailRef(as('staff1')), mailDoc({ attachment: 'x' }))));
+  it('rejects a too-short body or a missing address', async () => {
+    await assertFails(setDoc(mailRef(as('staff1')), mailDoc({ body: 'hi' })));
+    await assertFails(setDoc(mailRef(as('staff1')), mailDoc({ to: '' })));
+  });
+  it('rejects a backdated time', async () => assertFails(setDoc(mailRef(as('staff1')), mailDoc({ at: new Date('2020-01-01') }))));
+  it('records cannot be edited or deleted', async () => {
+    await assertSucceeds(setDoc(mailRef(as('staff1')), mailDoc()));
+    await assertFails(updateDoc(mailRef(as('staff1')), { body: 'changed after the fact, so this must fail' }));
+    await assertFails(deleteDoc(mailRef(as('staff1'))));
+  });
+});

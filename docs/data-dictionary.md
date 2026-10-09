@@ -79,6 +79,18 @@ Holds no staff identity, so the filer can read it without learning who handled t
 
 The document id is the case's `hCount` at that change, the same id as the history entry. Rules require history and audit entries to be written together with the complaint update in one batch, and never allow edits or deletes.
 
+### complaints/{caseId}/emails/{id}  (append-only, staff only)
+| Field | Type | Notes |
+|---|---|---|
+| kind | string | `notice`, `followup`, `schedule`, `decision` or `department` |
+| to, cc | string (≤300) | Addresses as the staff member typed them (`cc` may be empty) |
+| subject | string (1–200) | Subject line |
+| body | string (20–5000) | The message text that was prepared |
+| by, byName | string | Staff uid and name who confirmed the email was sent |
+| at | timestamp | Server time of the confirmation |
+
+UBridge never sends mail. Staff open the draft in their own email app, send it there and then confirm in the dialog, which writes this record. It proves the staff member confirmed sending, not that the message was delivered.
+
 ## notifications/{id}
 | Field | Type | Notes |
 |---|---|---|

@@ -17,6 +17,7 @@ import { shell, applyTheme, bindTheme } from './lib/layout.js';
 import * as authSvc from './services/auth.js';
 import * as cases from './services/complaints.js';
 import * as proc from './lib/process.js';
+import * as mail from './lib/mail.js';
 import * as profileSvc from './services/profile.js';
 import { loadAcademics } from './services/academics.js';
 import { pickerHtml, pairPicker } from './lib/picker.js';
@@ -98,6 +99,8 @@ export const UB = (() => {
     watchCases: (onData, onError) => cases.watchCases(me, onData, onError),
     watchHistory: cases.watchHistory,
     watchAudit: cases.watchAudit,
+    watchEmails: cases.watchEmails,
+    logEmail: (caseId, d) => cases.logEmail(me, caseId, d),
     create: (v, files) => cases.createComplaint(me, v, files),
     updateCase: (c, change) => cases.updateCase(me, c, change),
     evidenceUrl: cases.evidenceUrl,
@@ -108,6 +111,6 @@ export const UB = (() => {
     isComplete: profileSvc.isComplete, missingFields: profileSvc.missingFields, PHONE: profileSvc.PHONE,
     saveProfile: async (v) => { me = await profileSvc.saveProfile(me, v); return me; },
     loadAcademics, pickerHtml, pairPicker,
-    proc,
+    proc, mail,
   };
 })();
