@@ -26,9 +26,10 @@ beforeEach(async () => {
   await env.clearFirestore();
   await env.withSecurityRulesDisabled(async (ctx) => {
     const db = ctx.firestore();
-    await setDoc(doc(db, 'users/stu1'), { name: 'Stu One', email: 'stu1@ub.edu.ph', role: 'student' });
+    await setDoc(doc(db, 'users/stu1'), { name: 'Stu One', email: 'stu1@ub.edu.ph', role: 'student', sid: '2407881', course: 'BS Information Technology (BSIT)', dept: 'College of Information Technology, Entertainment and Communication', contact: '09171234567' });
     await setDoc(doc(db, 'users/stu2'), { name: 'Stu Two', email: 'stu2@ub.edu.ph', role: 'student' });
-    await setDoc(doc(db, 'users/fac1'), { name: 'Fac One', email: 'fac1@ub.edu.ph', role: 'faculty' });
+    await setDoc(doc(db, 'users/fac1'), { name: 'Fac One', email: 'fac1@ub.edu.ph', role: 'faculty', sid: '', dept: 'College of Management and Tourism', contact: '09171234567' });
+    await setDoc(doc(db, 'users/bare1'), { name: 'Bare One', email: 'bare1@ub.edu.ph', role: 'student' }); // profile never filled in
     await setDoc(doc(db, 'users/staff1'), { name: 'Staff One', email: 'staff1@ub.edu.ph', role: 'staff' });
     await setDoc(doc(db, 'offenses/dress-code-violation'), { type: 'Dress Code Violation', category: 'First Degree', sanction: '', section: 'CDB Manual § 4.1.4' });
   });
@@ -36,11 +37,11 @@ beforeEach(async () => {
 
 const as = (uid, claims = UB(uid)) => env.authenticatedContext(uid, claims).firestore();
 const complaint = (over = {}) => ({
-  student: 'Dela Cruz, Juan', sid: '2407880', program: 'BSIT', rDept: 'College of Computer Studies', rEmail: '', rContact: '',
-  cSid: '2407881', cCourse: 'BSIT', cDept: 'College of Computer Studies', cContact: '09171234567', signature: 'Stu One',
+  student: 'Dela Cruz, Juan', sid: '2407880', program: 'BS Psychology (BSPsych)', rDept: 'College of Education, Arts and Sciences', rEmail: '', rContact: '',
+  cSid: '2407881', cCourse: 'BS Information Technology (BSIT)', cDept: 'College of Information Technology, Entertainment and Communication', cContact: '09171234567', signature: 'Stu One', signatureImg: 'data:image/jpeg;base64,/9j/4AAQ',
   offenseId: 'dress-code-violation', offense: 'First Degree', type: 'Dress Code Violation',
   date: TODAY, filed: TODAY, location: 'Room 204', desc: 'Student was not wearing the prescribed uniform inside the room.',
-  status: 'submitted', filedBy: 'stu1', filedByName: 'Stu One', filedByRole: 'student', filedByEmail: 'stu1@ub.edu.ph',
+  route: 'department', status: 'submitted', filedBy: 'stu1', filedByName: 'Stu One', filedByRole: 'student', filedByEmail: 'stu1@ub.edu.ph',
   privacyConsent: true, privacyVersion: '2026-10', hCount: 0, files: [], createdAt: serverTimestamp(), ...over,
 });
 // Same two writes the app makes: bump the counter and create the complaint in one batch.
@@ -69,7 +70,7 @@ describe('authentication', () => {
 
 describe('creating complaints (integrity)', () => {
   it('accepts a valid complaint', async () => assertSucceeds(file(as('stu1'), 1)));
-  it('lets faculty file too', async () => assertSucceeds(file(as('fac1'), 1, { filedBy: 'fac1', filedByRole: 'faculty', filedByName: 'Fac One', filedByEmail: 'fac1@ub.edu.ph' })));
+  it('lets faculty file too', async () => assertSucceeds(file(as('fac1'), 1, { filedBy: 'fac1', filedByRole: 'faculty', filedByName: 'Fac One', filedByEmail: 'fac1@ub.edu.ph', cSid: '', cCourse: '', cDept: 'College of Management and Tourism', signature: 'Fac One' })));
   it('rejects a category that does not match the catalog', async () => assertFails(file(as('stu1'), 1, { offense: 'Third Degree' })));
   it('rejects an offense that is not in the catalog', async () => assertFails(file(as('stu1'), 1, { offenseId: 'made-up', type: 'Made up' })));
   it('rejects a missing privacy consent', async () => assertFails(file(as('stu1'), 1, { privacyConsent: false })));
@@ -77,8 +78,31 @@ describe('creating complaints (integrity)', () => {
   it('rejects a spoofed role', async () => assertFails(file(as('stu1'), 1, { filedByRole: 'faculty' })));
   it('rejects a status other than submitted', async () => assertFails(file(as('stu1'), 1, { status: 'resolved' })));
   it('rejects an incident date after the filing date', async () => assertFails(file(as('stu1'), 1, { date: '2999-01-01' })));
-  it('lets faculty leave the student number and course empty', async () => assertSucceeds(file(as('fac1'), 1, { filedBy: 'fac1', filedByRole: 'faculty', filedByName: 'Fac One', filedByEmail: 'fac1@ub.edu.ph', cSid: '', cCourse: '', signature: 'Fac One' })));
+  it('lets faculty leave the student number and course empty', async () => assertSucceeds(file(as('fac1'), 1, { filedBy: 'fac1', filedByRole: 'faculty', filedByName: 'Fac One', filedByEmail: 'fac1@ub.edu.ph', cSid: '', cCourse: '', cDept: 'College of Management and Tourism', signature: 'Fac One', signatureImg: 'data:image/jpeg;base64,/9j/4AAQ' })));
   it('rejects a student complainant without a valid student number', async () => assertFails(file(as('stu1'), 1, { cSid: '' })));
+  it('rejects complainant details that differ from the saved profile', async () => {
+    await assertFails(file(as('stu1'), 1, { cContact: '09999999999' }));
+    await assertFails(file(as('stu1'), 1, { cDept: 'Some Other College' }));
+  });
+  it('rejects filing when the profile was never completed', async () => assertFails(file(as('bare1'), 1, { filedBy: 'bare1', filedByName: 'Bare One', filedByEmail: 'bare1@ub.edu.ph', cSid: '', cCourse: '', cDept: '', cContact: '' })));
+  it('rejects a name that differs from the profile', async () => assertFails(file(as('stu1'), 1, { filedByName: 'Someone Else' })));
+  it('accepts the Others offense with a description and no category', async () => assertSucceeds(file(as('stu1'), 1, { offenseId: 'others', type: 'Others (not listed)', offense: 'Unclassified', route: 'cdb', offenseOther: 'Leaving a pet unattended on campus' })));
+  it('rejects Others without a description', async () => assertFails(file(as('stu1'), 1, { offenseId: 'others', type: 'Others (not listed)', offense: 'Unclassified', route: 'cdb' })));
+  it('rejects Others with a degree category', async () => assertFails(file(as('stu1'), 1, { offenseId: 'others', type: 'Others (not listed)', offense: 'First Degree', offenseOther: 'Something not listed' })));
+  it('rejects an offenseOther text on a catalog offense', async () => assertFails(file(as('stu1'), 1, { offenseOther: 'extra' })));
+  it('rejects Unclassified on a catalog offense', async () => assertFails(file(as('stu1'), 1, { offense: 'Unclassified', route: 'cdb' })));
+  it('routes First Degree to the department and rejects any other route', async () => {
+    await assertFails(file(as('stu1'), 1, { route: 'cdb' }));
+    await assertFails(file(as('stu1'), 1, { route: 'somewhere' }));
+  });
+  it('routes Second and Third Degree complaints to the CDB', async () => {
+    await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'offenses/vandalism'), { type: 'Vandalism', category: 'Second Degree', sanction: '', section: 'CDB Manual § 4.3.5' }));
+    await assertSucceeds(file(as('stu1'), 1, { offenseId: 'vandalism', type: 'Vandalism', offense: 'Second Degree', route: 'cdb' }));
+  });
+  it('rejects a Second Degree complaint routed to a department', async () => {
+    await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'offenses/vandalism'), { type: 'Vandalism', category: 'Second Degree', sanction: '', section: 'CDB Manual § 4.3.5' }));
+    await assertFails(file(as('stu1'), 1, { offenseId: 'vandalism', type: 'Vandalism', offense: 'Second Degree', route: 'department' }));
+  });
   it('rejects a missing complainant department', async () => assertFails(file(as('stu1'), 1, { cDept: '' })));
   it('rejects a missing or invalid complainant contact number', async () => {
     await assertFails(file(as('stu1'), 1, { cContact: '' }));
@@ -135,7 +159,8 @@ describe('updating cases (accountability and non-repudiation)', () => {
   it('a hearing needs a hearing date', async () => assertFails(staffEdit(as('staff1'), 1, { status: 'hearing' })));
   it('a hearing with a date is accepted', async () => assertSucceeds(staffEdit(as('staff1'), 1, { status: 'hearing', hearingDate: '2026-11-20' })));
   it('resolving needs a resolution note', async () => assertFails(staffEdit(as('staff1'), 1, { status: 'resolved' })));
-  it('resolving with a note is accepted', async () => assertSucceeds(staffEdit(as('staff1'), 1, { status: 'resolved', resolution: 'Warning issued and recorded.' })));
+  it('resolving needs a decision date', async () => assertFails(staffEdit(as('staff1'), 1, { status: 'resolved', resolution: 'Warning issued and recorded.' })));
+  it('resolving with a note and decision date is accepted', async () => assertSucceeds(staffEdit(as('staff1'), 1, { status: 'resolved', resolution: 'Warning issued and recorded.', decisionDate: TODAY, interventions: ['reprimand'] })));
   it('staff cannot edit the description', async () => assertFails(updateDoc(doc(as('staff1'), 'complaints', ID(1)), { desc: 'rewritten by staff '.repeat(3) })));
   it('history entries cannot be edited or deleted', async () => {
     await staffEdit(as('staff1'), 1, { status: 'review' });
@@ -182,6 +207,34 @@ describe('updating cases (accountability and non-repudiation)', () => {
   });
 });
 
+describe('case handling (CDB Manual 5.1)', () => {
+  beforeEach(seedCase);
+  const ST = (changes) => staffEdit(as('staff1'), 1, changes, { to: changes.status || 'submitted' });
+  it('accepts a notice with a three-day answer period', async () => assertSucceeds(ST({ noticeDate: '2026-10-10', answerDue: '2026-10-13', answer: '', parentsNotified: '', conferenceMode: '', conferencesHeld: 0 })));
+  it('accepts a longer answer period', async () => assertSucceeds(ST({ noticeDate: '2026-10-10', answerDue: '2026-10-20' })));
+  it('rejects an answer period shorter than three days', async () => assertFails(ST({ noticeDate: '2026-10-10', answerDue: '2026-10-12' })));
+  it('rejects an answer due date without a notice date', async () => assertFails(ST({ noticeDate: '', answerDue: '2026-10-13' })));
+  it('rejects a malformed date', async () => assertFails(ST({ noticeDate: '10/10/2026' })));
+  it('lets staff escalate to the CDB', async () => assertSucceeds(ST({ route: 'cdb' })));
+  it('rejects an unknown route', async () => assertFails(ST({ route: 'dean' })));
+  it('rejects an unknown intervention or answer value', async () => {
+    await assertFails(ST({ status: 'resolved', resolution: 'Decision recorded.', decisionDate: TODAY, interventions: ['fine'] }));
+    await assertFails(ST({ answer: 'maybe' }));
+  });
+  it('accepts a conference mode and count', async () => assertSucceeds(ST({ conferenceMode: 'online', conferencesHeld: 2 })));
+  it('rejects more than 20 conferences', async () => assertFails(ST({ conferencesHeld: 21 })));
+  it('only allows an appeal after a decision', async () => {
+    await assertFails(ST({ appeal: 'filed', appealDate: TODAY }));
+    await assertFails(ST({ status: 'resolved', resolution: 'Decision recorded.', decisionDate: TODAY, appeal: 'filed' })); // no appeal date
+    await assertSucceeds(ST({ status: 'resolved', resolution: 'Decision recorded.', decisionDate: TODAY, interventions: ['censure'], appeal: 'filed', appealDate: TODAY }));
+  });
+  it('students cannot change handling fields', async () => assertFails(updateDoc(doc(as('stu1'), 'complaints', ID(1)), { route: 'cdb' })));
+  it('a case that was already with the CDB cannot go back to the department', async () => {
+    await env.withSecurityRulesDisabled((ctx) => updateDoc(doc(ctx.firestore(), 'complaints', ID(1)), { route: 'cdb' }));
+    await assertFails(ST({ route: 'department' }));
+  });
+});
+
 describe('evidence entries (filer attaching files)', () => {
   beforeEach(seedCase);
   const entry = (over = {}) => ({ name: 'photo.png', path: `evidence/stu1/${ID(1)}/1-photo.png`, ...over });
@@ -222,6 +275,22 @@ describe('accounts and roles (authenticity)', () => {
   it('blocks self-assigning staff', async () => assertFails(setDoc(doc(as('new1'), 'users', 'new1'), profile('staff'))));
   it('blocks creating a profile for someone else', async () => assertFails(setDoc(doc(as('new1'), 'users', 'stu2'), profile('student'))));
   it('blocks changing a role afterwards', async () => assertFails(updateDoc(doc(as('stu1'), 'users', 'stu1'), { role: 'staff' })));
+  it('lets a student update their own profile details', async () => assertSucceeds(updateDoc(doc(as('stu1'), 'users', 'stu1'), { name: 'Stu One', sid: '2407881', course: 'BS Psychology (BSPsych)', dept: 'College of Education, Arts and Sciences', section: '4B', contact: '0917 123 4567', profileAt: serverTimestamp() })));
+  it('lets faculty and staff update their own profile details', async () => {
+    await assertSucceeds(updateDoc(doc(as('fac1'), 'users', 'fac1'), { dept: 'College of Management and Tourism', position: 'Instructor', contact: '09171234567', profileAt: serverTimestamp() }));
+    await assertSucceeds(updateDoc(doc(as('staff1'), 'users', 'staff1'), { position: 'SAEP Coordinator', contact: '09171234567', profileAt: serverTimestamp() }));
+  });
+  it('blocks editing someone else’s profile', async () => assertFails(updateDoc(doc(as('stu1'), 'users', 'stu2'), { contact: '09171234567', profileAt: serverTimestamp() })));
+  it('blocks changing email or createdAt from a profile edit', async () => {
+    await assertFails(updateDoc(doc(as('stu1'), 'users', 'stu1'), { email: 'other@ub.edu.ph', profileAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('stu1'), 'users', 'stu1'), { createdAt: serverTimestamp(), profileAt: serverTimestamp() }));
+  });
+  it('rejects an invalid student number, contact number or unknown field', async () => {
+    await assertFails(updateDoc(doc(as('stu1'), 'users', 'stu1'), { sid: '12345', profileAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('stu1'), 'users', 'stu1'), { contact: 'call me', profileAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('stu1'), 'users', 'stu1'), { admin: true, profileAt: serverTimestamp() }));
+  });
+  it('rejects a profile edit from an unverified email', async () => assertFails(updateDoc(doc(as('stu1', { ...UB('stu1'), email_verified: false }), 'users', 'stu1'), { contact: '09171234567', profileAt: serverTimestamp() })));
   it('students cannot read other profiles; staff can', async () => {
     await assertFails(getDoc(doc(as('stu1'), 'users', 'stu2')));
     await assertSucceeds(getDoc(doc(as('staff1'), 'users', 'stu2')));

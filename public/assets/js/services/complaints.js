@@ -8,11 +8,17 @@ import {
   runTransaction,
   writeBatch,
   updateDoc,
+  setDoc,
+  getDoc,
   serverTimestamp,
 } from '../sdk/firestore.js';
 import { ref, uploadBytes, getDownloadURL } from '../sdk/storage.js';
+import { toDataUrl, dataUrlToBlob } from '../lib/image.js';
 import { todayPH, yearPH } from '../lib/dates.js';
 import { PRIVACY_VERSION, STATUS } from '../data.js';
+
+/** Offense name as shown to people: "Others: <what they typed>" for the Others choice. */
+export const offenseLabel = (c) => (c.offenseOther ? `${c.type}: ${c.offenseOther}` : c.type);
 
 // Older complaints may lack a field; never let one odd document break the whole list.
 const byNewest = (a, b) => String(b.filed || '').localeCompare(String(a.filed || '')) || b.id.localeCompare(a.id);
@@ -64,6 +70,7 @@ export async function createComplaint(me, v, files) {
     t.set(doc(db, 'complaints', id), {
       ...v,
       filed: todayPH(),
+      route: v.offense === 'First Degree' ? 'department' : 'cdb', // CDB Manual § 5.1.1: First Degree starts with the respondent's department
       status: 'submitted',
       filedBy: me.uid,
       filedByName: me.name,
@@ -77,15 +84,21 @@ export async function createComplaint(me, v, files) {
     });
     return id;
   });
-  // Evidence is only stored when Cloud Storage is on. With it off nothing is uploaded and no file names are saved.
+  // Evidence goes to Cloud Storage when it is on (Blaze). On the free plan the already-shrunk file is saved as a Firestore
+  // document (complaints/{id}/evidence/{n}) and `files` points at it with an `inline-{n}` path.
   let uploadFailed = false;
-  if (USE_STORAGE && files.length) {
+  if (files.length) {
     const out = [];
-    for (const f of files) {
+    for (const [k, f] of files.entries()) {
       try {
-        const path = `evidence/${me.uid}/${id}/${Date.now()}-${f.name.replace(/[^\w.-]/g, '_')}`;
-        await uploadBytes(ref(storage, path), f, { contentType: f.type });
-        out.push({ name: f.name, path });
+        if (USE_STORAGE) {
+          const path = `evidence/${me.uid}/${id}/${Date.now()}-${f.name.replace(/[^\w.-]/g, '_')}`;
+          await uploadBytes(ref(storage, path), f, { contentType: f.type });
+          out.push({ name: f.name, path });
+        } else {
+          await setDoc(doc(db, 'complaints', id, 'evidence', String(k + 1)), { name: f.name, type: f.type, size: f.size, data: await toDataUrl(f), createdAt: serverTimestamp() });
+          out.push({ name: f.name, path: `evidence/${me.uid}/${id}/inline-${k + 1}` });
+        }
       } catch {
         uploadFailed = true;
       }
@@ -100,8 +113,10 @@ export async function createComplaint(me, v, files) {
  * an audit entry (who changed it, staff only) and an in-app notification, so they succeed or fail together
  * (the Firestore rules require them).
  */
-export async function updateCase(me, c, { status, remark = '', hearingDate = '', resolution = '' }) {
+export async function updateCase(me, c, { status, remark = '', hearingDate = '', resolution = '', process = {}, notes = [] }) {
   const n = (c.hCount || 0) + 1;
+  const summary = notes.join('; ');
+  remark = (remark && summary ? `${remark} (${summary})` : remark || summary).slice(0, 500);
   const b = writeBatch(db);
   b.update(doc(db, 'complaints', c.id), {
     status,
@@ -110,6 +125,7 @@ export async function updateCase(me, c, { status, remark = '', hearingDate = '',
     updatedAt: serverTimestamp(),
     updatedBy: me.uid,
     hCount: n,
+    ...process, // handling: route, notice, answer, conference, decision, interventions, appeal
   });
   b.set(doc(db, 'complaints', c.id, 'history', String(n)), {
     from: c.status,
@@ -123,7 +139,9 @@ export async function updateCase(me, c, { status, remark = '', hearingDate = '',
     at: serverTimestamp(),
   });
   const note =
-    status === 'hearing' && hearingDate
+    status === c.status && notes.length
+      ? `${c.id}: ${notes.join('. ')}.`.slice(0, 200)
+      : status === 'hearing' && hearingDate
       ? `${c.id} is now ${STATUS[status]}. Hearing date: ${hearingDate}.`
       : `${c.id} is now ${STATUS[status]}.`;
   b.set(doc(collection(db, 'notifications')), {
@@ -137,3 +155,13 @@ export async function updateCase(me, c, { status, remark = '', hearingDate = '',
 }
 
 export const evidenceUrl = (path) => getDownloadURL(ref(storage, path));
+
+/** Open one evidence entry for the viewer: {url, type, revoke?}. Works for both storage modes. */
+export async function loadEvidence(c, f) {
+  const base = f.path.split('/').pop();
+  if (!base.startsWith('inline-')) return { url: await evidenceUrl(f.path), type: /\.pdf$/i.test(f.name) ? 'application/pdf' : 'image/jpeg' };
+  const d = (await getDoc(doc(db, 'complaints', c.id, 'evidence', base.slice(7)))).data();
+  if (d.type !== 'application/pdf') return { url: d.data, type: d.type };
+  const url = URL.createObjectURL(dataUrlToBlob(d.data));
+  return { url, type: d.type, revoke: () => URL.revokeObjectURL(url) };
+}

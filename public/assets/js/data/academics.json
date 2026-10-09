@@ -1,0 +1,91 @@
+{
+  "_note": "Colleges (departments) and programs for the course/department pickers, UB Lipa. Source: Student Handbook Revision No. 8 (issue date 21 January 2026, revision date 8 January 2026), UB Lipa City Programs and College Offerings. Colleges and programs follow the handbook order. Names of the five colleges that already existed are unchanged, so saved profiles and complaints still match; course labels from the previous list are also unchanged. BS Forensic Science (BSFS) is NOT in Revision No. 8; it was kept from the previous list because of UBLC news of 2026, so confirm it with the Registrar's Office and delete it if it is not offered. Rules: each course belongs to exactly one department; 'name' is what is saved on the complaint; 'code' is appended in brackets for courses. Keep department names under 80 characters and course labels (name + code) under 60. 'Others (not listed)' is always offered by the app, so nobody is blocked by a missing entry.",
+  "provisional": false,
+  "departments": [
+    {
+      "id": "gs",
+      "name": "Graduate School",
+      "courses": [
+        { "id": "maed-edadmin", "name": "MAEd major in Educational Administration", "code": "MAEd-EdAdmin" },
+        { "id": "maed-eng", "name": "MAEd major in English", "code": "MAEd-Eng" },
+        { "id": "maed-ss", "name": "MAEd major in Social Studies", "code": "MAEd-SS" },
+        { "id": "maed-fil", "name": "MAEd major in Filipino", "code": "MAEd-Fil" },
+        { "id": "mbm-ba", "name": "MBM major in Business Administration", "code": "MBM-BA" },
+        { "id": "mbm-hrm", "name": "MBM major in Human Resource Management", "code": "MBM-HRM" }
+      ]
+    },
+    {
+      "id": "law",
+      "name": "College of Law",
+      "courses": [
+        { "id": "jd", "name": "Juris Doctor", "code": "JD" }
+      ]
+    },
+    {
+      "id": "ceas",
+      "name": "College of Education, Arts and Sciences",
+      "courses": [
+        { "id": "bslm", "name": "BS Legal Management", "code": "BSLM" },
+        { "id": "bspsych", "name": "BS Psychology", "code": "BSPsych" },
+        { "id": "bssw", "name": "BS Social Work", "code": "BSSW" },
+        { "id": "beed", "name": "Bachelor of Elementary Education", "code": "BEEd" },
+        { "id": "beced", "name": "Bachelor of Early Childhood Education", "code": "BECEd" },
+        { "id": "bsed-eng", "name": "BSEd major in English", "code": "BSEd-Eng" },
+        { "id": "bsed-ss", "name": "BSEd major in Social Studies", "code": "BSEd-SS" },
+        { "id": "ctp", "name": "Certificate in Teaching Program", "code": "CTP" }
+      ]
+    },
+    {
+      "id": "ccje",
+      "name": "College of Criminal Justice Education",
+      "courses": [
+        { "id": "bscrim", "name": "BS Criminology", "code": "BSCrim" },
+        { "id": "bsism", "name": "BS Industrial Security Management", "code": "BSISM" },
+        { "id": "bsfs", "name": "BS Forensic Science", "code": "BSFS" }
+      ]
+    },
+    {
+      "id": "cmt",
+      "name": "College of Management and Tourism",
+      "courses": [
+        { "id": "bsais", "name": "BS Accounting Information System", "code": "BSAIS" },
+        { "id": "bsa", "name": "BS Accountancy", "code": "BSA" },
+        { "id": "bsba-fm", "name": "BSBA major in Financial Management", "code": "BSBA-FM" },
+        { "id": "bsba-hrdm", "name": "BSBA major in HR Development Management", "code": "BSBA-HRDM" },
+        { "id": "bsba-mm", "name": "BSBA major in Marketing Management", "code": "BSBA-MM" },
+        { "id": "bstm", "name": "BS Tourism Management", "code": "BSTM" },
+        { "id": "bsrem", "name": "BS Real Estate Management", "code": "BSREM" },
+        { "id": "bsentrep", "name": "BS Entrepreneurship", "code": "BSEntrep" },
+        { "id": "bshm", "name": "BS Hospitality Management", "code": "BSHM" },
+        { "id": "bsihm", "name": "BS International Hospitality Management", "code": "BSIHM" }
+      ]
+    },
+    {
+      "id": "cenar",
+      "name": "College of Engineering and Architecture",
+      "courses": [
+        { "id": "bsid", "name": "BS Interior Design", "code": "BSID" },
+        { "id": "bsarch", "name": "BS Architecture", "code": "BSArch" },
+        { "id": "bscpe", "name": "BS Computer Engineering", "code": "BSCpE" },
+        { "id": "bsie", "name": "BS Industrial Engineering", "code": "BSIE" }
+      ]
+    },
+    {
+      "id": "citec",
+      "name": "College of Information Technology, Entertainment and Communication",
+      "courses": [
+        { "id": "bsemc", "name": "BS Entertainment and Multimedia Computing", "code": "BSEMC" },
+        { "id": "bsit", "name": "BS Information Technology", "code": "BSIT" },
+        { "id": "bscs", "name": "BS Computer Science", "code": "BSCS" },
+        { "id": "bmma", "name": "Bachelor of Multimedia Arts", "code": "BMMA" }
+      ]
+    },
+    {
+      "id": "chs",
+      "name": "College of Health Sciences",
+      "courses": [
+        { "id": "bsn", "name": "BS Nursing", "code": "BSN" }
+      ]
+    }
+  ]
+}

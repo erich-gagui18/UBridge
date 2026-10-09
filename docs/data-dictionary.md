@@ -9,6 +9,15 @@ Cloud Firestore is a document database, so this replaces the ERD in Chapter 3. T
 | email | string | Must equal the Auth email; @ub.edu.ph only |
 | role | string | `student`, `faculty` or `staff`. Clients can only create `student` or `faculty`; `staff` is set in the console. Immutable from clients |
 | createdAt | timestamp | Server time |
+| sid | string | Student no. (7 digits, required for students) or employee no. (optional, faculty). Editable in My profile |
+| course | string (≤60) | Students: saved program label, e.g. `BS Information Technology (BSIT)` |
+| section | string (≤20) | Students, optional: year and section, e.g. `4B` |
+| dept | string (≤80) | Students and faculty: department (college) name |
+| position | string (≤80) | Staff (required) and faculty (optional) |
+| contact | string | Contact no., 7–20 digits/`+()-`/spaces. Required for every role |
+| profileAt | timestamp | Server time of the last profile edit. The owner can change only name, sid, course, section, dept, position, contact and profileAt; email, role and createdAt stay immutable |
+
+A complaint's complainant fields (`cSid`, `cCourse`, `cDept`, `cContact`, `filedByName`) must equal these profile values when it is filed, so a profile has to be complete first.
 
 ## offenses/{offenseId}  (catalog from the College Discipline Board Manual, Handbook Revision No. 7)
 | Field | Type | Notes |
@@ -30,7 +39,16 @@ Read by any signed-in UB user; written only by staff. Seeded from `public/assets
 | cDept, cContact | string | Complainant department (required) and contact no. (required, 7–20 digits/`+()-`/spaces) |
 | signature | string (2–120) | Typed full name used as the complainant's e-signature (the form checks it matches the account name) |
 | section | string | Legacy field on complaints filed before F-SAEP-07; no longer written |
-| offenseId, type, offense | string | Catalog id, its type and category. Rules check they match the catalog |
+| offenseId, type, offense | string | Catalog id, its type and category. Rules check they match the catalog. The "Others" choice uses `offenseId` `others`, type `Others (not listed)` and category `Unclassified` (no catalog entry) |
+| offenseOther | string (3–100) | Only with Others: what the complainant says happened. Absent for catalog offenses |
+| route | string | `department` for First Degree, `cdb` otherwise; set at filing, can only move from `department` to `cdb` |
+| noticeDate, answerDue | string YYYY-MM-DD or '' | Notice to the respondent and answer deadline (at least 3 days after the notice) |
+| answer | string | '' (awaiting), `received` or `general-denial` |
+| parentsNotified | string YYYY-MM-DD or '' | Date parents or guardians were notified |
+| conferenceMode, conferencesHeld | string, int (0–20) | '' / `face-to-face` / `online`; conferences held so far. The conference date is `hearingDate` |
+| decisionDate | string YYYY-MM-DD or '' | Required when status is `resolved`; the written decision is `resolution` |
+| interventions | list of string | Any of `reprimand`, `censure`, `probation`, `community`, `suspension`, `exclusion`, `expulsion` |
+| appeal, appealDate | string | '' / `filed` / `upheld` / `modified` / `reversed` and its date; only when resolved |
 | date | string YYYY-MM-DD | Incident date, not after `filed` |
 | filed | string YYYY-MM-DD | Filing date in Philippine time. Rules require it to equal today's date on the server clock (UTC+8), so it cannot be backdated |
 | location, desc | string | desc is 30–5000 characters |

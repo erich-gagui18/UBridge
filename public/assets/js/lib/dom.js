@@ -21,6 +21,7 @@ const PATHS = {
   mail: 'M3 5h18v14H3zM3 5l9 8 9-8',
   up: 'M12 19V5M5 12l7-7 7 7',
   help: 'M9 9a3 3 0 115 2c0 2-3 2-3 4M12 18h.01',
+  user: 'M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0',
   bell: 'M6 8a6 6 0 1112 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 004 0',
 };
 export const icon = (n) =>

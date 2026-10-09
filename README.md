@@ -37,12 +37,15 @@ Sign up as a student, then in Firestore open `users/<uid>` and change `role` to 
 
 The guide retrieves the best-matching chunks in the browser, sends only those to Gemini with an "answer only from this context" instruction, and shows the cited section from the chunk data. If Gemini is unavailable it shows the closest handbook text instead.
 
+## Courses and departments
+`public/assets/js/data/academics.json` feeds the course and department pickers on the profile page and the respondent section of the complaint form. It lists the eight UBLC colleges and 37 programs from Student Handbook Revision No. 8 (issue date 21 January 2026): Graduate School, College of Law, College of Education, Arts and Sciences, College of Criminal Justice Education, College of Management and Tourism, College of Engineering and Architecture, College of Information Technology, Entertainment and Communication, and College of Health Sciences. Names of the colleges and course labels that were already in the list are unchanged, so saved profiles and complaints still match. BS Forensic Science (BSFS) is not in Revision No. 8; it is kept from the earlier list and should be confirmed with the Registrar's Office (delete its line if it is not offered). Profiles that saved a course no longer in the list open under \"Others (not listed)\" with the saved text intact, and the person can re-pick the course. Redeploy Hosting after editing the file.
+
 ## Notifications
 Staff changes create a document in `notifications/` for the person who filed the case; the bell in the header shows them live. Email would need Cloud Functions or the Trigger Email extension (both Blaze).
 
 ## Tests and formatting
     npm install
-    npm test            # AI Guide keyword matching (plain Node)
+    npm test            # AI Guide keyword matching and the course/department list (plain Node)
     npm run test:rules  # Firestore rules, in the Emulator Suite (needs Java)
     npm run format      # Prettier (run once before committing; run format:check in review)
 
@@ -53,7 +56,7 @@ Staff changes create a document in `notifications/` for the person who filed the
     lib/              dom, dates (Philippine time), local storage, UI (toast/modal), layout (sidebar, bell)
     services/         auth, complaints, notifications, offenses, guide (Gemini), retrieval (pure, tested)
     pages/            one script per page
-    data/             offenses.json (catalog seed), handbook.json (AI chunks)
+    data/             offenses.json (catalog seed), handbook.json (AI chunks), academics.json (UBLC colleges and programs)
 
 ## Data model
 See `docs/data-dictionary.md`.

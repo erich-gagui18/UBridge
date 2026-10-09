@@ -3,6 +3,8 @@ import { collection, getDocs, doc, writeBatch } from '../sdk/firestore.js';
 
 // Categories follow the College Discipline Board Manual (Revision No. 7): First, Second and Third Degree.
 export const DEGREES = ['First Degree', 'Second Degree', 'Third Degree'];
+/** The "Others" choice has no catalog entry or category: SAEP classifies it during assessment. */
+export const OTHER_OFFENSE = { id: 'others', type: 'Others (not listed)', category: 'Unclassified', sanction: '', section: '' };
 const RANK = Object.fromEntries(DEGREES.map((d, i) => [d, i]));
 /** CSS class for a category chip (see styles.css .chip.deg1/.deg2/.deg3). Unknown or legacy categories get no colour class. */
 export const degClass = (category) => ['deg1', 'deg2', 'deg3'][DEGREES.indexOf(category)] || '';

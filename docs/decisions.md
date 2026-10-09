@@ -18,6 +18,7 @@ Email needs Cloud Functions or the Trigger Email extension, both on Blaze. If th
 
 ## 3. Content that only the SAEP Office can supply
 - Confirmation that the First/Second/Third Degree list in the College Discipline Board Manual (Handbook Revision No. 7, 2023) is still the current one. Revision No. 8 (2026) does not reprint the manual. The list is already in `public/assets/js/data/offenses.json` and `handbook/cdb-manual.txt`.
+- Confirmation from the Registrar's Office that `public/assets/js/data/academics.json` (now Student Handbook Revision No. 8, January 2026) is still current, and whether BS Forensic Science (BSFS) is offered. It is not in Revision No. 8.
 - SAEP Office email (`CONTACT.email` is set to the Lipa address from Revision No. 8; confirm it), retention period, and DPO contact for `pages/privacy.html`.
 
 ## 4. First Degree offenses and routing

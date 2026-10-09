@@ -104,7 +104,7 @@ function bell(me) {
   };
 }
 
-export function shell({ me, local, isStaff, logout }) {
+export function shell({ me, local, isStaff, logout, missing = [] }) {
   const page = document.body.dataset.page, staff = isStaff();
   if (staff && page === 'file-complaint') return location.replace('dashboard.html');
   const nav = [
@@ -112,16 +112,21 @@ export function shell({ me, local, isStaff, logout }) {
     ...(staff ? [] : [['file-complaint', 'File a complaint', 'plus']]),
     ['my-complaints', staff ? 'All cases' : 'My complaints', 'list'],
     ['ai-guide', 'AI Guide', 'book'],
+    ['profile', 'My profile', 'user'],
   ];
   const main = $('#main'), app = $('#app');
   const roleLbl = { student: 'Student', faculty: 'Faculty', staff: 'SAEP Staff' }[me.role];
   app.className = 'shell';
   app.innerHTML = `<aside class="side" id="side" aria-label="Main navigation"><div class="brand"><span class="logo">UB</span><div>UBridge<small>SAEP Complaints</small></div></div>
       <nav class="nav">${nav.map(([p, l, i]) => `<a href="${p}.html" ${p === page ? 'aria-current="page"' : ''}>${icon(i)}${l}</a>`).join('')}</nav>
-      <div class="me"><span class="avatar">${esc(me.name[0])}</span><div><b>${esc(me.name)}</b><small>${roleLbl}</small></div></div></aside>
+      <a class="me" href="profile.html" aria-label="Open my profile"><span class="avatar">${esc(me.name[0])}</span><div><b>${esc(me.name)}</b><small>${roleLbl}${missing.length ? ' · profile incomplete' : ''}</small></div></a></aside>
       <div class="content"><header class="top"><div class="grow"><button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu" aria-controls="side">${icon('menu')}</button><span>University of Batangas – Lipa</span></div>
       <div style="display:flex;gap:8px"><button class="icon-btn bell" id="bellBtn" aria-label="Notifications">${icon('bell')}<span class="badge" id="bellBadge" hidden>0</span></button><button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode"></button><button class="icon-btn" id="outBtn" aria-label="Sign out">${icon('out')}</button></div></header><div class="scrim" id="scrim"></div></div>`;
   $('.content').append(main);
+  // Reminder on every page until the profile is complete (the profile page has its own, richer notice).
+  if (missing.length && page !== 'profile') {
+    main.insertAdjacentHTML('afterbegin', `<div class="profile-nudge" role="status"><div><b>Complete your profile</b><span>Still needed: ${esc(missing.join(', '))}. It fills in your complaint form for you${staff ? '' : ' and is required before you can file'}.</span></div><a class="btn primary" href="profile.html">Update profile</a></div>`);
+  }
   bindTheme($('#themeBtn'), local);
   $('#outBtn').onclick = async () => {
     if (await confirmDlg('Sign out?', 'You will need to sign in again to see your cases.', 'Sign out')) logout();

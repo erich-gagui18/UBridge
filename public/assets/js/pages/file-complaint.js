@@ -2,8 +2,8 @@ import { UB } from '../app.js';
 (async () => {
   await UB.ready;
   const { $, esc } = UB, f = $('#f');
-  const F = ['cSid', 'cCourse', 'cDept', 'cContact', 'student', 'sid', 'program', 'rEmail', 'rDept', 'rContact', 'type', 'date', 'location', 'desc', 'signature'];
-  let files = [], offenses = [];
+  const F = ['student', 'sid', 'rEmail', 'rContact', 'type', 'offenseOther', 'date', 'location', 'desc', 'signature'];
+  let files = [], offenses = [], timer;
 
   // Evidence: only offered when Cloud Storage is on. Otherwise say plainly that nothing would be stored.
   // Complainant: name and email come from the signed-in account and cannot be edited here.
@@ -11,21 +11,25 @@ import { UB } from '../app.js';
   $('#cName').value = me.name;
   $('#cEmail').value = me.email;
   $('#filedDate').value = UB.todayPH();
+  // Complainant details are the saved profile (the form is only reachable once it is complete). Faculty have no course.
+  $('#cSid').value = me.sid || '';
+  $('#cCourse').value = me.course || '';
+  $('#cDept').value = me.dept || '';
+  $('#cContact').value = me.contact || '';
   if (!student) {
-    // Faculty have no student number or course, so those two lines are optional for them.
-    $('#cSidL').textContent = 'Employee no. (optional)';
-    $('#cCourseL').textContent = 'Course (optional)';
-    $('#cSidL').classList.remove('req');
-    $('#cCourseL').classList.remove('req');
-    $('#cSid').placeholder = '';
-    $('#cCourse').placeholder = 'Not applicable';
+    $('#cSidL').textContent = 'Employee no.';
+    ['cSid', 'cCourse'].forEach((k) => { if (!$('#' + k).value) $('#' + k).closest('.field').hidden = true; });
   }
   const norm = (x) => x.replace(/\s+/g, ' ').trim().toLowerCase();
   const PHONE = /^[0-9+() -]{7,20}$/;
 
-  const evidenceOn = UB.USE_STORAGE;
-  $('#evOn').hidden = !evidenceOn;
-  $('#evOff').hidden = evidenceOn;
+  const evidenceOn = true; // inline (Firestore) while Cloud Storage is off, Storage when it is on
+  $('#evLimit').textContent = UB.USE_STORAGE ? 'Images are shrunk automatically; PDFs up to 10 MB each.' : 'Photos are shrunk automatically. PDFs must be under 700 KB each (compress larger ones, or bring them to the SAEP Office).';
+
+  // Respondent: department and course are linked pickers (pick one and the other follows).
+  $('#mDept').outerHTML = UB.pickerHtml({ id: 'rDept', label: 'Department', placeholder: 'Search or choose the department…' });
+  $('#mCourse').outerHTML = UB.pickerHtml({ id: 'program', label: 'Course', placeholder: 'Search or choose the course…' });
+  const pp = UB.pairPicker({ $, departments: await UB.loadAcademics(), dept: 'rDept', course: 'program', onChange: () => { clearTimeout(timer); timer = setTimeout(store, 600); } });
 
   // Offense types come from the handbook catalog (Firestore offenses/{id}); the category follows the type.
   try {
@@ -33,26 +37,29 @@ import { UB } from '../app.js';
   } catch {
     offenses = [];
   }
-  // One <optgroup> per degree so 45 offenses stay easy to scan.
-  UB.DEGREES.forEach((deg) => {
-    const list = offenses.filter((o) => o.category === deg);
-    if (list.length) $('#type').insertAdjacentHTML('beforeend', `<optgroup label="${esc(deg)}">${list.map((o) => `<option value="${esc(o.id)}">${esc(o.type)}</option>`).join('')}</optgroup>`);
+  // Searchable list (type to filter, arrow keys + Enter to pick), grouped by degree.
+  const cb = UB.combobox({
+    input: $('#typeQ'), hidden: $('#type'), list: $('#typeList'),
+    items: [...offenses.map((o) => ({ id: o.id, label: o.type, group: o.category, hint: o.section })), { id: UB.OTHER_OFFENSE.id, label: 'Others', group: 'Not in the list', hint: 'Describe it yourself' }],
   });
-  if (!offenses.length) {
-    $('#noCatalog').hidden = false;
-    f.querySelector('.btn.primary').disabled = true;
-  }
-  const chosen = () => offenses.find((o) => o.id === $('#type').value);
+  if (!offenses.length) $('#noCatalog').hidden = false;
+  const chosen = () => ($('#type').value === UB.OTHER_OFFENSE.id ? UB.OTHER_OFFENSE : offenses.find((o) => o.id === $('#type').value));
   const showOffense = () => {
     const o = chosen();
     $('#offInfo').hidden = !o;
+    $('#otherOffField').hidden = o?.id !== UB.OTHER_OFFENSE.id;
     if (!o) return;
-    $('#offInfo').innerHTML = `<b>Category: <span class="chip ${UB.degClass(o.category)}">${esc(o.category)}</span></b>${o.section ? ` <small class="muted">${esc(o.section)}</small>` : ''}${o.sanction ? `<p class="hint">Sanction in the handbook: ${esc(o.sanction)}</p>` : ''}${o.category === 'First Degree' ? '<p class="notice">The CDB Manual (§ 5.1.1) says First Degree offenses are handled first by the respondent’s department and and the SAEP Office and the College Discipline Board take it on the third commission.</p>' : ''}<p class="hint">SAEP reviews the category during assessment. Not sure? <a href="ai-guide.html">Ask the AI Guide</a>.</p>`;
+    if (o.id === UB.OTHER_OFFENSE.id) {
+      $('#offInfo').innerHTML = '<b>Category: <span class="chip">To be classified by SAEP</span></b><p class="hint">Describe the offense below. Check the list first, since most behaviors are already covered. <a href="ai-guide.html">Ask the AI Guide</a> if you are unsure.</p>';
+      return;
+    }
+    $('#offInfo').innerHTML = `<b>Category: <span class="chip ${UB.degClass(o.category)}">${esc(o.category)}</span></b>${o.section ? ` <small class="muted">${esc(o.section)}</small>` : ''}${o.sanction ? `<p class="hint">Sanction in the handbook: ${esc(o.sanction)}</p>` : ''}${o.category === 'First Degree' ? '<p class="notice">The CDB Manual (§ 5.1.1) says First Degree offenses are handled first by the respondent’s department and the SAEP Office and the College Discipline Board take it on the third commission.</p>' : ''}<p class="hint">SAEP reviews the category during assessment. Not sure? <a href="ai-guide.html">Ask the AI Guide</a>.</p>`;
   };
   $('#type').addEventListener('change', showOffense);
 
   const today = UB.todayPH(); // Philippine date, not the UTC date
   $('#date').max = today;
+  const flag = (id, m) => err($('#' + id), m || '');
   const err = (el, m) => {
     const p = el.closest('.field').querySelector('.err');
     p.textContent = m;
@@ -60,28 +67,24 @@ import { UB } from '../app.js';
     return m;
   };
   const rules = {
-    cSid: (v) => (student ? !/^\d{7}$/.test(v) && 'Student no. is 7 digits, e.g. 2407880' : v !== '' && !/^[\w-]{3,20}$/.test(v) && 'Use letters, numbers or hyphens only'),
-    cCourse: (v) => student && !v && 'Enter your course, e.g. BSIT',
-    cDept: (v) => !v && 'Enter your department',
-    cContact: (v) => !PHONE.test(v) && 'Enter a contact number SAEP can reach, e.g. 0917 123 4567',
     student: (v) => !v && 'Enter the respondent’s full name',
     sid: (v) => !/^\d{7}$/.test(v) && 'Student no. is 7 digits, e.g. 2407880',
-    program: (v) => !v && 'Enter the course, e.g. BSIT',
     rEmail: (v) => v !== '' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v) && 'Enter a valid email address or leave it blank',
-    rDept: (v) => !v && 'Enter the respondent’s department',
     rContact: (v) => v !== '' && !PHONE.test(v) && 'Enter a valid contact number or leave it blank',
     type: (v) => !v && 'Select the type of offense',
+    offenseOther: (v) => $('#type').value === UB.OTHER_OFFENSE.id && v.length < 3 && 'Describe the offense in a few words',
     date: (v) => (!v ? 'Choose the date it happened' : v > today && 'The date can’t be in the future'),
     location: (v) => !v && 'Enter where it happened',
     desc: (v) => v.length < 30 && 'Add at least 30 characters so SAEP can review it',
     signature: (v) => (!v ? 'Type your full name to sign' : norm(v) !== norm(me.name) && 'Type your name exactly as shown under Complainant'),
   };
-  const data = () => Object.fromEntries(F.map((k) => [k, $('#' + k).value.trim()]));
+  const data = () => ({ ...Object.fromEntries(F.map((k) => [k, $('#' + k).value.trim()])), resp: pp.value() });
   const store = () => UB.save('draft', data());
   const d = UB.load('draft', null);
   if (d) {
     F.forEach((k) => ($('#' + k).value = d[k] || ''));
-    if ($('#type').value !== (d.type || '')) $('#type').value = ''; // saved type no longer in the catalog
+    pp.set(d.resp || { dept: d.rDept, course: d.program }); // older drafts kept them as plain text
+    cb.set(d.type); // empty if the saved type is no longer in the catalog
     showOffense();
     UB.toast('Draft restored');
   }
@@ -90,7 +93,6 @@ import { UB } from '../app.js';
     $('#cnt').textContent = n < 30 ? `${n} / 30 minimum` : `${n} characters`;
   };
   count();
-  let timer;
   f.addEventListener('input', () => {
     count();
     clearTimeout(timer);
@@ -115,6 +117,7 @@ import { UB } from '../app.js';
     const b = new Uint8Array(await x.slice(0, 4).arrayBuffer());
     return Object.keys(SIG).find((m) => SIG[m].every((v, i) => b[i] === v));
   };
+  const INLINE = !UB.USE_STORAGE, isImg = (t) => t === 'image/png' || t === 'image/jpeg';
   const add = async (list) => {
     for (const x of [...list]) {
       if (!/\.(png|jpe?g|pdf)$/i.test(x.name)) { UB.toast(`${x.name}: only PNG, JPG or PDF`, 'bad'); continue; }
@@ -123,10 +126,33 @@ import { UB } from '../app.js';
       if (files.length >= 5) { UB.toast('You can attach up to 5 files', 'bad'); continue; }
       const t = await sniff(x);
       if (!t) { UB.toast(`${x.name} isn’t a real PNG, JPG or PDF`, 'bad'); continue; }
-      files.push(new File([x], x.name, { type: t }));
+      if (t === 'application/pdf') {
+        if (INLINE && x.size > UB.MAX_INLINE) { UB.toast(`${x.name} is over 700 KB. Compress it or bring it to the SAEP Office.`, 'bad'); continue; }
+        files.push(new File([x], x.name, { type: t }));
+      } else {
+        try { // photos are shrunk so they fit; the name keeps its meaning but ends in .jpg
+          const b = await UB.shrink(x, { maxDim: 1600, maxBytes: INLINE ? UB.MAX_INLINE : 1572864 });
+          files.push(new File([b], x.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' }));
+        } catch { UB.toast(`Couldn’t read ${x.name}. Try another photo.`, 'bad'); }
+      }
     }
     renderFiles();
   };
+  // Signature: an image of the complainant's signature, shrunk to a small JPEG and stored with the complaint.
+  let sigImg = '';
+  const setSig = async (x) => {
+    if (!x) return;
+    const t = await sniff(x);
+    if (!/\.(png|jpe?g)$/i.test(x.name) || !isImg(t)) return UB.toast('Upload your signature as a PNG or JPG image', 'bad');
+    try {
+      sigImg = await UB.toDataUrl(await UB.shrink(x, { maxDim: 700, maxBytes: 90000 }));
+      $('#sigPrev').src = sigImg; $('#sigPrev').hidden = false; $('#sigPrompt').hidden = true; $('#sigClear').hidden = false; $('#eSig').textContent = '';
+    } catch { UB.toast('Couldn’t read that image. Try a clearer photo.', 'bad'); }
+  };
+  $('#sigFile').onchange = (e) => { setSig(e.target.files[0]); e.target.value = ''; };
+  $('#sigClear').onclick = () => { sigImg = ''; $('#sigPrev').hidden = true; $('#sigPrompt').hidden = false; $('#sigClear').hidden = true; };
+  ['dragover', 'drop'].forEach((ev) => $('#sigDrop').addEventListener(ev, (e) => { e.preventDefault(); if (ev === 'drop') setSig(e.dataTransfer.files[0]); }));
+  [['#drop', '#file'], ['#sigDrop', '#sigFile']].forEach(([a, b]) => $(a).addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $(b).click(); } }));
   if (evidenceOn) {
     $('#file').onchange = (e) => { add(e.target.files); e.target.value = ''; };
     $('#files').onclick = (e) => {
@@ -147,21 +173,31 @@ import { UB } from '../app.js';
       const el = $('#' + k);
       if (err(el, rules[k](el.value.trim()) || '') && !first) first = el;
     });
+    const pc = pp.check();
+    [['rDeptQ', pc.dept], ['programQ', pc.course]].forEach(([id, m]) => { flag(id, m); if (m && !first) first = $('#' + id); });
+    $('#eSig').textContent = sigImg ? '' : 'Upload your signature to submit';
+    if (!sigImg && !first) first = $('#sigDrop');
     const consent = $('#consent');
     $('#eConsent').textContent = consent.checked ? '' : 'You must agree to the privacy notice to submit';
     if (!consent.checked && !first) first = consent;
-    if (first) { UB.toast('Please fix the highlighted fields', 'bad'); return first.focus(); }
+    if (!UB.isComplete(me)) return location.replace('profile.html?need=1&next=file-complaint');
+    if (first) { UB.toast('Please fix the highlighted fields', 'bad'); return (first.id === 'type' ? $('#typeQ') : first).focus(); }
     const o = chosen();
-    const note = evidenceOn ? '' : ' Evidence files are not stored in this version, so bring any evidence to the SAEP Office.';
+    const note = '';
     if (!(await UB.confirm('Submit this complaint?', `It goes straight to the SAEP Office and can’t be edited from your account afterwards.${note}`, 'Submit'))) return;
     const btn = f.querySelector('.btn.primary');
     btn.disabled = true;
     btn.textContent = 'Submitting…';
     let c;
     try {
-      const v = data();
-      const { type: _t, ...rest } = v; // everything on the form except the offense type, which comes from the catalog
-      c = await UB.create({ ...rest, offenseId: o.id, type: o.type, offense: o.category }, files);
+      const { type: _t, resp, offenseOther, ...rest } = data(); // the offense type comes from the catalog (or Others)
+      const other = o.id === UB.OTHER_OFFENSE.id;
+      c = await UB.create({
+        ...rest,
+        program: resp.course, rDept: resp.dept, // respondent, from the linked pickers
+        cSid: me.sid || '', cCourse: me.course || '', cDept: me.dept || '', cContact: me.contact || '', // complainant, from the profile
+        offenseId: o.id, type: o.type, offense: o.category, ...(other ? { offenseOther } : {}), signatureImg: sigImg,
+      }, files);
     } catch (e) {
       btn.disabled = false;
       btn.textContent = 'Submit complaint';
@@ -177,7 +213,6 @@ import { UB } from '../app.js';
     if (c.uploadFailed) UB.toast('Submitted, but some evidence didn’t upload. Tell SAEP or re-send it.', 'bad');
     UB.modal(
       `<div class="done-msg"><div class="ok">${UB.icon('check')}</div><h2>Complaint submitted</h2><p class="muted">SAEP will review it. Your case number is</p><p><b style="font-size:20px">${esc(c.id)}</b> <button class="link" type="button" data-copy="${esc(c.id)}">Copy</button></p>
-      ${evidenceOn ? '' : '<p class="notice">No evidence files were stored. Bring them to the SAEP Office and quote this case number.</p>'}
       <div class="actions"><a class="btn" href="dashboard.html">Back home</a><a class="btn primary" href="my-complaints.html?case=${encodeURIComponent(c.id)}">Track this case</a></div></div>`,
       'Complaint submitted',
     );

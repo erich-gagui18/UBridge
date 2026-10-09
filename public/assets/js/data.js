@@ -3,7 +3,7 @@
 export const CONTACT = { email: 'saep.ublc@ub.edu.ph' };
 
 // Bump this when the text of pages/privacy.html changes in a way users must re-accept.
-export const PRIVACY_VERSION = '2026-10b';
+export const PRIVACY_VERSION = '2026-10d';
 
 export const STATUS = { submitted: 'Submitted', review: 'In review', hearing: 'For hearing', resolved: 'Resolved' };
 export const ORDER = Object.keys(STATUS);

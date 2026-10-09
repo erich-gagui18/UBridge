@@ -8,10 +8,19 @@ import { $, $$, esc, icon, skel } from './lib/dom.js';
 import { todayPH, fmt, fmtTs } from './lib/dates.js';
 import { createLocal } from './lib/local.js';
 import { toast, modal, confirmDlg, copy } from './lib/ui.js';
+import { combobox } from './lib/combobox.js';
+import { openViewer } from './lib/viewer.js';
+import { shrink, toDataUrl, MAX_INLINE } from './lib/image.js';
+import { countUp, stagger } from './lib/motion.js';
+import { progress } from './lib/progress.js';
 import { shell, applyTheme, bindTheme } from './lib/layout.js';
 import * as authSvc from './services/auth.js';
 import * as cases from './services/complaints.js';
-import { loadOffenses, syncOffenses, degClass, DEGREES } from './services/offenses.js';
+import * as proc from './lib/process.js';
+import * as profileSvc from './services/profile.js';
+import { loadAcademics } from './services/academics.js';
+import { pickerHtml, pairPicker } from './lib/picker.js';
+import { loadOffenses, syncOffenses, degClass, DEGREES, OTHER_OFFENSE } from './services/offenses.js';
 
 export const UB = (() => {
   let me = null;
@@ -55,7 +64,17 @@ export const UB = (() => {
       return toLogin();
     }
     if (!me) return toLogin(); // signed in but no profile document: never create one implicitly
-    shell({ me, local, isStaff, logout });
+    const page = document.body.dataset.page;
+    // Profile gate: the complaint form needs a complete profile, and everyone is nudged to the profile page once per sign-in.
+    if (!profileSvc.isComplete(me) && page !== 'profile') {
+      const nudged = sessionStorage.getItem('ub.nudged');
+      if (page === 'file-complaint' || (page === 'dashboard' && !nudged)) {
+        sessionStorage.setItem('ub.nudged', '1');
+        location.replace(`profile.html?need=1${page === 'file-complaint' ? '&next=file-complaint' : ''}`);
+        return new Promise(() => {});
+      }
+    }
+    shell({ me, local, isStaff, logout, missing: profileSvc.missingFields(me) });
     document.body.classList.add('ready');
   })();
 
@@ -82,6 +101,13 @@ export const UB = (() => {
     create: (v, files) => cases.createComplaint(me, v, files),
     updateCase: (c, change) => cases.updateCase(me, c, change),
     evidenceUrl: cases.evidenceUrl,
-    loadOffenses, syncOffenses, degClass, DEGREES,
+    loadEvidence: cases.loadEvidence,
+    combobox, openViewer, shrink, toDataUrl, MAX_INLINE, countUp, stagger, progress,
+    loadOffenses, syncOffenses, degClass, DEGREES, OTHER_OFFENSE, offenseLabel: cases.offenseLabel,
+    // profile + course/department pickers
+    isComplete: profileSvc.isComplete, missingFields: profileSvc.missingFields, PHONE: profileSvc.PHONE,
+    saveProfile: async (v) => { me = await profileSvc.saveProfile(me, v); return me; },
+    loadAcademics, pickerHtml, pairPicker,
+    proc,
   };
 })();

@@ -28,8 +28,49 @@ service cloud.firestore {
         && get(/databases/$(db)/documents/offenses/$(d.offenseId)).data.category == d.offense;
     }
 
+    // Calendar date (YYYY-MM-DD) as a timestamp, for day arithmetic.
+    function dateTs(s) { return timestamp.date(int(s[0:4]), int(s[5:7]), int(s[8:10])); }
+    function dateOrEmpty(s) { return s is string && (s == '' || isDate(s)); }
+    // CDB Manual 5.1: routing, notice (answer time of at least 3 days), conference, decision and appeal. Every field is optional
+    // so older cases still validate; the app always sends them together.
+    function processOk(n, old) {
+      return (!('route' in n) || n.route == 'cdb' || n.route == old.get('route', n.route))
+        && (!('noticeDate' in n) || dateOrEmpty(n.noticeDate))
+        && (!('answerDue' in n) || dateOrEmpty(n.answerDue))
+        && (!('answerDue' in n) || n.answerDue == '' || ('noticeDate' in n && n.noticeDate != ''))
+        && (!('answerDue' in n && 'noticeDate' in n) || n.answerDue == '' || n.noticeDate == '' || dateTs(n.answerDue) >= dateTs(n.noticeDate) + duration.value(3, 'd'))
+        && (!('answer' in n) || n.answer in ['', 'received', 'general-denial'])
+        && (!('parentsNotified' in n) || dateOrEmpty(n.parentsNotified))
+        && (!('conferenceMode' in n) || n.conferenceMode in ['', 'face-to-face', 'online'])
+        && (!('conferencesHeld' in n) || (n.conferencesHeld is int && n.conferencesHeld >= 0 && n.conferencesHeld <= 20))
+        && (!('decisionDate' in n) || dateOrEmpty(n.decisionDate))
+        && (n.status != 'resolved' || ('decisionDate' in n && n.decisionDate != ''))
+        && (!('interventions' in n) || (n.interventions is list && n.interventions.size() <= 7
+            && n.interventions.hasOnly(['reprimand', 'censure', 'probation', 'community', 'suspension', 'exclusion', 'expulsion'])))
+        && (!('appeal' in n) || n.appeal in ['', 'filed', 'upheld', 'modified', 'reversed'])
+        && (!('appealDate' in n) || dateOrEmpty(n.appealDate))
+        && (!('appeal' in n) || n.appeal == '' || (n.status == 'resolved' && 'appealDate' in n && n.appealDate != ''));
+    }
+
+    // "Others": no catalog entry and no category. SAEP classifies it later, so the complainant must describe it.
+    function othersOk(d) {
+      return d.offenseId == 'others' && d.type == 'Others (not listed)' && d.offense == 'Unclassified'
+        && 'offenseOther' in d && d.offenseOther is string && d.offenseOther.size() >= 3 && d.offenseOther.size() <= 100;
+    }
+
+    function profileOk(n, role) {
+      return n.name is string && n.name.size() >= 2 && n.name.size() <= 120
+        && (!('sid' in n) || (n.sid is string && (role == 'student' ? n.sid.matches('^[0-9]{7}$') : n.sid.size() <= 20)))
+        && (!('course' in n) || (n.course is string && n.course.size() <= 60))
+        && (!('section' in n) || (n.section is string && n.section.size() <= 20))
+        && (!('dept' in n) || (n.dept is string && n.dept.size() <= 80))
+        && (!('position' in n) || (n.position is string && n.position.size() <= 80))
+        && (!('contact' in n) || (n.contact is string && n.contact.matches('^[0-9+() -]{7,20}$')))
+        && n.profileAt == request.time;
+    }
+
     function validNew(d) {
-      return d.keys().hasOnly(['student','sid','program','rDept','rEmail','rContact','cSid','cCourse','cDept','cContact','signature','offenseId','offense','type','date','location','desc','filed','status','filedBy','filedByName','filedByRole','filedByEmail','privacyConsent','privacyVersion','hCount','files','createdAt'])
+      return d.keys().hasOnly(['student','sid','program','rDept','rEmail','rContact','cSid','cCourse','cDept','cContact','signature','signatureImg','route','offenseId','offense','offenseOther','type','date','location','desc','filed','status','filedBy','filedByName','filedByRole','filedByEmail','privacyConsent','privacyVersion','hCount','files','createdAt'])
         && d.student is string && d.student.size() >= 2 && d.student.size() <= 120
         && d.sid is string && d.sid.matches('^[0-9]{7}$')
         && d.program is string && d.program.size() >= 1 && d.program.size() <= 60
@@ -40,16 +81,21 @@ service cloud.firestore {
         && d.cCourse is string && d.cCourse.size() <= 60 && (d.filedByRole != 'student' || d.cCourse.size() >= 1)
         && d.cDept is string && d.cDept.size() >= 1 && d.cDept.size() <= 80
         && d.cContact is string && d.cContact.matches('^[0-9+() -]{7,20}$')
+        // The complainant block must be exactly the saved profile (so the form can't be filed with made-up or outdated details).
+        && d.cSid == userDoc().get('sid', '') && d.cCourse == userDoc().get('course', '')
+        && d.cDept == userDoc().get('dept', '') && d.cContact == userDoc().get('contact', '')
         && d.signature is string && d.signature.size() >= 2 && d.signature.size() <= 120
-        && d.offense in ['First Degree', 'Second Degree', 'Third Degree']
+        && d.signatureImg is string && d.signatureImg.size() <= 200000 && d.signatureImg.matches('^data:image/(png|jpeg);base64,.*')
+        && d.offense in ['First Degree', 'Second Degree', 'Third Degree', 'Unclassified']
         && d.type is string && d.type.size() >= 2 && d.type.size() <= 80
-        && offenseOk(d)
+        && (othersOk(d) || (!('offenseOther' in d) && offenseOk(d)))
         && isDate(d.date) && d.filed == phToday() && d.date <= d.filed
         && d.location is string && d.location.size() >= 1 && d.location.size() <= 200
         && d.desc is string && d.desc.size() >= 30 && d.desc.size() <= 5000
+        && d.route == (d.offense == 'First Degree' ? 'department' : 'cdb')
         && d.status == 'submitted'
         && d.filedBy == request.auth.uid
-        && d.filedByName is string && d.filedByName.size() <= 120
+        && d.filedByName is string && d.filedByName.size() <= 120 && d.filedByName == userDoc().name
         && d.filedByRole in ['student', 'faculty'] && d.filedByRole == userDoc().role
         && d.filedByEmail == request.auth.token.email
         && d.privacyConsent == true
@@ -67,7 +113,11 @@ service cloud.firestore {
         && request.resource.data.email == request.auth.token.email
         && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120
         && request.resource.data.createdAt == request.time;
-      allow update, delete: if false;
+      // Profile: the owner can edit their own details (never email, role or createdAt). Staff-only role changes stay in the console.
+      allow update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'sid', 'course', 'section', 'dept', 'position', 'contact', 'profileAt'])
+        && profileOk(request.resource.data, resource.data.role);
+      allow delete: if false;
     }
 
     // Offense catalog taken from the College Discipline Board Manual (Student Handbook Revision No. 7, sections 4.1 to 4.6). Everyone signed in can read it; only staff edit it.
@@ -95,7 +145,7 @@ service cloud.firestore {
       function staffEdit() {
         let n = request.resource.data;
         return isStaff()
-          && n.diff(resource.data).affectedKeys().hasOnly(['status', 'hearingDate', 'resolution', 'updatedAt', 'updatedBy', 'hCount'])
+          && n.diff(resource.data).affectedKeys().hasOnly(['status', 'hearingDate', 'resolution', 'updatedAt', 'updatedBy', 'hCount', 'route', 'noticeDate', 'answerDue', 'answer', 'parentsNotified', 'conferenceMode', 'conferencesHeld', 'decisionDate', 'interventions', 'appeal', 'appealDate'])
           && n.status in ['submitted', 'review', 'hearing', 'resolved']
           && n.updatedAt == request.time && n.updatedBy == request.auth.uid
           && n.hCount == resource.data.get('hCount', 0) + 1
@@ -103,7 +153,8 @@ service cloud.firestore {
           && n.hearingDate is string && (n.hearingDate == '' || isDate(n.hearingDate))
           && (n.status != 'hearing' || n.hearingDate != '')
           && n.resolution is string && n.resolution.size() <= 2000
-          && (n.status != 'resolved' || n.resolution.size() >= 5);
+          && (n.status != 'resolved' || n.resolution.size() >= 5)
+          && processOk(n, resource.data);
       }
       // Each evidence entry is {name, path} and the path must point into the filer's own folder for this case.
       function fileOk(f) {
@@ -151,6 +202,22 @@ service cloud.firestore {
           && hid == string(getAfter(/databases/$(db)/documents/complaints/$(id)).data.hCount)
           && request.resource.data.at == request.time
           && existsAfter(/databases/$(db)/documents/complaints/$(id)/history/$(hid));
+        allow update, delete: if false;
+      }
+
+      // Evidence kept in Firestore while Cloud Storage is off (free plan). Items 1 to 5, written once by the filer
+      // while the case is still 'submitted'; the filer and staff can read them.
+      match /evidence/{eid} {
+        allow read: if signedIn() && (get(/databases/$(db)/documents/complaints/$(id)).data.filedBy == request.auth.uid || isStaff());
+        allow create: if signedIn() && eid.matches('^[1-5]$')
+          && get(/databases/$(db)/documents/complaints/$(id)).data.filedBy == request.auth.uid
+          && get(/databases/$(db)/documents/complaints/$(id)).data.status == 'submitted'
+          && request.resource.data.keys().hasOnly(['name', 'type', 'size', 'data', 'createdAt'])
+          && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120
+          && request.resource.data.type in ['image/jpeg', 'image/png', 'application/pdf']
+          && request.resource.data.size is int && request.resource.data.size > 0 && request.resource.data.size <= 716800
+          && request.resource.data.data is string && request.resource.data.data.size() <= 980000
+          && request.resource.data.createdAt == request.time;
         allow update, delete: if false;
       }
     }
