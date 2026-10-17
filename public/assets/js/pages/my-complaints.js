@@ -100,38 +100,189 @@ import { UB } from '../app.js';
     });
   };
 
-  const modalHtml = (c) => {
-    const o = offenses[c.offenseId], hist = cur?.history || [];
-    const form = staff ? `<div class="staffbox"><h3>Update this case</h3>
-      <div class="field"><label for="ns">Status</label><select id="ns">${UB.ORDER.map((s) => `<option value="${s}" ${s === c.status ? 'selected' : ''}>${UB.STATUS[s]}</option>`).join('')}</select></div>
-      <div class="field" id="hdF" ${c.status === 'hearing' ? '' : 'hidden'}><label for="hd" class="req">Hearing date</label><input id="hd" type="date" value="${esc(c.hearingDate || '')}"></div>
-      <div class="field" id="rsF" ${c.status === 'resolved' ? '' : 'hidden'}><label for="rs" class="req">Resolution note</label><textarea id="rs" maxlength="2000" style="min-height:90px">${esc(c.resolution || '')}</textarea></div>
-      ${UB.proc.processForm(c, { commission: UB.proc.commissionOf(c, data) })}
-      <div class="field"><label for="rm">Remark for the history</label><input id="rm" maxlength="500" placeholder="e.g. Both parties notified" aria-describedby="rmHint"><small class="muted" id="rmHint">Optional, but required (5+ characters) when moving a case back to an earlier status.</small></div></div>` : '';
-    return `<div class="case-head"><div><h2>${esc(c.id)} <button class="link" type="button" data-copy="${esc(c.id)}">Copy</button></h2><p class="muted">${esc(UB.offenseLabel(c))}</p></div><span class="live"><i></i>Live</span></div>
-      ${UB.progress(c.status, reached(c, hist))}
-      <div class="case-grid"><div class="case-main"><dl><dt>Respondent</dt><dd>${esc(c.student)} (${esc(c.sid)})</dd><dt>Course</dt><dd>${esc([c.program, c.section].filter(Boolean).join(' '))}</dd>
-      ${c.rDept ? `<dt>Department</dt><dd>${esc(c.rDept)}</dd>` : ''}${c.rEmail || c.rContact ? `<dt>Respondent contact</dt><dd>${[c.rEmail, c.rContact].filter(Boolean).map(esc).join(' · ')}</dd>` : ''}
-      ${staff ? `<dt>Complainant</dt><dd>${esc(c.filedByName)} · ${esc(c.filedByRole || '')}${c.filedByEmail ? ` · ${esc(c.filedByEmail)}` : ''}</dd>${c.cDept || c.cContact ? `<dt>Complainant details</dt><dd>${[c.cSid, c.cCourse, c.cDept, c.cContact].filter(Boolean).map(esc).join(' · ')}</dd>` : ''}` : ''}
-      ${c.signatureImg ? `<dt>Signature</dt><dd><img class="sigimg" alt="Complainant signature" src="${esc(c.signatureImg)}">${c.signature ? `<small class="muted" style="display:block">${esc(c.signature)}</small>` : ''}</dd>` : c.signature && staff ? `<dt>E-signature</dt><dd>${esc(c.signature)}</dd>` : ''}
-      <dt>Received</dt><dd>${UB.fmtTs(c.createdAt)}</dd>${UB.proc.processRows(c, { staff, commission: UB.proc.commissionOf(c, data) })}
-      <dt>Category</dt><dd>${esc(c.offense === 'Unclassified' ? 'Unclassified (SAEP to assess)' : c.offense)}${o?.section ? ` <small class="muted">${esc(o.section)}</small>` : ''}</dd>${o?.sanction ? `<dt>Handbook sanction</dt><dd>${esc(o.sanction)}</dd>` : ''}
-      <dt>Incident</dt><dd>${UB.fmt(c.date)}</dd><dt>Filed</dt><dd>${UB.fmt(c.filed)}</dd><dt>Updated</dt><dd>${UB.fmtTs(c.updatedAt || c.createdAt)}</dd>
-      ${c.resolution ? `<dt>Decision</dt><dd>${esc(c.resolution)}</dd>` : ''}
-      <dt>Location</dt><dd>${esc(c.location)}</dd><dt>Description</dt><dd>${esc(c.desc)}</dd><dt>Evidence</dt><dd>${evidence(c)}</dd></dl></div>
-      <aside class="case-side"><h3>History</h3>${timeline(c, hist)}${form}${staff ? mailboxHtml(c) : ''}</aside></div>
-      <div class="actions"><button class="btn" data-close>Close</button>${staff ? '<button class="btn primary" id="sv">Save changes</button>' : ''}</div>`;
-  };
-  const paintModal = () => {
-    const c = data.find((x) => x.id === cur?.id);
-    if (!c) return;
-    // Don't wipe what a staff member is typing; tell them instead.
-    if (cur.dirty) { if ((c.hCount || 0) !== cur.seen) { UB.toast('This case was just updated by someone else. Close and reopen it to see the latest.', 'bad'); cur.seen = c.hCount || 0; } return; }
-    cur.seen = c.hCount || 0;
-    if (cur.status && cur.status !== c.status) UB.toast(`Status updated: ${UB.STATUS[c.status]}`);
-    cur.status = c.status;
-    cur.m.set(modalHtml(c));
-  };
+  /* this part start i change Jm */
+
+const modalHtml = (c) => {
+  const o = offenses[c.offenseId], hist = cur?.history || [];
+
+  const formContent = staff ? `<div class="staff-tab-container">
+    <h3>Update this case</h3>
+
+    <div class="field">
+      <label for="ns">Status</label>
+      <select id="ns">
+        ${UB.ORDER.map((s) => `<option value="${s}" ${s === c.status ? 'selected' : ''}>${UB.STATUS[s]}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="field" id="hdF" ${c.status === 'hearing' ? '' : 'hidden'}>
+      <label for="hd" class="req">Hearing date</label>
+      <input id="hd" type="date" value="${esc(c.hearingDate || '')}">
+    </div>
+
+    <div class="field" id="rsF" ${c.status === 'resolved' ? '' : 'hidden'}>
+      <label for="rs" class="req">Resolution note</label>
+      <textarea id="rs" maxlength="2000" style="min-height:90px">${esc(c.resolution || '')}</textarea>
+    </div>
+
+    ${UB.proc.processForm(c, {
+      commission: UB.proc.commissionOf(c, data)
+    })}
+
+    <div class="field">
+      <label for="rm">Remark for the history</label>
+      <input id="rm" maxlength="500"
+        placeholder="e.g. Both parties notified"
+        aria-describedby="rmHint">
+      <small class="muted" id="rmHint">
+        Optional, but required (5+ characters) when moving a case back to an earlier status.
+      </small>
+    </div>
+  </div>` : '';
+
+  return `<div class="case-head">
+      <div>
+        <h2>${esc(c.id)}
+          <button class="link" type="button" data-copy="${esc(c.id)}">Copy</button>
+        </h2>
+        <p class="muted">${esc(UB.offenseLabel(c))}</p>
+      </div>
+      <span class="live"><i></i>Live</span>
+    </div>
+
+    ${UB.progress(c.status, reached(c, hist))}
+
+    <div class="modal-tabs">
+      <button type="button" class="tab-btn active" data-tab="details">
+         Case Details &amp; History
+      </button>
+      ${staff ? '<button type="button" class="tab-btn" data-tab="update"> Update Case</button>' : ''}
+      ${staff ? '<button type="button" class="tab-btn" data-tab="email"> Email Drafts</button>' : ''}
+    </div>
+
+    <div class="tab-content active" id="tab-details">
+      <div class="case-grid">
+        <div class="case-main">
+          <dl>
+            <dt>Respondent</dt>
+            <dd>${esc(c.student)} (${esc(c.sid)})</dd>
+
+            <dt>Course</dt>
+            <dd>${esc([c.program, c.section].filter(Boolean).join(' '))}</dd>
+
+            ${c.rDept ? `<dt>Department</dt><dd>${esc(c.rDept)}</dd>` : ''}
+
+            ${c.rEmail || c.rContact
+              ? `<dt>Respondent contact</dt>
+                 <dd>${[c.rEmail, c.rContact].filter(Boolean).map(esc).join(' · ')}</dd>`
+              : ''}
+
+            ${staff ? `
+              <dt>Complainant</dt>
+              <dd>${esc(c.filedByName)} · ${esc(c.filedByRole || '')}${c.filedByEmail ? ` · ${esc(c.filedByEmail)}` : ''}</dd>
+
+              ${c.cDept || c.cContact
+                ? `<dt>Complainant details</dt>
+                   <dd>${[c.cSid, c.cCourse, c.cDept, c.cContact].filter(Boolean).map(esc).join(' · ')}</dd>`
+                : ''}
+            ` : ''}
+
+            ${c.signatureImg
+              ? `<dt>Signature</dt>
+                 <dd>
+                   <img class="sigimg" alt="Complainant signature" src="${esc(c.signatureImg)}">
+                   ${c.signature ? `<small class="muted" style="display:block">${esc(c.signature)}</small>` : ''}
+                 </dd>`
+              : c.signature && staff
+                ? `<dt>E-signature</dt><dd>${esc(c.signature)}</dd>`
+                : ''}
+
+            <dt>Received</dt>
+            <dd>${UB.fmtTs(c.createdAt)}</dd>
+
+            ${UB.proc.processRows(c, {
+              staff,
+              commission: UB.proc.commissionOf(c, data)
+            })}
+
+            <dt>Category</dt>
+            <dd>
+              ${esc(c.offense === 'Unclassified' ? 'Unclassified (SAEP to assess)' : c.offense)}
+              ${o?.section ? ` <small class="muted">${esc(o.section)}</small>` : ''}
+            </dd>
+
+            ${o?.sanction ? `<dt>Handbook sanction</dt><dd>${esc(o.sanction)}</dd>` : ''}
+
+            <dt>Incident</dt>
+            <dd>${UB.fmt(c.date)}</dd>
+
+            <dt>Filed</dt>
+            <dd>${UB.fmt(c.filed)}</dd>
+
+            <dt>Updated</dt>
+            <dd>${UB.fmtTs(c.updatedAt || c.createdAt)}</dd>
+
+            ${c.resolution ? `<dt>Decision</dt><dd>${esc(c.resolution)}</dd>` : ''}
+
+            <dt>Location</dt>
+            <dd>${esc(c.location)}</dd>
+
+            <dt>Description</dt>
+            <dd>${esc(c.desc)}</dd>
+
+            <dt>Evidence</dt>
+            <dd>${evidence(c)}</dd>
+          </dl>
+        </div>
+
+        <aside class="case-side">
+          <h3>History</h3>
+          ${timeline(c, hist)}
+        </aside>
+      </div>
+    </div>
+
+    ${staff ? `<div class="tab-content" id="tab-update">${formContent}</div>` : ''}
+    ${staff ? `<div class="tab-content" id="tab-email">${mailboxHtml(c)}</div>` : ''}
+
+    <div class="actions">
+      <button class="btn" data-close>Close</button>
+      ${staff ? '<button class="btn primary" id="sv">Save changes</button>' : ''}
+    </div>`;
+};
+/* Case modal tab switching */
+document.addEventListener('click', function (event) {
+    const button = event.target.closest('.tab-btn[data-tab]');
+
+    if (!button) return;
+
+    // Find the modal containing the clicked tab
+    const modal = button.closest('.modal');
+    if (!modal) return;
+
+    const tabName = button.dataset.tab;
+    const targetPanel = modal.querySelector('#tab-' + tabName);
+
+    // Ignore tabs that don't have a matching panel
+    if (!targetPanel) {
+        console.warn('Tab panel not found:', 'tab-' + tabName);
+        return;
+    }
+
+    // Update selected tab styling
+    modal.querySelectorAll('.tab-btn').forEach(function (tab) {
+        const isActive = tab === button;
+        tab.classList.toggle('active', isActive);
+        tab.setAttribute('aria-selected', String(isActive));
+    });
+
+    // Show the selected panel and hide the others
+    modal.querySelectorAll('.tab-content').forEach(function (panel) {
+        panel.classList.toggle('active', panel === targetPanel);
+    });
+});
+
+/* until here*/
 
   const save = async () => {
     const c = data.find((x) => x.id === cur.id), el = cur.m.el, v = (s) => el.querySelector(s)?.value ?? '';

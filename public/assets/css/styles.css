@@ -119,9 +119,41 @@ dl{display:grid;grid-template-columns:110px 1fr;gap:8px 12px;margin:14px 0}dt{co
 .composer{position:sticky;bottom:0;padding:12px 0;background:var(--bg);display:flex;gap:8px}
 [hidden]{display:none!important}
 /* auth */
+
 .auth .theme{position:fixed;top:14px;right:14px;z-index:5}
 .auth-wrap{display:grid;grid-template-columns:1.1fr 1fr;min-height:100vh;max-width:1100px;margin:auto;padding:5vh 16px}
-.auth-art{background:linear-gradient(170deg,var(--maroon),var(--maroon-d));color:#fff;padding:36px;border-radius:14px 0 0 14px;display:flex;flex-direction:column;justify-content:space-between;gap:40px}
+.auth-art{background:linear-gradient(170deg,var(--maroon),var(--maroon-d));color:#fff;padding:36px;border-radius:14px 0 0 14px;display:flex;flex-direction:column;justify-content:space-between;gap:20px}
+
+/* Top brand text styling */
+.brand div {
+  display: flex;
+  flex-direction: column;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.brand small {
+  opacity: 0.8;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* Centered Logo Section */
+.art-center-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  padding: 12px 0; /* Creates balanced breathing room top and bottom */
+}
+
+.art-center-logo img {
+  width: 280px;            /* Exact proportion matching your target screenshot */
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15));
+}
+
 .auth-art h1{font-size:36px;margin:8px 0 12px}.auth-art .kick{color:var(--gold);font-weight:700}.auth-art p:last-child{color:#f3e3a8}
 .auth-form{background:var(--surface);padding:40px;border:1px solid var(--line);border-radius:0 14px 14px 0}
 .auth-form h2{font-size:26px;text-align:center}.auth-form>.muted{text-align:center;margin-bottom:20px}
@@ -173,8 +205,92 @@ body:not(.ready):not(.auth) main{visibility:hidden}
 .hist li{position:relative;padding:0 0 12px 12px}
 .hist li::before{content:"";position:absolute;left:-21px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--maroon);border:2px solid var(--surface)}
 .hist b{display:block}.hist small{color:var(--muted);display:block}.hist p{margin-top:2px;font-size:14px}
-.staffbox{margin:6px 0 4px;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--sunk)}
-.staffbox h3{margin-bottom:10px}
+
+
+/* ==========================================
+   Case Modal Tabs & Layout
+   i change this part to separate the tabs and make it more readable for staff 
+   -jm
+   ========================================== */
+
+/* Expand modal width for a better reading layout */
+.modal.wide {
+  max-width: 1000px;
+  width: 92vw;
+}
+
+/* Tab Header Navigation */
+.modal-tabs {
+  display: flex;
+  gap: 12px;
+  border-bottom: 2px solid var(--line);
+  margin-bottom: 20px;
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 10px 18px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.tab-btn:hover {
+  color: var(--ink);
+}
+
+.tab-btn.active {
+  color: var(--ink);
+  border-bottom-color: var(--gold); /* Uses UBridge gold highlight theme */
+}
+
+/* Hide inactive tabs */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Dedicated Panel Styling for Tab 2 (Update Case) */
+.staff-tab-container {
+  max-width: 650px;
+  margin: 0 auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.staff-tab-container h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.staff-tab-container .field {
+  margin-bottom: 16px;
+}
+
+.staff-tab-container details.proc {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+}
+
+  /* until here*/
+
 .field.check{flex-direction:row;flex-wrap:wrap;align-items:flex-start;gap:10px}
 .field.check input{width:22px;min-height:22px;height:22px;margin-top:2px;flex:none}
 .field.check label{flex:1;font-weight:500}
@@ -268,3 +384,152 @@ input[readonly]{background:var(--sunk);cursor:not-allowed}
 .mails summary{cursor:pointer}.mails details p{margin:8px 0 4px}
 .mailbody{white-space:pre-wrap;word-break:break-word;font:inherit;font-size:13.5px;background:var(--sunk);border-radius:8px;padding:10px;margin-top:6px;max-height:260px;overflow:auto}
 .modal textarea#mBody{min-height:260px;font-family:inherit;line-height:1.5}
+
+
+  /* this part start i change Jm */
+
+/* ======================================
+   COMPACT CASE MODAL
+   ====================================== */
+
+/* Stop the modal from filling the whole screen */
+.modal.wide {
+    width: min(900px, calc(100vw - 40px));
+    max-width: 900px;
+    max-height: 85vh;
+    padding: 22px 24px;
+    border-radius: 14px;
+}
+
+/* Keep the modal centered with comfortable space */
+.overlay {
+    padding: 24px;
+    overflow-y: auto;
+}
+
+/* Smaller progress tracker spacing */
+.steps {
+    margin: 14px 0 20px;
+}
+
+/* Compact tabs instead of three huge buttons */
+.modal-tabs {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 4px;
+    width: fit-content;
+    max-width: 100%;
+    margin: 18px 0 20px;
+    padding: 4px;
+    background: var(--sunk);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow-x: auto;
+}
+
+.tab-btn {
+    flex: 0 0 auto;
+    min-height: 38px;
+    padding: 8px 14px;
+    font-size: 13px;
+    gap: 7px;
+    border-radius: 7px;
+}
+
+.tab-btn.active {
+    background: var(--surface);
+    color: var(--maroon);
+    border: 1px solid var(--line);
+    border-bottom: 2px solid var(--gold);
+    box-shadow: none;
+}
+
+[data-theme="dark"] .tab-btn.active {
+    color: var(--gold);
+}
+
+/* Make the update form narrower */
+.staff-tab-container {
+    max-width: 650px;
+    padding: 22px 24px;
+    border-radius: 12px;
+}
+
+/* Reduce unnecessary form spacing */
+.staff-tab-container .field {
+    margin-bottom: 15px;
+    gap: 5px;
+}
+
+.staff-tab-container input,
+.staff-tab-container select {
+    min-height: 42px;
+}
+
+.staff-tab-container textarea {
+    min-height: 95px;
+}
+
+/* Keep the footer compact */
+.modal > .actions {
+    margin-top: 18px;
+    padding-top: 14px;
+    gap: 8px;
+}
+
+.modal > .actions .btn {
+    min-height: 38px;
+    padding: 8px 14px;
+    font-size: 14px;
+}
+
+/* Slightly tighter case details layout */
+.case-grid {
+    gap: 20px;
+}
+
+.case-side {
+    padding-left: 18px;
+}
+
+.case-main dl {
+    grid-template-columns: 115px minmax(0, 1fr);
+    gap: 9px 12px;
+}
+
+/* Smaller screens */
+@media (max-width: 650px) {
+    .modal.wide {
+        width: calc(100vw - 20px);
+        max-height: 92vh;
+        padding: 16px;
+    }
+
+    .overlay {
+        padding: 10px;
+    }
+
+    .modal-tabs {
+        width: 100%;
+    }
+
+    .tab-btn {
+        padding: 8px 10px;
+    }
+
+    .staff-tab-container {
+        padding: 18px 14px;
+    }
+
+    .case-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .case-side {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+        padding: 16px 0 0;
+    }
+}
+  /* this part end i change Jm */
