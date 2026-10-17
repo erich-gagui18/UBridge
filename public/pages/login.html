@@ -1,90 +1,16 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sign in UBridge</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' x='0' fill='%236b1a1c'/%3E%3Ctext x='16' y='22' font-size='15' font-weight='800' text-anchor='middle' fill='%23d9bd45' font-family='Arial'%3EUB%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="../assets/css/styles.css">
-</head>
-<body data-page="login" class="auth">
-  <button class="icon-btn theme" id="themeBtn" aria-label="Toggle dark mode"></button>
-  <a class="skip" href="#email">Skip to sign-in form</a>
-
-  <div class="auth-wrap">
-    <!-- Left Section (Maroon Banner) -->
-   <section class="auth-art">
-  <!-- Top Title -->
-  <div class="brand">
-    <div>
-      SAEP Complaint
-      <small>University of Batangas - Lipa Campus</small>
-    </div>
-  </div>
-
-  <!-- Center Logo -->
-  <div class="art-center-logo">
-    <img src="../assets/image/Logo 1.png" alt="UBridge Logo">
-  </div>
-
-  <!-- Bottom Details -->
-  <div>
-    <p class="kick">Student Affairs &amp; External Programs</p>
-    <h1>A record for every concern raised on campus</h1>
-    <p>File it once, track every stage from your dashboard. Ask the handbook before it becomes a case.</p>
-  </div>
-</section>
-
-    <!-- Right Section (Login Form) -->
-    <section class="auth-form">
-      <h2 id="ttl">Welcome back</h2>
-      <p class="muted">Choose your role, then sign in with your UB account.</p>
-
-      <div class="roles" role="group" aria-label="Role">
-        <button type="button" data-role="faculty" aria-pressed="false">Faculty</button>
-        <button type="button" id="staffTab" data-role="staff" aria-pressed="false">SAEP Staff</button>
-        <button type="button" data-role="student" aria-pressed="true">Student</button>
-      </div>
-
-      <form id="f" novalidate>
-        <div class="field" id="nameF" hidden>
-          <label for="name">Full name</label>
-          <input id="name" maxlength="120" autocomplete="name" placeholder="Juan M. Dela Cruz">
-          <p class="err" id="eName"></p>
-        </div>
-
-        <div class="field">
-          <label for="email">University email</label>
-          <input id="email" type="email" maxlength="254" autocomplete="username" placeholder="name@ub.edu.ph" aria-describedby="eEmail">
-          <p class="err" id="eEmail"></p>
-        </div>
-
-        <div class="field">
-          <label for="pw">Password</label>
-          <div class="pw">
-            <input id="pw" type="password" maxlength="128" autocomplete="current-password" aria-describedby="ePw">
-            <button type="button" id="showPw" aria-label="Show password">Show</button>
-          </div>
-          <p class="err" id="ePw"></p>
-        </div>
-
-        <p class="err" id="eForm" role="alert"></p>
-        <button type="button" class="link" id="resend" hidden>Resend verification email</button>
-        <button class="btn primary block" id="go">Sign in</button>
-      </form>
-
-      <p class="center">
-        <span id="swTxt">No account yet?</span> 
-        <a href="#" id="signup">Sign up</a>
-      </p>
-
-      <div class="or">or</div>
-      <button class="btn block" id="google" type="button">Continue with Google</button>
-
-      <p class="hint">Use your @ub.edu.ph account. SAEP Staff access is assigned by the office.</p>
-    </section>
-  </div>
-
-  <script type="module" src="../assets/js/pages/login.js"></script>
-</body>
-</html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in · UBridge</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%236b1a1c'/%3E%3Ctext x='16' y='22' font-size='15' font-weight='800' text-anchor='middle' fill='%23d9bd45' font-family='Arial'%3EUB%3C/text%3E%3C/svg%3E"><link rel="stylesheet" href="../assets/css/styles.css"></head>
+<body data-page="login" class="auth"><button class="icon-btn theme" id="themeBtn" aria-label="Toggle dark mode"></button>
+<a class="skip" href="#email">Skip to sign-in form</a><div class="auth-wrap">
+<section class="auth-art"><div class="brand"><span class="logo">UB</span><div>SAEP Complaint<small>University of Batangas – Lipa Campus</small></div></div>
+<div><p class="kick">Student Affairs &amp; External Programs</p><h1>A record for every concern raised on campus</h1><p>File it once, track every stage from your dashboard. Ask the handbook before it becomes a case.</p></div></section>
+<section class="auth-form"><h2 id="ttl">Welcome back</h2><p class="muted">Choose your role, then sign in with your UB account.</p>
+<div class="roles" role="group" aria-label="Role"><button type="button" data-role="faculty" aria-pressed="false">Faculty</button><button type="button" id="staffTab" data-role="staff" aria-pressed="false">SAEP Staff</button><button type="button" data-role="student" aria-pressed="true">Student</button></div>
+<form id="f" novalidate>
+<div class="field" id="nameF" hidden><label for="name">Full name</label><input id="name" maxlength="120" autocomplete="name" placeholder="Juan M. Dela Cruz"><p class="err" id="eName"></p></div>
+<div class="field"><label for="email">University email</label><input id="email" type="email" maxlength="254" autocomplete="username" placeholder="name@ub.edu.ph" aria-describedby="eEmail"><p class="err" id="eEmail"></p></div>
+<div class="field"><label for="pw">Password</label><div class="pw"><input id="pw" type="password" maxlength="128" autocomplete="current-password" aria-describedby="ePw"><button type="button" id="showPw" aria-label="Show password">Show</button></div><p class="err" id="ePw"></p></div>
+<p class="err" id="eForm" role="alert"></p><button type="button" class="link" id="resend" hidden>Resend verification email</button><button class="btn primary block" id="go">Sign in</button></form>
+<p class="center"><span id="swTxt">No account yet?</span> <a href="#" id="signup">Sign up</a></p>
+<div class="or">or</div><button class="btn block" id="google" type="button">Continue with Google</button>
+<p class="hint">Use your @ub.edu.ph account. SAEP Staff access is assigned by the office.</p></section></div>
+<script type="module" src="../assets/js/pages/login.js"></script></body></html>
