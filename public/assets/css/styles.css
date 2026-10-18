@@ -289,7 +289,7 @@ body:not(.ready):not(.auth) main{visibility:hidden}
   border-top: 1px dashed var(--line);
 }
 
-  /* until here*/
+  /* until here*/  
 
 .field.check{flex-direction:row;flex-wrap:wrap;align-items:flex-start;gap:10px}
 .field.check input{width:22px;min-height:22px;height:22px;margin-top:2px;flex:none}
@@ -533,3 +533,403 @@ input[readonly]{background:var(--sunk);cursor:not-allowed}
     }
 }
   /* this part end i change Jm */
+
+  
+/* ==========================================
+   UBRIDGE AUTH PAGE — RESPONSIVE + ANIMATED
+   Append at the bottom of styles.css
+   ========================================== */
+
+/* Center the login card within the available screen */
+body.auth {
+  min-height: 100vh;
+  min-height: 100svh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: 20px;
+}
+
+/* Responsive split-screen container */
+.auth .auth-wrap {
+  --slide-time: 780ms;
+  --slide-ease: cubic-bezier(0.76, 0, 0.24, 1);
+
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+  width: min(1280px, 100%);
+  height: min(760px, calc(100svh - 40px));
+  min-height: 600px;
+  max-width: none;
+
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+
+  box-shadow:
+    0 24px 70px rgba(55, 20, 20, 0.10),
+    0 3px 12px rgba(55, 20, 20, 0.04);
+}
+
+/* Shared panel animation */
+.auth .auth-art,
+.auth .auth-form {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+
+  transition:
+    transform var(--slide-time) var(--slide-ease),
+    border-radius var(--slide-time) ease;
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Brand panel */
+.auth .auth-art {
+  z-index: 2;
+  grid-column: 1;
+  grid-row: 1;
+
+  border-radius: 19px 0 0 19px;
+  overflow: hidden;
+  transform: translateX(0);
+}
+
+/* Form panel */
+.auth .auth-form {
+  z-index: 1;
+  grid-column: 2;
+  grid-row: 1;
+
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: clamp(24px, 3.2vw, 48px);
+
+  border-radius: 0 19px 19px 0;
+  transform: translateX(0);
+}
+
+/* ------------------------------------------
+   SIGN-UP: panels exchange positions smoothly
+   ------------------------------------------ */
+
+.auth .auth-wrap.is-signup .auth-art {
+  transform: translateX(100%);
+  border-radius: 0 19px 19px 0;
+}
+
+.auth .auth-wrap.is-signup .auth-form {
+  transform: translateX(-100%);
+  border-radius: 19px 0 0 19px;
+}
+
+/* ------------------------------------------
+   FLOATING UB LOGO
+   ------------------------------------------ */
+
+.auth .art-center-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth .art-center-logo img {
+  display: block;
+  max-width: min(100%, 230px);
+  max-height: 240px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+
+  transform-origin: center;
+  animation: ubLogoFloat 4s ease-in-out infinite;
+
+  filter: drop-shadow(0 12px 12px rgba(0, 0, 0, 0.12));
+}
+
+/* Subtle logo glow and floating motion */
+.auth .art-center-logo {
+  animation: ubLogoGlow 5s ease-in-out infinite;
+}
+
+@keyframes ubLogoFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes ubLogoGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 0 rgba(217, 189, 69, 0));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 14px rgba(217, 189, 69, 0.16));
+  }
+}
+
+/* ------------------------------------------
+   FORM INTERACTIONS
+   ------------------------------------------ */
+
+.auth .roles button,
+.auth .auth-form .btn,
+.auth .auth-form a,
+.auth .pw button {
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.auth .roles button:hover {
+  filter: brightness(0.97);
+}
+
+.auth .auth-form .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 18px rgba(107, 26, 28, 0.14);
+}
+
+.auth .auth-form .btn:active {
+  transform: translateY(0);
+}
+
+.auth .auth-form input {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.auth .auth-form input:focus-visible,
+.auth .auth-form button:focus-visible,
+.auth .auth-form a:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* ------------------------------------------
+   MEDIUM SCREENS
+   ------------------------------------------ */
+
+@media (max-width: 900px) {
+  body.auth {
+    padding: 14px;
+  }
+
+  .auth .auth-wrap {
+    width: 100%;
+    height: min(740px, calc(100svh - 28px));
+    min-height: 560px;
+  }
+
+  .auth .auth-art {
+    padding: 26px;
+  }
+
+  .auth .auth-art h1 {
+    font-size: clamp(24px, 3vw, 32px);
+  }
+
+  .auth .art-center-logo img {
+    max-width: 190px;
+    max-height: 210px;
+  }
+
+  .auth .auth-form {
+    padding: 26px;
+  }
+}
+
+/* ------------------------------------------
+   MOBILE: stack panels; avoid overlap
+   ------------------------------------------ */
+
+@media (max-width: 650px) {
+  body.auth {
+    display: block;
+    padding: 0;
+  }
+
+  .auth .auth-wrap {
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+    height: auto;
+    min-height: 100svh;
+    margin: 0;
+
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .auth .auth-art,
+  .auth .auth-form {
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: auto;
+    overflow: visible;
+
+    transform: none !important;
+    transition: none;
+    border-radius: 0 !important;
+  }
+
+  .auth .auth-art {
+    min-height: 290px;
+    padding: 24px;
+    gap: 18px;
+  }
+
+  .auth .art-center-logo img {
+    max-width: 125px;
+    max-height: 135px;
+  }
+
+  .auth .auth-art h1 {
+    font-size: 25px;
+  }
+
+  .auth .auth-form {
+    padding: 28px 22px 36px;
+  }
+
+  .auth .auth-wrap.is-signup .auth-art,
+  .auth .auth-wrap.is-signup .auth-form {
+    transform: none !important;
+  }
+}
+
+/* Short laptop screens: allow scrolling instead of clipping */
+@media (max-height: 650px) and (min-width: 651px) {
+  body.auth {
+    display: block;
+    padding: 16px;
+  }
+
+  .auth .auth-wrap {
+    height: auto;
+    min-height: 580px;
+    margin: 0 auto;
+  }
+}
+
+/* Accessibility: respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .auth .auth-art,
+  .auth .auth-form,
+  .auth .art-center-logo,
+  .auth .art-center-logo img,
+  .auth .roles button,
+  .auth .auth-form .btn,
+  .auth .auth-form a,
+  .auth .pw button {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+
+/* ==========================================
+   PAGE OPENING ANIMATION
+   ========================================== */
+
+@keyframes ubPageEntrance {
+  from {
+    opacity: 0;
+    translate: 0 22px;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes ubFormEntrance {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* The complete card appears smoothly on page load */
+.auth .auth-wrap {
+  animation: ubPageEntrance 750ms cubic-bezier(.2, .7, .2, 1) both;
+}
+
+/* Form contents appear shortly after the card */
+.auth .auth-form h2,
+.auth .auth-form > .muted,
+.auth .auth-form .roles,
+.auth .auth-form form,
+.auth .auth-form .center,
+.auth .auth-form .or,
+.auth .auth-form #google,
+.auth .auth-form .hint {
+  animation: ubFormEntrance 500ms ease-out both;
+}
+
+.auth .auth-form h2 {
+  animation-delay: 120ms;
+}
+
+.auth .auth-form > .muted {
+  animation-delay: 180ms;
+}
+
+.auth .auth-form .roles {
+  animation-delay: 240ms;
+}
+
+.auth .auth-form form {
+  animation-delay: 300ms;
+}
+
+.auth .auth-form .center,
+.auth .auth-form .or {
+  animation-delay: 360ms;
+}
+
+.auth .auth-form #google,
+.auth .auth-form .hint {
+  animation-delay: 420ms;
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .auth .auth-wrap,
+  .auth .auth-form h2,
+  .auth .auth-form > .muted,
+  .auth .auth-form .roles,
+  .auth .auth-form form,
+  .auth .auth-form .center,
+  .auth .auth-form .or,
+  .auth .auth-form #google,
+  .auth .auth-form .hint {
+    animation: none !important;
+  }
+}
