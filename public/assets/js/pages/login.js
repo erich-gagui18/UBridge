@@ -8,6 +8,7 @@ $('#signup').onclick = e => {
   if (up && role === 'staff') $('[data-role=student]').click();
   $('#ttl').textContent = up ? 'Create your account' : 'Welcome back'; $('#go').textContent = up ? 'Create account' : 'Sign in';
   $('#swTxt').textContent = up ? 'Already have an account?' : 'No account yet?'; e.target.textContent = up ? 'Sign in' : 'Sign up'; $('#pw').autocomplete = up ? 'new-password' : 'current-password'; $('#eForm').textContent = '';
+  document.querySelector('.auth-wrap')?.classList.toggle('is-signup', up);
 };
 const flag = (id, msg, inp) => { $('#' + id).textContent = msg; inp.setAttribute('aria-invalid', !!msg); return !msg; };
 const busy = on => { $('#go').disabled = $('#google').disabled = on; $('#go').textContent = on ? 'Please wait…' : up ? 'Create account' : 'Sign in'; };

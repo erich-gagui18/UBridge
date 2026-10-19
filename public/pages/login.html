@@ -86,27 +86,5 @@
   </div>
 
   <script type="module" src="../assets/js/pages/login.js"></script>
-
-  <script>
-  (() => {
-    const wrap = document.querySelector('.auth-wrap');
-    const signupLink = document.getElementById('signup');
-    const nameField = document.getElementById('nameF');
-
-    if (!wrap || !signupLink || !nameField) return;
-
-    signupLink.addEventListener('click', () => {
-      /*
-       * Let the existing login.js switch the form mode first.
-       * Then match the panel position to the form's actual state.
-       */
-      setTimeout(() => {
-        wrap.classList.toggle('is-signup', !nameField.hidden);
-      }, 0);
-    });
-  })();
-</script>
-</body>
-</html>
 </body>
 </html>

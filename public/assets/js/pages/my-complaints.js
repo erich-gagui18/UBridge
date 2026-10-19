@@ -284,6 +284,28 @@ document.addEventListener('click', function (event) {
 
 /* until here*/
 
+  const paintModal = () => {
+    if (!cur?.m || cur.dirty) return;
+    const c = data.find((x) => x.id === cur.id);
+    if (!c) return;
+    const modalEl = cur.m.el.querySelector('.modal');
+    const activeTab = modalEl?.querySelector('.tab-btn.active')?.dataset.tab;
+    cur.m.set(modalHtml(c));
+    modalEl.classList.add('wide');
+    if (activeTab) {
+      const btn = modalEl.querySelector(`.tab-btn[data-tab="${activeTab}"]`);
+      const panel = modalEl.querySelector(`#tab-${activeTab}`);
+      if (btn && panel) {
+        modalEl.querySelectorAll('.tab-btn').forEach((tab) => {
+          const on = tab === btn;
+          tab.classList.toggle('active', on);
+          tab.setAttribute('aria-selected', String(on));
+        });
+        modalEl.querySelectorAll('.tab-content').forEach((p) => p.classList.toggle('active', p === panel));
+      }
+    }
+  };
+
   const save = async () => {
     const c = data.find((x) => x.id === cur.id), el = cur.m.el, v = (s) => el.querySelector(s)?.value ?? '';
     const status = v('#ns'), hearingDate = status === 'hearing' ? v('#hd') : (c.hearingDate || ''), resolution = status === 'resolved' ? v('#rs').trim() : (c.resolution || ''), remark = v('#rm').trim();
