@@ -12,33 +12,28 @@
   <a class="skip" href="#email">Skip to sign-in form</a>
 
   <div class="auth-wrap">
-    <!-- Left Section (Maroon Banner) -->
-   <section class="auth-art">
-  <!-- Top Title -->
-  <div class="brand">
-    <div>
-      SAEP Complaint
-      <small>University of Batangas - Lipa Campus</small>
-    </div>
-  </div>
+    <section class="auth-art">
+      <div class="brand">
+        <div>
+          SAEP Complaint
+          <small>University of Batangas - Lipa Campus</small>
+        </div>
+      </div>
 
-  <!-- Center Logo -->
-  <div class="art-center-logo">
-    <img src="../assets/image/Logo 1.png" alt="UBridge Logo">
-  </div>
+      <div class="art-center-logo">
+        <img src="../assets/image/Logo 1.png" alt="UBridge Logo">
+      </div>
 
-  <!-- Bottom Details -->
-  <div>
-    <p class="kick">Student Affairs &amp; External Programs</p>
-    <h1>A record for every concern raised on campus</h1>
-    <p>File it once, track every stage from your dashboard. Ask the handbook before it becomes a case.</p>
-  </div>
-</section>
+      <div>
+        <p class="kick">Student Affairs &amp; External Programs</p>
+        <h1>A record for every concern raised on campus</h1>
+        <p>File it once, track every stage from your dashboard. Ask the handbook before it becomes a case.</p>
+      </div>
+    </section>
 
-    <!-- Right Section (Login Form) -->
     <section class="auth-form">
       <h2 id="ttl">Welcome back</h2>
-      <p class="muted">Choose your role, then sign in with your UB account.</p>
+      <p class="muted" id="sub">Choose your role, then sign in with your UB account.</p>
 
       <div class="roles" role="group" aria-label="Role">
         <button type="button" data-role="faculty" aria-pressed="false">Faculty</button>
@@ -74,7 +69,7 @@
       </form>
 
       <p class="center">
-        <span id="swTxt">No account yet?</span> 
+        <span id="swTxt">No account yet?</span>
         <a href="#" id="signup">Sign up</a>
       </p>
 
@@ -86,27 +81,5 @@
   </div>
 
   <script type="module" src="../assets/js/pages/login.js"></script>
-
-  <script>
-  (() => {
-    const wrap = document.querySelector('.auth-wrap');
-    const signupLink = document.getElementById('signup');
-    const nameField = document.getElementById('nameF');
-
-    if (!wrap || !signupLink || !nameField) return;
-
-    signupLink.addEventListener('click', () => {
-      /*
-       * Let the existing login.js switch the form mode first.
-       * Then match the panel position to the form's actual state.
-       */
-      setTimeout(() => {
-        wrap.classList.toggle('is-signup', !nameField.hidden);
-      }, 0);
-    });
-  })();
-</script>
-</body>
-</html>
 </body>
 </html>

@@ -558,8 +558,7 @@ body.auth {
 
   position: relative;
   isolation: isolate;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  display: block;
 
   width: min(1280px, 100%);
   height: min(760px, calc(100svh - 40px));
@@ -581,7 +580,10 @@ body.auth {
 /* Shared panel animation */
 .auth .auth-art,
 .auth .auth-form {
-  position: relative;
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
   min-width: 0;
   min-height: 0;
   box-sizing: border-box;
@@ -596,27 +598,25 @@ body.auth {
 
 /* Brand panel */
 .auth .auth-art {
+  left: 0;
   z-index: 2;
-  grid-column: 1;
-  grid-row: 1;
 
   border-radius: 19px 0 0 19px;
   overflow: hidden;
-  transform: translateX(0);
+  transform: translate3d(0, 0, 0);
 }
 
 /* Form panel */
 .auth .auth-form {
+  left: 50%;
   z-index: 1;
-  grid-column: 2;
-  grid-row: 1;
 
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: clamp(24px, 3.2vw, 48px);
 
   border-radius: 0 19px 19px 0;
-  transform: translateX(0);
+  transform: translate3d(0, 0, 0);
 }
 
 /* ------------------------------------------
@@ -624,12 +624,12 @@ body.auth {
    ------------------------------------------ */
 
 .auth .auth-wrap.is-signup .auth-art {
-  transform: translateX(100%);
+  transform: translate3d(100%, 0, 0);
   border-radius: 0 19px 19px 0;
 }
 
 .auth .auth-wrap.is-signup .auth-form {
-  transform: translateX(-100%);
+  transform: translate3d(-100%, 0, 0);
   border-radius: 19px 0 0 19px;
 }
 
@@ -783,8 +783,12 @@ body.auth {
 
   .auth .auth-art,
   .auth .auth-form {
+    position: relative;
+    left: auto;
+    top: auto;
     flex: 0 0 auto;
     width: 100%;
+    height: auto;
     min-height: auto;
     overflow: visible;
 
@@ -815,6 +819,10 @@ body.auth {
   .auth .auth-wrap.is-signup .auth-art,
   .auth .auth-wrap.is-signup .auth-form {
     transform: none !important;
+  }
+
+  .auth .auth-wrap.is-signup .auth-form {
+    order: -1;
   }
 }
 

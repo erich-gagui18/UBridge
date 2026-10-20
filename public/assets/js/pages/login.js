@@ -6,9 +6,14 @@ $('#showPw').onclick = e => { const p = $('#pw'), show = p.type === 'password'; 
 $('#signup').onclick = e => {
   e.preventDefault(); up = !up; $('#nameF').hidden = !up; $('#staffTab').hidden = up;
   if (up && role === 'staff') $('[data-role=student]').click();
-  $('#ttl').textContent = up ? 'Create your account' : 'Welcome back'; $('#go').textContent = up ? 'Create account' : 'Sign in';
-  $('#swTxt').textContent = up ? 'Already have an account?' : 'No account yet?'; e.target.textContent = up ? 'Sign in' : 'Sign up'; $('#pw').autocomplete = up ? 'new-password' : 'current-password'; $('#eForm').textContent = '';
-  document.querySelector('.auth-wrap')?.classList.toggle('is-signup', up);
+  $('#ttl').textContent = up ? 'Create your account' : 'Welcome back';
+  $('#sub').textContent = up ? 'Choose your role, then create your UB account.' : 'Choose your role, then sign in with your UB account.';
+  $('#go').textContent = up ? 'Create account' : 'Sign in';
+  $('#swTxt').textContent = up ? 'Already have an account?' : 'No account yet?';
+  e.target.textContent = up ? 'Sign in' : 'Sign up';
+  $('#pw').autocomplete = up ? 'new-password' : 'current-password';
+  $('#eForm').textContent = '';
+  $('.auth-wrap').classList.toggle('is-signup', up);
 };
 const flag = (id, msg, inp) => { $('#' + id).textContent = msg; inp.setAttribute('aria-invalid', !!msg); return !msg; };
 const busy = on => { $('#go').disabled = $('#google').disabled = on; $('#go').textContent = on ? 'Please wait…' : up ? 'Create account' : 'Sign in'; };
