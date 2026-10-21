@@ -83,18 +83,46 @@ export const UB = (() => {
 
   return {
     // dom / format
-    $, $$, esc, icon, skel, fmt, fmtTs, todayPH, chip, STATUS, ORDER,
+    $,
+    $$,
+    esc,
+    icon,
+    skel,
+    fmt,
+    fmtTs,
+    todayPH,
+    chip,
+    STATUS,
+    ORDER,
     // local storage (per user)
-    load: local.load, save: local.save, drop: local.drop,
+    load: local.load,
+    save: local.save,
+    drop: local.drop,
     // ui
-    toast, modal, confirm: confirmDlg, copy, bindTheme: (btn) => bindTheme(btn, local),
+    toast,
+    modal,
+    confirm: confirmDlg,
+    copy,
+    bindTheme: (btn) => bindTheme(btn, local),
     // session
-    session: () => me, isStaff, ready, logout,
-    get me() { return me; },
+    session: () => me,
+    isStaff,
+    ready,
+    logout,
+    get me() {
+      return me;
+    },
     // config flags
-    CONTACT, PRIVACY_VERSION, USE_STORAGE,
+    CONTACT,
+    PRIVACY_VERSION,
+    USE_STORAGE,
     // auth
-    DOMAIN: authSvc.DOMAIN, signIn: authSvc.signIn, signUp: authSvc.signUp, google: authSvc.google, resendVerification: authSvc.resendVerification, authMsg: authSvc.authMsg,
+    DOMAIN: authSvc.DOMAIN,
+    signIn: authSvc.signIn,
+    signUp: authSvc.signUp,
+    google: authSvc.google,
+    resendVerification: authSvc.resendVerification,
+    authMsg: authSvc.authMsg,
     // data
     watchCases: (onData, onError) => cases.watchCases(me, onData, onError),
     watchHistory: cases.watchHistory,
@@ -105,12 +133,33 @@ export const UB = (() => {
     updateCase: (c, change) => cases.updateCase(me, c, change),
     evidenceUrl: cases.evidenceUrl,
     loadEvidence: cases.loadEvidence,
-    combobox, openViewer, shrink, toDataUrl, MAX_INLINE, countUp, stagger, progress,
-    loadOffenses, syncOffenses, venuesOf, degClass, DEGREES, OTHER_OFFENSE, offenseLabel: cases.offenseLabel,
+    combobox,
+    openViewer,
+    shrink,
+    toDataUrl,
+    MAX_INLINE,
+    countUp,
+    stagger,
+    progress,
+    loadOffenses,
+    syncOffenses,
+    venuesOf,
+    degClass,
+    DEGREES,
+    OTHER_OFFENSE,
+    offenseLabel: cases.offenseLabel,
     // profile + course/department pickers
-    isComplete: profileSvc.isComplete, missingFields: profileSvc.missingFields, PHONE: profileSvc.PHONE,
-    saveProfile: async (v) => { me = await profileSvc.saveProfile(me, v); return me; },
-    loadAcademics, pickerHtml, pairPicker,
-    proc, mail,
+    isComplete: profileSvc.isComplete,
+    missingFields: profileSvc.missingFields,
+    PHONE: profileSvc.PHONE,
+    saveProfile: async (v) => {
+      me = await profileSvc.saveProfile(me, v);
+      return me;
+    },
+    loadAcademics,
+    pickerHtml,
+    pairPicker,
+    proc,
+    mail,
   };
 })();

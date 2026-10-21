@@ -17,7 +17,14 @@ export const tokens = (s) =>
       .match(/[a-z0-9]+/g) || []
   )
     .filter((w) => !STOP.has(w))
-    .map((w) => (w.length <= 3 ? w : w.replace(/sses$/, 'ss').replace(/(?<!s)s$/, '').slice(0, 6)));
+    .map((w) =>
+      w.length <= 3
+        ? w
+        : w
+            .replace(/sses$/, 'ss')
+            .replace(/(?<!s)s$/, '')
+            .slice(0, 6),
+    );
 
 export function buildIndex(chunks) {
   const docs = chunks.map((c) => ({ ...c, toks: tokens(`${c.section} ${c.title || ''} ${c.text}`) }));
@@ -31,11 +38,14 @@ export function buildIndex(chunks) {
 export function search({ docs, df, avg }, question) {
   const q = [...new Set(tokens(question))];
   if (!docs.length || !q.length) return [];
-  const N = docs.length, k1 = 1.4, b = 0.75;
+  const N = docs.length,
+    k1 = 1.4,
+    b = 0.75;
   const scored = docs.map((d) => {
     const tf = new Map();
     d.toks.forEach((t) => tf.set(t, (tf.get(t) || 0) + 1));
-    let s = 0, matched = 0;
+    let s = 0,
+      matched = 0;
     for (const t of q) {
       const f = tf.get(t);
       if (!f) continue;
@@ -48,7 +58,10 @@ export function search({ docs, df, avg }, question) {
   const need = Math.max(1, Math.ceil(q.length * 0.34));
   const hits = scored.filter((x) => x.s > 0 && x.matched >= need).sort((a, c) => c.s - a.s);
   const top = hits[0]?.s || 0;
-  return hits.filter((x) => x.s >= top * 0.35).slice(0, TOP_K).map((x) => x.d);
+  return hits
+    .filter((x) => x.s >= top * 0.35)
+    .slice(0, TOP_K)
+    .map((x) => x.d);
 }
 
 export const RRF_K = 60;
@@ -56,13 +69,18 @@ export const RRF_K = 60;
 export function fuse(rankings, limit = TOP_K, k = RRF_K) {
   const scores = new Map();
   for (const ranking of rankings) ranking.forEach((id, i) => scores.set(id, (scores.get(id) || 0) + 1 / (k + i + 1)));
-  return [...scores.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit).map(([id]) => id);
+  return [...scores.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([id]) => id);
 }
 
 export function mergeHits({ docs }, keywordDocs, semanticIds) {
   if (!semanticIds) return keywordDocs;
   const byId = new Map(docs.map((d) => [d.id, d]));
-  return fuse([keywordDocs.map((d) => d.id), semanticIds]).map((id) => byId.get(id)).filter(Boolean);
+  return fuse([keywordDocs.map((d) => d.id), semanticIds])
+    .map((id) => byId.get(id))
+    .filter(Boolean);
 }
 
 export async function contentHash(chunks) {

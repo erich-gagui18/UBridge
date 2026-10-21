@@ -10,7 +10,14 @@ const NEEDS = {
   faculty: ['name', 'dept', 'contact'],
   staff: ['name', 'position', 'contact'],
 };
-const LABEL = { name: 'full name', sid: 'student number', dept: 'department', course: 'course', contact: 'contact number', position: 'position' };
+const LABEL = {
+  name: 'full name',
+  sid: 'student number',
+  dept: 'department',
+  course: 'course',
+  contact: 'contact number',
+  position: 'position',
+};
 
 const bad = (p, k) => {
   const v = String(p?.[k] ?? '').trim();
@@ -29,7 +36,11 @@ export async function saveProfile(me, v) {
   const clean = Object.fromEntries(Object.entries(v).map(([k, x]) => [k, String(x ?? '').trim()]));
   await updateDoc(doc(db, 'users', me.uid), { ...clean, profileAt: serverTimestamp() });
   if (clean.name && auth.currentUser && auth.currentUser.displayName !== clean.name) {
-    try { await updateProfile(auth.currentUser, { displayName: clean.name }); } catch { /* the profile document is the source of truth */ }
+    try {
+      await updateProfile(auth.currentUser, { displayName: clean.name });
+    } catch {
+      /* the profile document is the source of truth */
+    }
   }
   return { ...me, ...clean };
 }

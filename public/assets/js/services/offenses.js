@@ -4,11 +4,17 @@ import { collection, getDocs, doc, writeBatch } from '../sdk/firestore.js';
 // Categories follow the UB College Student Discipline Policy (SAEP M, Revision No. 4): First, Second and Third Degree.
 export const DEGREES = ['First Degree', 'Second Degree', 'Third Degree'];
 /** The "Others" choice has no catalog entry or category: SAEP classifies it during assessment. */
-export const OTHER_OFFENSE = { id: 'others', type: 'Others (not listed)', category: 'Unclassified', sanction: '', section: '' };
+export const OTHER_OFFENSE = {
+  id: 'others',
+  type: 'Others (not listed)',
+  category: 'Unclassified',
+  sanction: '',
+  section: '',
+};
 const RANK = Object.fromEntries(DEGREES.map((d, i) => [d, i]));
 /** CSS class for a category chip (see styles.css .chip.deg1/.deg2/.deg3). Unknown or legacy categories get no colour class. */
 /** Where an offense can be filed: 'campus' or 'offcampus'. Catalog entries without `venues` (older ones) count as both. */
-export const venuesOf = (o) => o.venues?.length ? o.venues : ['campus', 'offcampus'];
+export const venuesOf = (o) => (o.venues?.length ? o.venues : ['campus', 'offcampus']);
 export const degClass = (category) => ['deg1', 'deg2', 'deg3'][DEGREES.indexOf(category)] || '';
 
 /** Offense catalog from Firestore (offenses/{id}): type, category, sanction, section. */
@@ -16,7 +22,12 @@ export async function loadOffenses() {
   const snap = await getDocs(collection(db, 'offenses'));
   return snap.docs
     .map((d) => ({ id: d.id, ...d.data() }))
-    .sort((a, b) => (RANK[a.category] ?? 9) - (RANK[b.category] ?? 9) || a.section.localeCompare(b.section, undefined, { numeric: true }) || a.type.localeCompare(b.type));
+    .sort(
+      (a, b) =>
+        (RANK[a.category] ?? 9) - (RANK[b.category] ?? 9) ||
+        a.section.localeCompare(b.section, undefined, { numeric: true }) ||
+        a.type.localeCompare(b.type),
+    );
 }
 
 /** Staff action: publish data/offenses.json to Firestore and remove catalog entries that are no longer in it. Returns {count, provisional, removed}. */

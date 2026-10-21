@@ -1,6 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { degreeOf, routeFor, routeOf, commissionOf, readProcess, describeChanges, processChanged, processRows } from '../public/assets/js/lib/process.js';
+import {
+  degreeOf,
+  routeFor,
+  routeOf,
+  commissionOf,
+  readProcess,
+  describeChanges,
+  processChanged,
+  processRows,
+} from '../public/assets/js/lib/process.js';
 
 // Minimal stand-in for the staff form: querySelector('#id') returns {value}, querySelectorAll returns the checked boxes.
 const form = (vals, checked = []) => ({
@@ -25,7 +34,9 @@ test('routing: First Degree to the department, everything else to the CDB', () =
 });
 
 test('the third First Degree commission is counted by the assessed degree', () => {
-  const a = { ...base, id: 'A', filed: '2026-09-01' }, b = { ...base, id: 'B', filed: '2026-09-15' }, c = { ...base, id: 'C', filed: '2026-10-01' };
+  const a = { ...base, id: 'A', filed: '2026-09-01' },
+    b = { ...base, id: 'B', filed: '2026-09-15' },
+    c = { ...base, id: 'C', filed: '2026-10-01' };
   assert.equal(commissionOf(c, [a, b, c]), 3);
   // a case SAEP assessed as Second Degree is not a First Degree commission
   assert.equal(commissionOf(c, [{ ...a, assessedDegree: 'Second Degree' }, b, c]), 2);
@@ -37,7 +48,11 @@ test('assessing as Second or Third Degree moves the case to the CDB; First Degre
   const r = readProcess(f, base, 'review');
   assert.equal(r.values.assessedDegree, 'Second Degree');
   assert.equal(r.values.route, 'cdb');
-  const r1 = readProcess(form({ '#pAssess': 'First Degree', '#pRoute': 'department', '#pAnswer': '', '#pHeld': '0' }), base, 'review');
+  const r1 = readProcess(
+    form({ '#pAssess': 'First Degree', '#pRoute': 'department', '#pAnswer': '', '#pHeld': '0' }),
+    base,
+    'review',
+  );
   assert.equal(r1.values.route, 'department');
 });
 
@@ -48,14 +63,25 @@ test('an earlier assessment is kept when the form is left on “not assessed”'
 });
 
 test('the department’s decision date is only read for department cases and is tracked as a change', () => {
-  const r = readProcess(form({ '#pAssess': '', '#pRoute': 'department', '#pAnswer': '', '#pHeld': '0', '#pDept': '2026-10-12' }), base, 'review');
+  const r = readProcess(
+    form({ '#pAssess': '', '#pRoute': 'department', '#pAnswer': '', '#pHeld': '0', '#pDept': '2026-10-12' }),
+    base,
+    'review',
+  );
   assert.equal(r.values.deptDecisionDate, '2026-10-12');
   assert.ok(processChanged(base, r.values));
   assert.ok(describeChanges(base, r.values).some((x) => /Department’s decision/.test(x)));
 });
 
 test('the notice needs at least 3 days to answer (policy, Process step 2)', () => {
-  const f = form({ '#pAssess': '', '#pRoute': 'cdb', '#pAnswer': '', '#pHeld': '0', '#pNotice': '2026-10-10', '#pDue': '2026-10-12' });
+  const f = form({
+    '#pAssess': '',
+    '#pRoute': 'cdb',
+    '#pAnswer': '',
+    '#pHeld': '0',
+    '#pNotice': '2026-10-10',
+    '#pDue': '2026-10-12',
+  });
   assert.match(readProcess(f, { ...base, route: 'cdb' }, 'review').error, /at least 3 days/);
 });
 
@@ -73,22 +99,66 @@ test('declining jurisdiction requires the case to be resolved', () => {
   const off = { ...base, venue: 'offcampus', jurisdiction: ['event'], route: 'cdb' };
   const f = form({ '#pAssess': '', '#pRoute': 'cdb', '#pAnswer': '', '#pHeld': '0', '#pJur': 'declined' });
   assert.match(readProcess(f, off, 'review').error, /outside the University’s jurisdiction is closed/);
-  const done = form({ '#pAssess': '', '#pRoute': 'cdb', '#pAnswer': '', '#pHeld': '0', '#pJur': 'declined', '#pDecDate': '2026-10-21' });
+  const done = form({
+    '#pAssess': '',
+    '#pRoute': 'cdb',
+    '#pAnswer': '',
+    '#pHeld': '0',
+    '#pJur': 'declined',
+    '#pDecDate': '2026-10-21',
+  });
   assert.equal(readProcess(done, off, 'resolved').values.jurisdictionReview, 'declined');
-  assert.ok(describeChanges(off, { ...off, jurisdictionReview: 'declined', assessedDegree: '', route: 'cdb', deptDecisionDate: '' }).some((x) => /outside the University’s jurisdiction/.test(x)));
+  assert.ok(
+    describeChanges(off, {
+      ...off,
+      jurisdictionReview: 'declined',
+      assessedDegree: '',
+      route: 'cdb',
+      deptDecisionDate: '',
+    }).some((x) => /outside the University’s jurisdiction/.test(x)),
+  );
 });
 
 test('describeChanges names the assessment in plain language', () => {
-  const n = { assessedDegree: 'Second Degree', route: 'cdb', deptDecisionDate: '', noticeDate: '', answerDue: '', answer: '', parentsNotified: '', conferenceMode: '', decisionDate: '', appeal: '' };
+  const n = {
+    assessedDegree: 'Second Degree',
+    route: 'cdb',
+    deptDecisionDate: '',
+    noticeDate: '',
+    answerDue: '',
+    answer: '',
+    parentsNotified: '',
+    conferenceMode: '',
+    decisionDate: '',
+    appeal: '',
+  };
   const notes = describeChanges({ ...base, offense: 'Unclassified' }, n);
   assert.ok(notes.some((x) => /assessed the offense as Second Degree/.test(x)));
 });
 
 test('the case rows show the assessment, and expulsion replaces the 5-day effectivity text', () => {
   assert.match(processRows({ ...base, offense: 'Unclassified' }), /Awaiting SAEP to assess/);
-  assert.match(processRows({ ...base, offense: 'Unclassified', assessedDegree: 'Third Degree', route: 'cdb' }), /Third Degree/);
-  const rows = processRows({ ...base, route: 'cdb', status: 'resolved', decisionDate: '2026-10-21', interventions: ['expulsion'] });
+  assert.match(
+    processRows({ ...base, offense: 'Unclassified', assessedDegree: 'Third Degree', route: 'cdb' }),
+    /Third Degree/,
+  );
+  const rows = processRows({
+    ...base,
+    route: 'cdb',
+    status: 'resolved',
+    decisionDate: '2026-10-21',
+    interventions: ['expulsion'],
+  });
   assert.match(rows, /Commission on Higher Education/);
   assert.doesNotMatch(rows, /effective 2026/);
-  assert.match(processRows({ ...base, route: 'cdb', status: 'resolved', decisionDate: '2026-10-21', interventions: ['reprimand'] }), /effective/);
+  assert.match(
+    processRows({
+      ...base,
+      route: 'cdb',
+      status: 'resolved',
+      decisionDate: '2026-10-21',
+      interventions: ['reprimand'],
+    }),
+    /effective/,
+  );
 });

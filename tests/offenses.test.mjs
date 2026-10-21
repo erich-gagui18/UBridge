@@ -10,7 +10,10 @@ test('every offense is listed for on campus, and venues are valid', () => {
   assert.equal(offenses.length, 45);
   for (const o of offenses) {
     assert.ok(Array.isArray(o.venues) && o.venues.length >= 1, o.id);
-    assert.ok(o.venues.every((v) => v === 'campus' || v === 'offcampus'), o.id);
+    assert.ok(
+      o.venues.every((v) => v === 'campus' || v === 'offcampus'),
+      o.id,
+    );
     assert.ok(o.venues.includes('campus'), `${o.id} must be available on campus`);
   }
 });
@@ -26,14 +29,16 @@ test('offenses the policy ties to the campus are not listed for off campus', () 
 
 test('offenses the policy says can happen online, off campus or anywhere are listed for off campus', () => {
   // First 3: posting "physically or online"; Second 4: "posted online"; 13: bullying "cyber"; 14: "inside the campus or outside"; 18: "social media"
-  for (const id of ['cdb-4-1-3', 'cdb-4-3-4', 'cdb-4-3-13', 'cdb-4-3-14', 'cdb-4-3-18']) assert.equal(off(by(id)), true, id);
+  for (const id of ['cdb-4-1-3', 'cdb-4-3-4', 'cdb-4-3-13', 'cdb-4-3-14', 'cdb-4-3-18'])
+    assert.equal(off(by(id)), true, id);
   // Third 4: assaulting personnel "whether in or off the campus"; 5: hazing; 6: sexual harassment
   for (const id of ['cdb-4-5-4', 'cdb-4-5-5', 'cdb-4-5-6']) assert.equal(off(by(id)), true, id);
 });
 
 test('the off-campus list is a proper, non-empty subset in every degree', () => {
   for (const d of ['First Degree', 'Second Degree', 'Third Degree']) {
-    const all = offenses.filter((o) => o.category === d), some = all.filter(off);
+    const all = offenses.filter((o) => o.category === d),
+      some = all.filter(off);
     assert.ok(some.length > 0 && some.length < all.length, d);
   }
   assert.equal(offenses.filter(off).length, 24);

@@ -31,11 +31,7 @@ const byNewest = (a, b) => String(b.filed || '').localeCompare(String(a.filed ||
 export function watchCases(me, onData, onError) {
   const c = collection(db, 'complaints');
   const q = me.role === 'staff' ? c : query(c, where('filedBy', '==', me.uid));
-  return onSnapshot(
-    q,
-    (snap) => onData(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort(byNewest)),
-    onError,
-  );
+  return onSnapshot(q, (snap) => onData(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort(byNewest)), onError);
 }
 
 /** Status history of one case, oldest first. */
@@ -97,7 +93,13 @@ export async function createComplaint(me, v, files) {
           await uploadBytes(ref(storage, path), f, { contentType: f.type });
           out.push({ name: f.name, path });
         } else {
-          await setDoc(doc(db, 'complaints', id, 'evidence', String(k + 1)), { name: f.name, type: f.type, size: f.size, data: await toDataUrl(f), createdAt: serverTimestamp() });
+          await setDoc(doc(db, 'complaints', id, 'evidence', String(k + 1)), {
+            name: f.name,
+            type: f.type,
+            size: f.size,
+            data: await toDataUrl(f),
+            createdAt: serverTimestamp(),
+          });
           out.push({ name: f.name, path: `evidence/${me.uid}/${id}/inline-${k + 1}` });
         }
       } catch {
@@ -114,7 +116,11 @@ export async function createComplaint(me, v, files) {
  * an audit entry (who changed it, staff only) and an in-app notification, so they succeed or fail together
  * (the Firestore rules require them).
  */
-export async function updateCase(me, c, { status, remark = '', hearingDate = '', resolution = '', process = {}, notes = [] }) {
+export async function updateCase(
+  me,
+  c,
+  { status, remark = '', hearingDate = '', resolution = '', process = {}, notes = [] },
+) {
   const n = (c.hCount || 0) + 1;
   const summary = notes.join('; ');
   remark = (remark && summary ? `${remark} (${summary})` : remark || summary).slice(0, 500);
@@ -143,8 +149,8 @@ export async function updateCase(me, c, { status, remark = '', hearingDate = '',
     status === c.status && notes.length
       ? `${c.id}: ${notes.join('. ')}.`.slice(0, 200)
       : status === 'hearing' && hearingDate
-      ? `${c.id} is now ${STATUS[status]}. Hearing date: ${hearingDate}.`
-      : `${c.id} is now ${STATUS[status]}.`;
+        ? `${c.id} is now ${STATUS[status]}. Hearing date: ${hearingDate}.`
+        : `${c.id} is now ${STATUS[status]}.`;
   b.set(doc(collection(db, 'notifications')), {
     uid: c.filedBy,
     caseId: c.id,
@@ -160,7 +166,8 @@ export const evidenceUrl = (path) => getDownloadURL(ref(storage, path));
 /** Open one evidence entry for the viewer: {url, type, revoke?}. Works for both storage modes. */
 export async function loadEvidence(c, f) {
   const base = f.path.split('/').pop();
-  if (!base.startsWith('inline-')) return { url: await evidenceUrl(f.path), type: /\.pdf$/i.test(f.name) ? 'application/pdf' : 'image/jpeg' };
+  if (!base.startsWith('inline-'))
+    return { url: await evidenceUrl(f.path), type: /\.pdf$/i.test(f.name) ? 'application/pdf' : 'image/jpeg' };
   const d = (await getDoc(doc(db, 'complaints', c.id, 'evidence', base.slice(7)))).data();
   if (d.type !== 'application/pdf') return { url: d.data, type: d.type };
   const url = URL.createObjectURL(dataUrlToBlob(d.data));
@@ -180,5 +187,12 @@ export function watchEmails(caseId, onData, onError) {
 /** Record that a staff member sent an email about a case (what was sent, to whom, by whom, when). */
 export const logEmail = (me, caseId, { kind, to, cc, subject, body }) =>
   addDoc(collection(db, 'complaints', caseId, 'emails'), {
-    kind, to, cc, subject, body, by: me.uid, byName: me.name, at: serverTimestamp(),
+    kind,
+    to,
+    cc,
+    subject,
+    body,
+    by: me.uid,
+    byName: me.name,
+    at: serverTimestamp(),
   });

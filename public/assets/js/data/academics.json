@@ -17,9 +17,7 @@
     {
       "id": "law",
       "name": "College of Law",
-      "courses": [
-        { "id": "jd", "name": "Juris Doctor", "code": "JD" }
-      ]
+      "courses": [{ "id": "jd", "name": "Juris Doctor", "code": "JD" }]
     },
     {
       "id": "ceas",
@@ -83,9 +81,7 @@
     {
       "id": "chs",
       "name": "College of Health Sciences",
-      "courses": [
-        { "id": "bsn", "name": "BS Nursing", "code": "BSN" }
-      ]
+      "courses": [{ "id": "bsn", "name": "BS Nursing", "code": "BSN" }]
     }
   ]
 }

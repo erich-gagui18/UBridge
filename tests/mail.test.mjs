@@ -3,10 +3,24 @@ import assert from 'node:assert/strict';
 import { draft, check, mailto, addresses, KINDS, MAILTO_LIMIT } from '../public/assets/js/lib/mail.js';
 
 const c = {
-  id: 'SAEP-2026-007', student: 'Dela Cruz, Juan', sid: '2407880', program: 'BS Psychology (BSPsych)', rDept: 'College of Education, Arts and Sciences',
-  rEmail: 'juan.delacruz@ub.edu.ph', type: 'Dress Code Violation', offense: 'First Degree', date: '2026-10-01', location: 'Room 204',
-  desc: 'SECRET DESCRIPTION OF WHAT HAPPENED IN THE ROOM', filedByName: 'Complainant Name', hearingDate: '2026-10-20', conferenceMode: 'online',
-  answerDue: '2026-10-05', interventions: ['reprimand', 'community'], resolution: 'Warning and community service.', decisionDate: '2026-10-21',
+  id: 'SAEP-2026-007',
+  student: 'Dela Cruz, Juan',
+  sid: '2407880',
+  program: 'BS Psychology (BSPsych)',
+  rDept: 'College of Education, Arts and Sciences',
+  rEmail: 'juan.delacruz@ub.edu.ph',
+  type: 'Dress Code Violation',
+  offense: 'First Degree',
+  date: '2026-10-01',
+  location: 'Room 204',
+  desc: 'SECRET DESCRIPTION OF WHAT HAPPENED IN THE ROOM',
+  filedByName: 'Complainant Name',
+  hearingDate: '2026-10-20',
+  conferenceMode: 'online',
+  answerDue: '2026-10-05',
+  interventions: ['reprimand', 'community'],
+  resolution: 'Warning and community service.',
+  decisionDate: '2026-10-21',
 };
 const me = { name: 'Staff One', position: 'SAEP Coordinator' };
 

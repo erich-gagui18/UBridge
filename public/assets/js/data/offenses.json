@@ -8,9 +8,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 1",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-1-2",
@@ -19,9 +17,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 2",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-1-3",
@@ -30,10 +26,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 3",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-1-4",
@@ -42,9 +35,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 4",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-1-5",
@@ -53,9 +44,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 5",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-1-6",
@@ -64,10 +53,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 6",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-1-7",
@@ -76,10 +62,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 7",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-1-8",
@@ -88,9 +71,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 8",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-1-9",
@@ -99,10 +80,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 9",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-1-10",
@@ -111,10 +89,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 10",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-1-11",
@@ -123,10 +98,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 11",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-1-12",
@@ -135,9 +107,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 12",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-1-13",
@@ -146,9 +116,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 13",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-1-14",
@@ -157,9 +125,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 14",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-1-15",
@@ -168,9 +134,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 15",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-1-16",
@@ -179,9 +143,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 16",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-1-17",
@@ -190,9 +152,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 17",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-1-18",
@@ -201,9 +161,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 18",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-1-19",
@@ -212,9 +170,7 @@
       "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
       "section": "First Degree Offenses, no. 19",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-3-1",
@@ -223,9 +179,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 1",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-3-2",
@@ -234,9 +188,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 2",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-3-3",
@@ -245,9 +197,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 3",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-3-4",
@@ -256,10 +206,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 4",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-3-5",
@@ -268,9 +215,7 @@
       "sanction": "University Censure; Disciplinary Probation; In case of vandalism, payment sufficient to restore the property to original state shall be required. Payment shall be assessed by MAGS Office to be paid to the Cashier’s Office; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 5",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-3-6",
@@ -279,10 +224,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 6",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-3-7",
@@ -291,10 +233,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 7",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-3-8",
@@ -303,10 +242,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 8",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-3-9",
@@ -315,9 +251,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 9",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-3-10",
@@ -326,9 +260,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 10",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-3-11",
@@ -337,10 +269,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 11",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-3-12",
@@ -349,10 +278,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 12",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-3-13",
@@ -361,10 +287,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 13",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-3-14",
@@ -373,10 +296,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 14",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-3-15",
@@ -385,9 +305,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 15",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-3-16",
@@ -396,10 +314,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 16",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-3-17",
@@ -408,10 +323,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 17",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-3-18",
@@ -420,10 +332,7 @@
       "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
       "section": "Second Degree Offenses, no. 18",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-5-1",
@@ -432,10 +341,7 @@
       "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion.",
       "section": "Third Degree Offenses, no. 1",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-5-2",
@@ -444,10 +350,7 @@
       "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion.",
       "section": "Third Degree Offenses, no. 2",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-5-3",
@@ -456,9 +359,7 @@
       "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion.",
       "section": "Third Degree Offenses, no. 3",
       "provisional": false,
-      "venues": [
-        "campus"
-      ]
+      "venues": ["campus"]
     },
     {
       "id": "cdb-4-5-4",
@@ -467,10 +368,7 @@
       "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion.",
       "section": "Third Degree Offenses, no. 4",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-5-5",
@@ -479,10 +377,7 @@
       "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion.",
       "section": "Third Degree Offenses, no. 5",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-5-6",
@@ -491,10 +386,7 @@
       "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion.",
       "section": "Third Degree Offenses, no. 6",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-5-7",
@@ -503,10 +395,7 @@
       "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion.",
       "section": "Third Degree Offenses, no. 7",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     },
     {
       "id": "cdb-4-5-8",
@@ -515,10 +404,7 @@
       "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion.",
       "section": "Third Degree Offenses, no. 8",
       "provisional": false,
-      "venues": [
-        "campus",
-        "offcampus"
-      ]
+      "venues": ["campus", "offcampus"]
     }
   ]
 }

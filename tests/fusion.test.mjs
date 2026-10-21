@@ -19,12 +19,18 @@ test('mergeHits returns the keyword hits untouched when the semantic service did
 });
 
 test('mergeHits lets semantic hits rescue a question with no keyword hits', () => {
-  assert.deepEqual(mergeHits({ docs }, [], ['D', 'B']).map((d) => d.id), ['D', 'B']);
+  assert.deepEqual(
+    mergeHits({ docs }, [], ['D', 'B']).map((d) => d.id),
+    ['D', 'B'],
+  );
 });
 
 test('mergeHits combines both rankings and ignores unknown ids', () => {
   const merged = mergeHits({ docs }, [docs[0], docs[1]], ['B', 'Z', 'C']);
-  assert.deepEqual(merged.map((d) => d.id), ['B', 'A', 'C']);
+  assert.deepEqual(
+    merged.map((d) => d.id),
+    ['B', 'A', 'C'],
+  );
 });
 
 test('contentHash matches the Python fingerprint used by the search service', async () => {

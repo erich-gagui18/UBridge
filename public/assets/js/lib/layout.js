@@ -40,9 +40,12 @@ function extras() {
       $('.privacy').remove();
     };
   }
-  const bar = $('#prog i'), top = $('.top'), up = $('#totop');
+  const bar = $('#prog i'),
+    top = $('.top'),
+    up = $('#totop');
   const onScroll = () => {
-    const h = document.documentElement, max = h.scrollHeight - h.clientHeight;
+    const h = document.documentElement,
+      max = h.scrollHeight - h.clientHeight;
     bar.style.width = (max > 0 ? (scrollY / max) * 100 : 0) + '%';
     top.classList.toggle('scrolled', scrollY > 4);
     up.hidden = scrollY < 400;
@@ -60,7 +63,8 @@ function extras() {
 
 function bell(me) {
   let items = [];
-  const btn = $('#bellBtn'), badge = $('#bellBadge');
+  const btn = $('#bellBtn'),
+    badge = $('#bellBadge');
   const paint = () => {
     const n = items.filter((x) => !x.read).length;
     badge.textContent = n > 9 ? '9+' : n;
@@ -105,7 +109,8 @@ function bell(me) {
 }
 
 export function shell({ me, local, isStaff, logout, missing = [] }) {
-  const page = document.body.dataset.page, staff = isStaff();
+  const page = document.body.dataset.page,
+    staff = isStaff();
   if (staff && page === 'file-complaint') return location.replace('dashboard.html');
   const nav = [
     ['dashboard', 'Dashboard', 'home'],
@@ -114,7 +119,8 @@ export function shell({ me, local, isStaff, logout, missing = [] }) {
     ['ai-guide', 'AI Guide', 'book'],
     ['profile', 'My profile', 'user'],
   ];
-  const main = $('#main'), app = $('#app');
+  const main = $('#main'),
+    app = $('#app');
   const roleLbl = { student: 'Student', faculty: 'Faculty', staff: 'SAEP Staff' }[me.role];
   app.className = 'shell';
   app.innerHTML = `<aside class="side" id="side" aria-label="Main navigation"><div class="brand"><span class="logo">UB</span><div>UBridge<small>SAEP Complaints</small></div></div>
@@ -125,7 +131,10 @@ export function shell({ me, local, isStaff, logout, missing = [] }) {
   $('.content').append(main);
   // Reminder on every page until the profile is complete (the profile page has its own, richer notice).
   if (missing.length && page !== 'profile') {
-    main.insertAdjacentHTML('afterbegin', `<div class="profile-nudge" role="status"><div><b>Complete your profile</b><span>Still needed: ${esc(missing.join(', '))}. It fills in your complaint form for you${staff ? '' : ' and is required before you can file'}.</span></div><a class="btn primary" href="profile.html">Update profile</a></div>`);
+    main.insertAdjacentHTML(
+      'afterbegin',
+      `<div class="profile-nudge" role="status"><div><b>Complete your profile</b><span>Still needed: ${esc(missing.join(', '))}. It fills in your complaint form for you${staff ? '' : ' and is required before you can file'}.</span></div><a class="btn primary" href="profile.html">Update profile</a></div>`,
+    );
   }
   bindTheme($('#themeBtn'), local);
   $('#outBtn').onclick = async () => {

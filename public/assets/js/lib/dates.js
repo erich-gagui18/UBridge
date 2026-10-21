@@ -14,15 +14,11 @@ export const yearPH = () => Number(todayPH().slice(0, 4));
 
 /** Format a YYYY-MM-DD string (a calendar date, not an instant). */
 export const fmt = (d) =>
-  d
-    ? new Date(d + 'T00:00').toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })
-    : '—';
+  d ? new Date(d + 'T00:00').toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
 
 /** Format a Firestore Timestamp. */
 export const fmtTs = (t) =>
-  t?.toDate
-    ? t.toDate().toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short', timeZone: TZ })
-    : '—';
+  t?.toDate ? t.toDate().toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short', timeZone: TZ }) : '—';
 
 /** Add whole days to a YYYY-MM-DD calendar date (no time zone involved). */
 export const addDays = (d, n) => {

@@ -9,7 +9,13 @@ const client = (over = {}) =>
 
 test('disabled without an https url, and never calls fetch', async () => {
   let called = false;
-  const c = createDenseClient({ url: '', getToken: async () => 'tok', fetchImpl: async () => { called = true; } });
+  const c = createDenseClient({
+    url: '',
+    getToken: async () => 'tok',
+    fetchImpl: async () => {
+      called = true;
+    },
+  });
   assert.equal(c.enabled, false);
   assert.equal(await c.search('q', EXPECT), null);
   assert.equal(await c.warm(), false);
@@ -21,7 +27,17 @@ test('sends the question with the bearer token and returns chunk ids', async () 
   let seen;
   const fetchImpl = async (url, init) => {
     seen = { url, init };
-    return { ok: true, json: async () => ({ handbookVersion: 'v1', handbookHash: 'h1', hits: [{ id: 'CDB-21', score: 0.9 }, { id: 'CDB-25', score: 0.8 }] }) };
+    return {
+      ok: true,
+      json: async () => ({
+        handbookVersion: 'v1',
+        handbookHash: 'h1',
+        hits: [
+          { id: 'CDB-21', score: 0.9 },
+          { id: 'CDB-25', score: 0.8 },
+        ],
+      }),
+    };
   };
   const ids = await client({ fetchImpl }).search('what is vandalism', EXPECT);
   assert.deepEqual(ids, ['CDB-21', 'CDB-25']);
@@ -33,17 +49,37 @@ test('sends the question with the bearer token and returns chunk ids', async () 
 test('ignores results built from a different handbook version or content', async () => {
   const c = client({ fetchImpl: ok({ handbookVersion: 'old', handbookHash: 'h1', hits: [{ id: 'CDB-01' }] }) });
   assert.equal(await c.search('q', EXPECT), null);
-  const edited = client({ fetchImpl: ok({ handbookVersion: 'v1', handbookHash: 'changed', hits: [{ id: 'CDB-01' }] }) });
+  const edited = client({
+    fetchImpl: ok({ handbookVersion: 'v1', handbookHash: 'changed', hits: [{ id: 'CDB-01' }] }),
+  });
   assert.equal(await edited.search('q', EXPECT), null);
   assert.equal(await edited.search('q', { version: 'v1' }), null);
 });
 
 test('returns null on HTTP errors, bad bodies, missing token and network failures', async () => {
   assert.equal(await client({ fetchImpl: async () => ({ ok: false }) }).search('q', EXPECT), null);
-  assert.equal(await client({ fetchImpl: ok({ handbookVersion: 'v1', handbookHash: 'h1' }) }).search('q', EXPECT), null);
+  assert.equal(
+    await client({ fetchImpl: ok({ handbookVersion: 'v1', handbookHash: 'h1' }) }).search('q', EXPECT),
+    null,
+  );
   assert.equal(await client({ getToken: async () => null, fetchImpl: ok({}) }).search('q', EXPECT), null);
-  assert.equal(await client({ getToken: async () => { throw new Error('x'); }, fetchImpl: ok({}) }).search('q', EXPECT), null);
-  assert.equal(await client({ fetchImpl: async () => { throw new Error('offline'); } }).search('q', EXPECT), null);
+  assert.equal(
+    await client({
+      getToken: async () => {
+        throw new Error('x');
+      },
+      fetchImpl: ok({}),
+    }).search('q', EXPECT),
+    null,
+  );
+  assert.equal(
+    await client({
+      fetchImpl: async () => {
+        throw new Error('offline');
+      },
+    }).search('q', EXPECT),
+    null,
+  );
 });
 
 test('gives up after the timeout so the keyword search is never held up', async () => {
@@ -55,5 +91,12 @@ test('gives up after the timeout so the keyword search is never held up', async 
 
 test('warm reports whether the service answered', async () => {
   assert.equal(await client({ fetchImpl: ok({}) }).warm(), true);
-  assert.equal(await client({ fetchImpl: async () => { throw new Error('x'); } }).warm(), false);
+  assert.equal(
+    await client({
+      fetchImpl: async () => {
+        throw new Error('x');
+      },
+    }).warm(),
+    false,
+  );
 });

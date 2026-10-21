@@ -20,17 +20,28 @@ export const MAILTO_LIMIT = 1900;
 export const LIMITS = { to: 300, cc: 300, subject: 200, body: 5000 };
 
 const IV = {
-  reprimand: 'Disciplinary reprimand', censure: 'University censure', probation: 'Disciplinary probation',
-  community: 'Community service', suspension: 'Suspension', exclusion: 'Exclusion', expulsion: 'Expulsion',
+  reprimand: 'Disciplinary reprimand',
+  censure: 'University censure',
+  probation: 'Disciplinary probation',
+  community: 'Community service',
+  suspension: 'Suspension',
+  exclusion: 'Exclusion',
+  expulsion: 'Expulsion',
 };
 const MODES = { 'face-to-face': 'Face-to-face', online: 'Online' };
 
 const offenseName = (c) => (c.offenseOther ? `${c.type}: ${c.offenseOther}` : c.type);
-const sign = (me) => `${me?.name || 'SAEP Office'}\n${me?.position || 'SAEP Office'}\nSAEP Office, University of Batangas – Lipa`;
+const sign = (me) =>
+  `${me?.name || 'SAEP Office'}\n${me?.position || 'SAEP Office'}\nSAEP Office, University of Batangas – Lipa`;
 // The degree is the one SAEP assessed (policy, Process step 1); until then, the one that follows from the filed offense.
 const degreeLabel = (c) => c.assessedDegree || (c.offense && c.offense !== 'Unclassified' ? c.offense : '');
 const caseBlock = (c) =>
-  [`Case no.: ${c.id}`, `Offense: ${offenseName(c)}${degreeLabel(c) ? ` (${degreeLabel(c)})` : ''}`, `Date of incident: ${fmt(c.date)}`, `Place: ${c.location}`].join('\n');
+  [
+    `Case no.: ${c.id}`,
+    `Offense: ${offenseName(c)}${degreeLabel(c) ? ` (${degreeLabel(c)})` : ''}`,
+    `Date of incident: ${fmt(c.date)}`,
+    `Place: ${c.location}`,
+  ].join('\n');
 const CONFIDENTIAL = 'This matter is confidential. Please do not share this message.';
 
 /**
@@ -95,7 +106,12 @@ ${CONFIDENTIAL}
 ${sign(me)}`;
   } else if (kind === 'decision') {
     const ivs = (c.interventions || []).map((k) => IV[k] || k);
-    const docs = ['Narrative report', 'Reflection', ...(ivs.includes('Community service') ? ['Attendance record for the community service'] : []), 'Photos (optional)'];
+    const docs = [
+      'Narrative report',
+      'Reflection',
+      ...(ivs.includes('Community service') ? ['Attendance record for the community service'] : []),
+      'Photos (optional)',
+    ];
     subject = `Conference summary and decision, case ${c.id}`;
     body = `${hi}
 
@@ -141,11 +157,16 @@ ${sign(me)}`;
 
 const EMAIL = /^[^@\s,;]+@[^@\s,;]+\.[^@\s,;]+$/;
 /** Split "a@x.com, b@y.com; c@z.com" into a clean list. */
-export const addresses = (s) => String(s || '').split(/[;,]/).map((x) => x.trim()).filter(Boolean);
+export const addresses = (s) =>
+  String(s || '')
+    .split(/[;,]/)
+    .map((x) => x.trim())
+    .filter(Boolean);
 
 /** A message for the first problem found, or '' when the draft can be sent. */
 export function check(d) {
-  const to = addresses(d.to), cc = addresses(d.cc);
+  const to = addresses(d.to),
+    cc = addresses(d.cc);
   if (!to.length) return 'Add at least one address in To.';
   const bad = [...to, ...cc].find((x) => !EMAIL.test(x));
   if (bad) return `“${bad}” is not a valid email address.`;
@@ -162,6 +183,10 @@ export function check(d) {
 /** mailto: link for a draft. */
 export function mailto(d) {
   const crlf = (s) => s.replace(/\r?\n/g, '\r\n');
-  const q = [d.cc && `cc=${addresses(d.cc).join(',')}`, `subject=${encodeURIComponent(d.subject)}`, d.body && `body=${encodeURIComponent(crlf(d.body))}`].filter(Boolean);
+  const q = [
+    d.cc && `cc=${addresses(d.cc).join(',')}`,
+    `subject=${encodeURIComponent(d.subject)}`,
+    d.body && `body=${encodeURIComponent(crlf(d.body))}`,
+  ].filter(Boolean);
   return `mailto:${addresses(d.to).join(',')}?${q.join('&')}`;
 }

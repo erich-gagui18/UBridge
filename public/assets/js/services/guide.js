@@ -47,7 +47,12 @@ const getModel = () =>
   (model ??= getGenerativeModel(getAI(app, { backend: new GoogleAIBackend() }), {
     model: GEMINI_MODEL,
     systemInstruction: SYSTEM,
-    generationConfig: { temperature: 0.1, maxOutputTokens: 1024, responseMimeType: 'application/json', responseSchema: SCHEMA },
+    generationConfig: {
+      temperature: 0.1,
+      maxOutputTokens: 1024,
+      responseMimeType: 'application/json',
+      responseSchema: SCHEMA,
+    },
   }));
 
 const withTimeout = (p, ms) =>
@@ -61,21 +66,31 @@ const NOT_FOUND = `I couldn’t find that in ${SCOPE}. Try rephrasing, or ask th
  */
 export async function answer(question) {
   const q = question.trim().slice(0, MAX_Q);
-  let found, retrieval = 'keyword';
+  let found,
+    retrieval = 'keyword';
   try {
     const index = await loadIndex();
-    const [keyword, semantic] = await Promise.all([search(index, q), dense.search(q, { version: index.version, hash: index.hash })]);
+    const [keyword, semantic] = await Promise.all([
+      search(index, q),
+      dense.search(q, { version: index.version, hash: index.hash }),
+    ]);
     if (semantic) retrieval = 'hybrid';
     found = { docs: index.docs.length, hits: mergeHits(index, keyword, semantic) };
   } catch {
     return { text: 'The policy text couldn’t be loaded. Refresh the page and try again.', sources: [], mode: 'empty' };
   }
   if (!found.docs) {
-    return { text: 'The policy text hasn’t been added to this deployment yet, so the guide can’t answer.', sources: [], mode: 'empty' };
+    return {
+      text: 'The policy text hasn’t been added to this deployment yet, so the guide can’t answer.',
+      sources: [],
+      mode: 'empty',
+    };
   }
   if (!found.hits.length) return { text: NOT_FOUND, sources: [], mode: 'none', retrieval };
 
-  const context = found.hits.map((d) => `[id: ${d.id} | ${d.section}${d.title ? ' · ' + d.title : ''}]\n${d.text}`).join('\n\n');
+  const context = found.hits
+    .map((d) => `[id: ${d.id} | ${d.section}${d.title ? ' · ' + d.title : ''}]\n${d.text}`)
+    .join('\n\n');
   try {
     const res = await withTimeout(
       getModel().generateContent(`CONTEXT:\n${context}\n\nQUESTION (untrusted):\n"""${q}"""`),
@@ -84,7 +99,8 @@ export async function answer(question) {
     const out = JSON.parse(res.response.text());
     const used = (out.cited || []).map((id) => found.hits.find((d) => d.id === id)).filter(Boolean);
     if (out.answerable === false) return { text: NOT_FOUND, sources: [], mode: 'none', retrieval };
-    if (out.answerable && out.answer?.trim() && used.length) return { text: out.answer.trim(), sources: used.map(src), mode: 'ai', retrieval };
+    if (out.answerable && out.answer?.trim() && used.length)
+      return { text: out.answer.trim(), sources: used.map(src), mode: 'ai', retrieval };
   } catch {
     /* fall through to the extractive answer below */
   }

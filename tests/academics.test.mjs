@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { courseLabel } from '../public/assets/js/services/academics.js';
 
-const { departments } = JSON.parse(readFileSync(new URL('../public/assets/js/data/academics.json', import.meta.url), 'utf8'));
+const { departments } = JSON.parse(
+  readFileSync(new URL('../public/assets/js/data/academics.json', import.meta.url), 'utf8'),
+);
 const courses = departments.flatMap((d) => d.courses.map((c) => ({ ...c, dept: d.id })));
 
 test('every department has a unique id, a name under 80 characters and at least one course', () => {
@@ -27,7 +29,28 @@ test('saved course labels fit the 60 character limit in firestore.rules', () => 
 
 test('every UBLC program in Student Handbook Revision No. 7 Section II is still selectable', () => {
   const codes = new Set(courses.map((c) => c.code));
-  const rev7 = ['BSA', 'BSBA-FM', 'BSBA-MM', 'BSBA-HRDM', 'BSCrim', 'BSPsych', 'BSEd-Eng', 'BSEd-SS', 'BSLM', 'BSSW', 'BECEd', 'BSCpE', 'BSIE', 'BSArch', 'BSIHM', 'BSTM', 'BSEntrep', 'BSREM', 'BSIT', 'BMMA'];
+  const rev7 = [
+    'BSA',
+    'BSBA-FM',
+    'BSBA-MM',
+    'BSBA-HRDM',
+    'BSCrim',
+    'BSPsych',
+    'BSEd-Eng',
+    'BSEd-SS',
+    'BSLM',
+    'BSSW',
+    'BECEd',
+    'BSCpE',
+    'BSIE',
+    'BSArch',
+    'BSIHM',
+    'BSTM',
+    'BSEntrep',
+    'BSREM',
+    'BSIT',
+    'BMMA',
+  ];
   for (const code of rev7) assert.ok(codes.has(code), code);
 });
 
@@ -42,14 +65,28 @@ const rev8 = {
   'College of Law': ['JD'],
   'College of Education, Arts and Sciences': ['BSLM', 'BSPsych', 'BSSW', 'BEEd', 'BECEd', 'BSEd-Eng', 'BSEd-SS', 'CTP'],
   'College of Criminal Justice Education': ['BSCrim', 'BSISM'],
-  'College of Management and Tourism': ['BSAIS', 'BSA', 'BSBA-FM', 'BSBA-HRDM', 'BSBA-MM', 'BSTM', 'BSREM', 'BSEntrep', 'BSHM', 'BSIHM'],
+  'College of Management and Tourism': [
+    'BSAIS',
+    'BSA',
+    'BSBA-FM',
+    'BSBA-HRDM',
+    'BSBA-MM',
+    'BSTM',
+    'BSREM',
+    'BSEntrep',
+    'BSHM',
+    'BSIHM',
+  ],
   'College of Engineering and Architecture': ['BSID', 'BSArch', 'BSCpE', 'BSIE'],
   'College of Information Technology, Entertainment and Communication': ['BSEMC', 'BSIT', 'BSCS', 'BMMA'],
   'College of Health Sciences': ['BSN'],
 };
 
 test('the colleges are the Revision No. 8 colleges, in handbook order', () => {
-  assert.deepEqual(departments.map((d) => d.name), Object.keys(rev8));
+  assert.deepEqual(
+    departments.map((d) => d.name),
+    Object.keys(rev8),
+  );
 });
 
 test('every Revision No. 8 program is listed under its own college', () => {

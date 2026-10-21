@@ -34,7 +34,8 @@ export function createDenseClient({ url = '', getToken, fetchImpl, timeoutMs = D
       if (!res.ok) return null;
       const out = await res.json();
       if (!expected.version || !expected.hash) return null;
-      if (out.handbookVersion !== expected.version || out.handbookHash !== expected.hash || !Array.isArray(out.hits)) return null;
+      if (out.handbookVersion !== expected.version || out.handbookHash !== expected.hash || !Array.isArray(out.hits))
+        return null;
       return out.hits.map((h) => h?.id).filter((id) => typeof id === 'string');
     } catch {
       return null;

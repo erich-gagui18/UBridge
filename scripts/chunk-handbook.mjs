@@ -25,7 +25,9 @@ const PREFIX = opt('--prefix', '');
 const HEADING = new RegExp(opt('--heading', '^\\s*(?:\\d+\\.\\d+\\s+\\S.{2,100}|[A-Z][A-Z0-9 ,&/()\\-]{5,100})\\s*$'));
 const files = args;
 if (!files.length) {
-  console.error('Usage: node scripts/chunk-handbook.mjs <policy.txt> [...] [--label "Shown source name"] [--prefix ID] [--out file] [--max 900] [--heading regex] [--version label]');
+  console.error(
+    'Usage: node scripts/chunk-handbook.mjs <policy.txt> [...] [--label "Shown source name"] [--prefix ID] [--out file] [--max 900] [--heading regex] [--version label]',
+  );
   process.exit(1);
 }
 
@@ -34,15 +36,27 @@ for (const file of files) {
   const stem = basename(file).replace(/\.[^.]+$/, '');
   const m = stem.match(/^section[-_ ]?([ivxlc]+)$/i);
   // section-VII.txt -> "Section VII"; any other name (cdb-manual.txt) -> words capitalised, short words upper-case ("CDB Manual").
-  const label = LABEL || (m
-    ? `Section ${m[1].toUpperCase()}`
-    : stem.split(/[-_ ]+/).filter(Boolean).map((w) => (w.length <= 3 ? w.toUpperCase() : w[0].toUpperCase() + w.slice(1))).join(' '));
+  const label =
+    LABEL ||
+    (m
+      ? `Section ${m[1].toUpperCase()}`
+      : stem
+          .split(/[-_ ]+/)
+          .filter(Boolean)
+          .map((w) => (w.length <= 3 ? w.toUpperCase() : w[0].toUpperCase() + w.slice(1)))
+          .join(' '));
   if (!label) throw new Error(`Cannot read a label from the file name: ${file}`);
   const roman = PREFIX || (m ? m[1].toUpperCase() : label.split(' ')[0].toUpperCase());
   const section = label;
-  let title = '', buf = [], seq = 0;
+  let title = '',
+    buf = [],
+    seq = 0;
   const flush = () => {
-    const paras = buf.join('\n').split(/\n\s*\n/).map((p) => p.replace(/\s+/g, ' ').trim()).filter(Boolean);
+    const paras = buf
+      .join('\n')
+      .split(/\n\s*\n/)
+      .map((p) => p.replace(/\s+/g, ' ').trim())
+      .filter(Boolean);
     let cur = '';
     const push = () => {
       if (!cur) return;
