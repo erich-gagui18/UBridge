@@ -24,6 +24,22 @@ const MODES = { '': 'Not set', 'face-to-face': 'Face-to-face', online: 'Online' 
 export const DEGREES = ['First Degree', 'Second Degree', 'Third Degree'];
 
 /**
+ * OFF-CAMPUS AND ONLINE OFFENSES (policy): the University may exercise jurisdiction over an offense committed off-campus
+ * and online only when at least one of these five grounds applies. The wording is the policy's.
+ */
+export const GROUNDS = [
+  { id: 'victim', label: 'The victim of such offense is a member of the campus community (student, faculty or staff)' },
+  { id: 'event', label: 'The offense occurred at a college or university sponsored-event' },
+  { id: 'status', label: 'The accused student used his or her status as a member of the University community to assist in the commission of the offense' },
+  { id: 'objectives', label: 'The offense seriously impairs the pursuit of the University’s objectives' },
+  { id: 'name', label: 'The offense tarnishes the good name of the school' },
+];
+export const VENUE_LABEL = { campus: 'On campus, in an online class or social media platform of the University, or at a University activity', offcampus: 'Off campus or online, outside University activities' };
+export const venueOf = (c) => c.venue || 'campus';
+export const JUR_REVIEW = { '': 'Pending SAEP review', confirmed: 'Within jurisdiction (confirmed by SAEP)', declined: 'Outside the University’s jurisdiction' };
+
+
+/**
  * Process step 1: SAEP initially assesses the degree of the offense. Until SAEP records an assessment, the degree is the
  * one that follows from the offense the complainant picked ('Unclassified' when they chose "Others").
  */
@@ -43,6 +59,11 @@ const row = (k, v) => `<dt>${k}</dt><dd>${v}</dd>`;
 /** Read-only summary rows shown to the filer and to staff. */
 export function processRows(c, { staff = false, commission = 0 } = {}) {
   const today = todayPH(), r = routeOf(c), out = [];
+  if (venueOf(c) === 'offcampus') {
+    const g = (c.jurisdiction || []).map((id) => GROUNDS.find((x) => x.id === id)?.label).filter(Boolean);
+    out.push(row('Place of offense', `Off campus or online${g.length ? `<ul class="grounds">${g.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}`));
+    out.push(row('Jurisdiction', `${esc(JUR_REVIEW[c.jurisdictionReview || ''])}`));
+  }
   if (c.assessedDegree) out.push(row('SAEP assessment', `${esc(c.assessedDegree)}${c.assessedDegree !== c.offense ? ` <small class="muted">· filed as ${esc(c.offense === 'Unclassified' ? 'Others (unclassified)' : c.offense)}</small>` : ''}`));
   else if (c.offense === 'Unclassified') out.push(row('SAEP assessment', 'Awaiting SAEP to assess the degree of the offense'));
   out.push(row('Handled by', esc(ROUTES[r]) + (staff && commission >= 3 && r === 'department' ? ' <small class="muted">· third commission: belongs with the CDB (First Degree Offenses)</small>' : staff && commission > 1 ? ` <small class="muted">· commission #${commission} for this respondent</small>` : '')));
@@ -75,6 +96,7 @@ export function processForm(c, { commission = 0 } = {}) {
   const filed = c.offense === 'Unclassified' ? 'Others (unclassified)' : c.offense;
   return `<details class="proc" open><summary>Case handling (College Student Discipline Policy)</summary>
     <div class="field"><label for="pAssess">SAEP assessment: degree of the offense</label><select id="pAssess"><option value="" ${c.assessedDegree ? '' : 'selected'}>Not assessed yet (filed as ${esc(filed)})</option>${DEGREES.map((d) => `<option value="${esc(d)}" ${d === c.assessedDegree ? 'selected' : ''}>${esc(d)}</option>`).join('')}</select><small class="muted">SAEP initially assesses the degree of every complaint (Process step 1). First Degree goes to the respondent’s department; Second and Third Degree go to the College Discipline Board, so choosing either moves the case to the CDB.</small></div>
+    ${venueOf(c) === 'offcampus' ? `<div class="field"><label for="pJur">Off-campus / online jurisdiction</label><select id="pJur">${Object.entries(JUR_REVIEW).map(([k, t]) => `<option value="${k}" ${k === (c.jurisdictionReview || '') ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select><small class="muted">The University may act on an offense committed off campus or online only when one of the grounds the complainant gave applies (policy, Off-Campus and Online Offenses). If none does, choose “Outside”, set the status to Resolved and explain in the decision note. The University’s decision may proceed independently of public prosecutors and it may refer the matter to the police.</small></div>` : ''}
     <div class="field"><label for="pRoute">Handled by</label><select id="pRoute" ${r === 'cdb' ? 'disabled' : ''}>${opts(ROUTES, r)}</select><small class="muted">${r === 'cdb' ? 'Already with SAEP / the College Discipline Board.' : commission >= 3 ? 'This is the respondent’s third First Degree commission, so it should go to the CDB.' : 'First Degree offenses are handled by the respondent’s department. Escalate for a repeat or a serious case.'}</small></div>
     <div class="cols tight"><div class="field"><label for="pNotice">Notice sent</label><input id="pNotice" type="date" value="${esc(c.noticeDate || '')}"></div>
     <div class="field"><label for="pDue">Answer due</label><input id="pDue" type="date" value="${esc(c.answerDue || '')}" ${c.noticeDate ? `min="${esc(addDays(c.noticeDate, ANSWER_DAYS))}"` : ''}></div></div>
@@ -100,6 +122,7 @@ export function readProcess(el, c, status) {
   const noticeDate = v('#pNotice'), answerDue = v('#pDue');
   const resolved = status === 'resolved';
   const values = {
+    jurisdictionReview: el.querySelector('#pJur') ? v('#pJur') : c.jurisdictionReview || '',
     assessedDegree: v('#pAssess') || c.assessedDegree || '', deptDecisionDate: el.querySelector('#pDept') ? v('#pDept') : c.deptDecisionDate || '',
     route: v('#pRoute') || routeOf(c), noticeDate, answerDue, answer: v('#pAnswer'), parentsNotified: v('#pParents'),
     conferenceMode: v('#pMode'), conferencesHeld: Math.max(0, Math.min(20, Number(v('#pHeld')) || 0)),
@@ -109,6 +132,7 @@ export function readProcess(el, c, status) {
   };
   // Second and Third Degree offenses are handled by the College Discipline Board (Process step 1).
   if (values.assessedDegree && values.assessedDegree !== 'First Degree') values.route = 'cdb';
+  if (values.jurisdictionReview === 'declined' && !resolved) return { error: 'A complaint outside the University’s jurisdiction is closed: set the status to Resolved and explain why in the decision note.' };
   if (answerDue && !noticeDate) return { error: 'Set the notice date before the answer due date.' };
   if (noticeDate && answerDue && answerDue < addDays(noticeDate, ANSWER_DAYS)) return { error: `The respondent must have at least ${ANSWER_DAYS} days to answer (due ${fmt(addDays(noticeDate, ANSWER_DAYS))} or later).` };
   if (resolved && !values.decisionDate) return { error: 'Enter the decision date.' };
@@ -120,6 +144,7 @@ export function readProcess(el, c, status) {
 /** Short plain-language list of what changed in handling, used for the history remark and the notification. */
 export function describeChanges(c, n) {
   const out = [];
+  if ((n.jurisdictionReview || '') !== (c.jurisdictionReview || '')) out.push(n.jurisdictionReview === 'declined' ? 'SAEP found the offense outside the University’s jurisdiction' : n.jurisdictionReview === 'confirmed' ? 'SAEP confirmed the University’s jurisdiction' : 'Jurisdiction review reset');
   if (n.assessedDegree && n.assessedDegree !== (c.assessedDegree || '')) out.push(`SAEP assessed the offense as ${n.assessedDegree}`);
   if (n.route !== routeOf(c)) out.push('Escalated to SAEP / the College Discipline Board');
   if (n.deptDecisionDate && n.deptDecisionDate !== (c.deptDecisionDate || '')) out.push('Department’s decision received by the CDB');
@@ -134,7 +159,7 @@ export function describeChanges(c, n) {
 
 /** True when any handling field differs from what is saved. */
 export const processChanged = (c, n) =>
-  n.assessedDegree !== (c.assessedDegree || '') || n.deptDecisionDate !== (c.deptDecisionDate || '') || n.route !== routeOf(c) || n.noticeDate !== (c.noticeDate || '') || n.answerDue !== (c.answerDue || '') || n.answer !== (c.answer || '') ||
+  (n.jurisdictionReview || '') !== (c.jurisdictionReview || '') || n.assessedDegree !== (c.assessedDegree || '') || n.deptDecisionDate !== (c.deptDecisionDate || '') || n.route !== routeOf(c) || n.noticeDate !== (c.noticeDate || '') || n.answerDue !== (c.answerDue || '') || n.answer !== (c.answer || '') ||
   n.parentsNotified !== (c.parentsNotified || '') || n.conferenceMode !== (c.conferenceMode || '') || n.conferencesHeld !== (Number(c.conferencesHeld) || 0) ||
   n.decisionDate !== (c.decisionDate || '') || n.appeal !== (c.appeal || '') || n.appealDate !== (c.appealDate || '') ||
   [...n.interventions].sort().join() !== [...(c.interventions || [])].sort().join();

@@ -941,3 +941,19 @@ body.auth {
     animation: none !important;
   }
 }
+/* where it happened / jurisdiction grounds */
+fieldset.venue{border:0;padding:0;margin:0 0 14px;min-width:0}
+fieldset.venue legend{padding:0;margin-bottom:6px}
+.opt{display:flex;gap:10px;align-items:flex-start;margin:6px 0;font-weight:500}
+.opt input{width:auto;min-height:0;margin-top:4px;flex:none}
+#jurBox{margin-top:8px}
+.grounds{margin:4px 0 0;padding-left:18px}
+
+/* single place question: segmented toggle + one adaptive location box */
+.place-toggle{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border-radius:12px;background:var(--sunk);margin-bottom:8px}
+.place-toggle input{position:absolute;opacity:0;width:1px;min-height:0}
+.place-toggle label{display:grid;place-items:center;text-align:center;padding:9px 8px;border-radius:9px;cursor:pointer;font-weight:700;font-size:14px;color:var(--muted);transition:background .2s,color .2s,box-shadow .2s}
+.place-toggle label:has(input:checked){background:var(--surface);color:var(--maroon);box-shadow:0 1px 6px rgba(0,0,0,.15)}
+.place-toggle label:has(input:focus-visible){outline:2px solid var(--gold);outline-offset:1px}
+[data-theme=dark] .place-toggle label:has(input:checked){color:var(--gold)}
+#jurBox{margin-top:10px;animation:cbin .2s ease both}

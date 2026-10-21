@@ -21,7 +21,7 @@ import * as mail from './lib/mail.js';
 import * as profileSvc from './services/profile.js';
 import { loadAcademics } from './services/academics.js';
 import { pickerHtml, pairPicker } from './lib/picker.js';
-import { loadOffenses, syncOffenses, degClass, DEGREES, OTHER_OFFENSE } from './services/offenses.js';
+import { loadOffenses, syncOffenses, venuesOf, degClass, DEGREES, OTHER_OFFENSE } from './services/offenses.js';
 
 export const UB = (() => {
   let me = null;
@@ -106,7 +106,7 @@ export const UB = (() => {
     evidenceUrl: cases.evidenceUrl,
     loadEvidence: cases.loadEvidence,
     combobox, openViewer, shrink, toDataUrl, MAX_INLINE, countUp, stagger, progress,
-    loadOffenses, syncOffenses, degClass, DEGREES, OTHER_OFFENSE, offenseLabel: cases.offenseLabel,
+    loadOffenses, syncOffenses, venuesOf, degClass, DEGREES, OTHER_OFFENSE, offenseLabel: cases.offenseLabel,
     // profile + course/department pickers
     isComplete: profileSvc.isComplete, missingFields: profileSvc.missingFields, PHONE: profileSvc.PHONE,
     saveProfile: async (v) => { me = await profileSvc.saveProfile(me, v); return me; },

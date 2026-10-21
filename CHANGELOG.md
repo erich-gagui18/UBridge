@@ -13,7 +13,10 @@
 
 ### Added
 - **SAEP assessment** (Process step 1): staff record the degree of the offense; Second and Third Degree move the case to the CDB. New fields `assessedDegree` and `deptDecisionDate` (rules, UI, report, data dictionary).
-- `tests/process.test.mjs` (9 tests), new mail tests, and 6 new rules tests.
+- **Off-campus and online offenses** (policy section of that name): the complaint form asks where it happened; an off-campus or online offense needs at least one of the policy's five grounds, shown to staff, who record a jurisdiction review (confirmed, or outside, which closes the case). New fields `venue`, `jurisdiction`, `jurisdictionReview`; the staff report gets a "Place" column.
+- The filing form asks the place **once**: a two-way toggle (on campus or a University activity / off campus or online) sets the context, and the single location box changes its hint and placeholder to match (room or building, or place or platform). The five jurisdiction grounds appear only for off campus.
+- **The offense list follows the place.** On campus shows all 45 offenses; off campus or online shows the 24 that can happen away from the campus (new `venues` field in the catalog, rules and tests). Changing the place clears a pick that no longer fits and says so. The split is our reading of the policy; see `docs/cdb-alignment.md`. Press **Sync offense list** after deploying.
+- `tests/process.test.mjs` (11 tests), new mail tests, and 14 new rules tests.
 
 ### Notes
 - Deploy Firestore rules with Hosting: `firebase deploy --only hosting,firestore:rules`, then press **Sync offense list**.

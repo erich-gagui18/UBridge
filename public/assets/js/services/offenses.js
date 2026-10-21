@@ -7,6 +7,8 @@ export const DEGREES = ['First Degree', 'Second Degree', 'Third Degree'];
 export const OTHER_OFFENSE = { id: 'others', type: 'Others (not listed)', category: 'Unclassified', sanction: '', section: '' };
 const RANK = Object.fromEntries(DEGREES.map((d, i) => [d, i]));
 /** CSS class for a category chip (see styles.css .chip.deg1/.deg2/.deg3). Unknown or legacy categories get no colour class. */
+/** Where an offense can be filed: 'campus' or 'offcampus'. Catalog entries without `venues` (older ones) count as both. */
+export const venuesOf = (o) => o.venues?.length ? o.venues : ['campus', 'offcampus'];
 export const degClass = (category) => ['deg1', 'deg2', 'deg3'][DEGREES.indexOf(category)] || '';
 
 /** Offense catalog from Firestore (offenses/{id}): type, category, sanction, section. */
@@ -32,6 +34,7 @@ export async function syncOffenses() {
       category: o.category,
       sanction: o.sanction || '',
       section: o.section || '',
+      venues: o.venues?.length ? o.venues : ['campus', 'offcampus'],
     }),
   );
   await b.commit();

@@ -59,6 +59,25 @@ test('the notice needs at least 3 days to answer (policy, Process step 2)', () =
   assert.match(readProcess(f, { ...base, route: 'cdb' }, 'review').error, /at least 3 days/);
 });
 
+test('off-campus cases list the grounds and the review; on-campus cases show neither', () => {
+  const off = { ...base, venue: 'offcampus', jurisdiction: ['victim', 'name'] };
+  const rows = processRows(off);
+  assert.match(rows, /Off campus or online/);
+  assert.match(rows, /member of the campus community/);
+  assert.match(rows, /good name of the school/);
+  assert.match(rows, /Pending SAEP review/);
+  assert.doesNotMatch(processRows(base), /Place of offense/);
+});
+
+test('declining jurisdiction requires the case to be resolved', () => {
+  const off = { ...base, venue: 'offcampus', jurisdiction: ['event'], route: 'cdb' };
+  const f = form({ '#pAssess': '', '#pRoute': 'cdb', '#pAnswer': '', '#pHeld': '0', '#pJur': 'declined' });
+  assert.match(readProcess(f, off, 'review').error, /outside the University’s jurisdiction is closed/);
+  const done = form({ '#pAssess': '', '#pRoute': 'cdb', '#pAnswer': '', '#pHeld': '0', '#pJur': 'declined', '#pDecDate': '2026-10-21' });
+  assert.equal(readProcess(done, off, 'resolved').values.jurisdictionReview, 'declined');
+  assert.ok(describeChanges(off, { ...off, jurisdictionReview: 'declined', assessedDegree: '', route: 'cdb', deptDecisionDate: '' }).some((x) => /outside the University’s jurisdiction/.test(x)));
+});
+
 test('describeChanges names the assessment in plain language', () => {
   const n = { assessedDegree: 'Second Degree', route: 'cdb', deptDecisionDate: '', noticeDate: '', answerDue: '', answer: '', parentsNotified: '', conferenceMode: '', decisionDate: '', appeal: '' };
   const notes = describeChanges({ ...base, offense: 'Unclassified' }, n);

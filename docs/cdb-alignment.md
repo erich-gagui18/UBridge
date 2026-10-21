@@ -16,6 +16,8 @@ Source: UB document **SAEP M, Revision No. 4**, "7.0 College Student Discipline 
 | Process 2: notice has a copy of the complaint with the statement of the complainant and witnesses, not less than 3 days, assistance of counsel, answer filed with the SAEP Office **or** emailed, **general denial** if no answer | email only, no denial wording | Notice and follow-up drafts rewritten. The notice has a `[attached / included below]` placeholder staff must resolve. Rules still enforce at least 3 days |
 | Process 4: two missed conferences waive rights and the Board decides | same | Shown in the form hint and the schedule email |
 | Process 6: copies of the decision go to the respondent, parent/guardian, **Registrar's Office, VPSAS**, Office of the President; effective in 5 days unless appealed (not for expulsion); President's decision immediately executory except expulsion | respondent, parent, President | Decision email and form hint list all recipients; expulsion shows the CHED approval note instead of an effectivity date |
+| OFF-CAMPUS AND ONLINE OFFENSES: the University may act on an off-campus or online offense only if the victim is a member of the campus community, it happened at a sponsored event, the accused used their University status, it seriously impairs the University's objectives, or it tarnishes the school's good name | not modelled | The complaint form asks **where it happened**. Off campus or online needs at least one of the five grounds (word for word from the policy; enforced by the rules). Staff record a **jurisdiction review**: confirmed, or outside (which must close the case with a reason). The dialog, report and history show it |
+| The policy applies offenses to the campus, online classes, social media and University activities, and reaches off-campus and online offenses only on the five grounds | not modelled | The offense dropdown follows the place the complainant picks: **on campus** lists all 45 offenses; **off campus or online** lists only the 24 that can happen away from the campus. The rules reject an offense that does not fit the place. **This split is our reading of the policy, not a list printed in it** (see below) |
 | Process 5: suspension means reporting daily to the SAEP Office, readmission conditions in writing by the CDB; community service coordinated with the External Programs Coordinator | same | Added to the decision email when those interventions are chosen |
 
 ## Matches already in place
@@ -24,9 +26,12 @@ Source: UB document **SAEP M, Revision No. 4**, "7.0 College Student Discipline 
 - 10-day decision deadline, 5-day effectivity and appeal date, parents notified when under 18, case history and audit trail.
 - AI Guide answers only from the policy text and cites the part used.
 
+## How the offenses were split by place
+The policy never labels offenses on or off campus. The split in `offenses.json` (`venues`) uses one rule: an offense is **on campus only** when the policy ties it to the campus, the school's facilities or a class (for example smoking "inside the campus", brawl or gambling "inside the campus", littering "anywhere in the campus", uniform, canteen, vandalism of school property: 21 offenses). It is also listed for **off campus and online** when the policy says "online", "cyber", "social media", "in or off the campus", "inside the campus or outside", or the act is not place-bound (bullying, hazing, sexual harassment, assault of personnel, forgery, false reports, fraud, academic dishonesty: 24 offenses). Please have the SAEP Office confirm it; to change an entry, edit `venues` in `offenses.json` and press **Sync offense list**.
+
 ## Not modelled (decide with the adviser and SAEP)
 - A login for departments: First Degree conferences held by departments happen outside UBridge.
-- Off-campus and online jurisdiction: UBridge records the place and description but does not test the five jurisdiction conditions.
+- Off-campus and online jurisdiction is recorded and reviewed by SAEP, but UBridge cannot verify the grounds the complainant ticks. The policy's other two statements (the decision may proceed independently of prosecutors; the University may refer matters to the police) appear as notes only.
 - Withholding and revocation of awards and privileges (Process step 7): recorded only in the resolution note.
 - CDB voting (at least 2 members) and separate opinions: kept in the written decision, not in the system.
 - The F-SAEP-07 form itself: its layout is not in the policy PDF, so the form fields follow what the team already mapped.

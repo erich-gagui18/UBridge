@@ -38,9 +38,15 @@ import { UB } from '../app.js';
     offenses = [];
   }
   // Searchable list (type to filter, arrow keys + Enter to pick), grouped by degree.
+  // The list follows the place chosen below: on campus shows every offense; off campus or online shows only the
+  // offenses that can happen away from the campus (offenses.json `venues`). "Others" is always available.
+  const itemsFor = (v) => [
+    ...offenses.filter((o) => UB.venuesOf(o).includes(v)).map((o) => ({ id: o.id, label: o.type, group: o.category, hint: o.section })),
+    { id: UB.OTHER_OFFENSE.id, label: 'Others', group: 'Not in the list', hint: 'Describe it yourself' },
+  ];
   const cb = UB.combobox({
     input: $('#typeQ'), hidden: $('#type'), list: $('#typeList'),
-    items: [...offenses.map((o) => ({ id: o.id, label: o.type, group: o.category, hint: o.section })), { id: UB.OTHER_OFFENSE.id, label: 'Others', group: 'Not in the list', hint: 'Describe it yourself' }],
+    items: itemsFor('campus'),
   });
   if (!offenses.length) $('#noCatalog').hidden = false;
   const chosen = () => ($('#type').value === UB.OTHER_OFFENSE.id ? UB.OTHER_OFFENSE : offenses.find((o) => o.id === $('#type').value));
@@ -74,13 +80,51 @@ import { UB } from '../app.js';
     type: (v) => !v && 'Select the type of offense',
     offenseOther: (v) => $('#type').value === UB.OTHER_OFFENSE.id && v.length < 3 && 'Describe the offense in a few words',
     date: (v) => (!v ? 'Choose the date it happened' : v > today && 'The date can’t be in the future'),
-    location: (v) => !v && 'Enter where it happened',
+    location: (v) => !v && PLACE[venue()].err,
     desc: (v) => v.length < 30 && 'Add at least 30 characters so SAEP can review it',
     signature: (v) => (!v ? 'Type your full name to sign' : norm(v) !== norm(me.name) && 'Type your name exactly as shown under Complainant'),
   };
   const data = () => ({ ...Object.fromEntries(F.map((k) => [k, $('#' + k).value.trim()])), resp: pp.value() });
-  const store = () => UB.save('draft', data());
+  const venue = () => document.querySelector('[name=venue]:checked')?.value || 'campus';
+  const grounds = () => [...document.querySelectorAll('[name=ground]:checked')].map((x) => x.value);
+  // One question, not two: the toggle sets the context and the single location box adapts to it.
+  const PLACE = {
+    campus: { aria: 'Room or building', ph: 'Room 204, A Building', hint: 'The room, building or University activity, including online classes and University social media.', err: 'Enter the room, building or activity' },
+    offcampus: { aria: 'Place or platform', ph: 'e.g. Facebook group chat, a mall, a street', hint: 'Name the place or the online platform where it happened.', err: 'Enter the place or platform' },
+  };
+  const showVenue = () => {
+    const v = venue(), t = PLACE[v];
+    $('#jurBox').hidden = v !== 'offcampus';
+    $('#eJur').textContent = '';
+    $('#location').placeholder = t.ph;
+    $('#location').setAttribute('aria-label', t.aria);
+    $('#locHint').textContent = t.hint;
+    refreshOffenses();
+  };
+  // Re-filter the offense list for the chosen place. A pick that no longer fits is cleared, and the person is told why.
+  function refreshOffenses() {
+    const v = venue(), list = itemsFor(v), n = list.length - 1;
+    cb.setItems(list);
+    $('#typeHint').textContent = offenses.length
+      ? `Showing the ${n} offense${n === 1 ? '' : 's'} that can happen ${v === 'campus' ? 'on campus or at a University activity' : 'off campus or online'}. Type a word to filter.`
+      : 'Type a word such as “bullying” or “smoking” to filter the list.';
+    const id = $('#type').value;
+    if (id && !list.some((x) => x.id === id)) {
+      cb.set('');
+      $('#typeQ').value = '';
+      showOffense();
+      UB.toast('Your offense isn’t listed for off campus or online, so the choice was cleared. Pick again.', 'bad');
+    }
+  }
+  document.querySelectorAll('[name=venue]').forEach((r) => r.addEventListener('change', () => { showVenue(); if ($('#location').getAttribute('aria-invalid') === 'true') $('#location').removeAttribute('aria-invalid'); }));
+  showVenue();
+  const store = () => UB.save('draft', { ...data(), venue: venue(), grounds: grounds() });
   const d = UB.load('draft', null);
+  if (d?.venue === 'offcampus') {
+    document.querySelector('[name=venue][value=offcampus]').checked = true;
+    (d.grounds || []).forEach((g) => { const b = document.querySelector(`[name=ground][value=${g}]`); if (b) b.checked = true; });
+    showVenue();
+  }
   if (d) {
     F.forEach((k) => ($('#' + k).value = d[k] || ''));
     pp.set(d.resp || { dept: d.rDept, course: d.program }); // older drafts kept them as plain text
@@ -177,6 +221,9 @@ import { UB } from '../app.js';
     [['rDeptQ', pc.dept], ['programQ', pc.course]].forEach(([id, m]) => { flag(id, m); if (m && !first) first = $('#' + id); });
     $('#eSig').textContent = sigImg ? '' : 'Upload your signature to submit';
     if (!sigImg && !first) first = $('#sigDrop');
+    const needGround = venue() === 'offcampus' && !grounds().length;
+    $('#eJur').textContent = needGround ? 'Tick at least one reason the University can act on an off-campus or online offense' : '';
+    if (needGround && !first) first = document.querySelector('[name=ground]');
     const consent = $('#consent');
     $('#eConsent').textContent = consent.checked ? '' : 'You must agree to the privacy notice to submit';
     if (!consent.checked && !first) first = consent;
@@ -196,6 +243,7 @@ import { UB } from '../app.js';
         ...rest,
         program: resp.course, rDept: resp.dept, // respondent, from the linked pickers
         cSid: me.sid || '', cCourse: me.course || '', cDept: me.dept || '', cContact: me.contact || '', // complainant, from the profile
+        venue: venue(), jurisdiction: venue() === 'offcampus' ? grounds() : [],
         offenseId: o.id, type: o.type, offense: o.category, ...(other ? { offenseOther } : {}), signatureImg: sigImg,
       }, files);
     } catch (e) {

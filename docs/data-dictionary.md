@@ -25,6 +25,7 @@ A complaint's complainant fields (`cSid`, `cCourse`, `cDept`, `cContact`, `filed
 | type | string (2–80) | Offense name shown in the form |
 | category | string | `First Degree`, `Second Degree` or `Third Degree` (the three offense lists of the policy). Complaints filed before this change may still hold `Minor`, `Major` or `Grave` in `offense`; they stay readable |
 | sanction | string (≤1000) | Sanction text as written in the handbook |
+| venues | list | Where it can be filed: `campus`, `offcampus`. Every offense includes `campus`; only those that can happen away from the campus also include `offcampus`. Missing means both |
 | section | string (≤60) | List and item number as printed in the policy, e.g. `Second Degree Offenses, no. 13`. Ids look like `cdb-4-3-13` (kept from the earlier manual so old complaints still match) |
 
 Read by any signed-in UB user; written only by staff. Seeded from `public/assets/js/data/offenses.json`.
@@ -43,6 +44,9 @@ Read by any signed-in UB user; written only by staff. Seeded from `public/assets
 | offenseOther | string (3–100) | Only with Others: what the complainant says happened. Absent for catalog offenses |
 | route | string | `department` for First Degree, `cdb` otherwise; set at filing, can only move from `department` to `cdb` |
 | assessedDegree | string | SAEP's assessment of the degree (`First Degree`, `Second Degree`, `Third Degree`) or ''. Second and Third Degree require `route` = `cdb`. Overrides the degree of the filed offense when set |
+| venue | string | `campus` or `offcampus` (off campus or online outside University activities). Missing on older complaints means `campus` |
+| jurisdiction | list of strings | Grounds the complainant gave for an off-campus/online offense: `victim`, `event`, `status`, `objectives`, `name`. At least one when `venue` is `offcampus`, empty otherwise |
+| jurisdictionReview | string | SAEP review of an off-campus case: '' (pending), `confirmed`, or `declined` (outside jurisdiction; needs status Resolved) |
 | deptDecisionDate | string YYYY-MM-DD or '' | Date the respondent's department's decision copy reached the CDB (department cases) |
 | noticeDate, answerDue | string YYYY-MM-DD or '' | Notice to the respondent and answer deadline (at least 3 days after the notice) |
 | answer | string | '' (awaiting), `received` or `general-denial` |

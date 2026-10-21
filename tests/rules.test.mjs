@@ -41,7 +41,7 @@ const complaint = (over = {}) => ({
   cSid: '2407881', cCourse: 'BS Information Technology (BSIT)', cDept: 'College of Information Technology, Entertainment and Communication', cContact: '09171234567', signature: 'Stu One', signatureImg: 'data:image/jpeg;base64,/9j/4AAQ',
   offenseId: 'dress-code-violation', offense: 'First Degree', type: 'Dress Code Violation',
   date: TODAY, filed: TODAY, location: 'Room 204', desc: 'Student was not wearing the prescribed uniform inside the room.',
-  route: 'department', status: 'submitted', filedBy: 'stu1', filedByName: 'Stu One', filedByRole: 'student', filedByEmail: 'stu1@ub.edu.ph',
+  venue: 'campus', jurisdiction: [], route: 'department', status: 'submitted', filedBy: 'stu1', filedByName: 'Stu One', filedByRole: 'student', filedByEmail: 'stu1@ub.edu.ph',
   privacyConsent: true, privacyVersion: '2026-10', hCount: 0, files: [], createdAt: serverTimestamp(), ...over,
 });
 // Same two writes the app makes: bump the counter and create the complaint in one batch.
@@ -66,6 +66,33 @@ describe('authentication', () => {
   it('rejects unverified email', async () => assertFails(file(as('stu1', { ...UB('stu1'), email_verified: false }), 1)));
   it('rejects non-UB email', async () => assertFails(file(as('stu1', { email: 'stu1@gmail.com', email_verified: true }), 1)));
   it('rejects signed-out users', async () => assertFails(getDoc(env.unauthenticatedContext().firestore().doc('offenses/dress-code-violation'))));
+});
+
+describe('offense must fit the place (venues)', () => {
+  beforeEach(() => env.withSecurityRulesDisabled(async (c) => {
+    const db = c.firestore();
+    await setDoc(doc(db, 'offenses/campus-only'), { type: 'Smoking inside the campus', category: 'First Degree', sanction: '', section: 'First Degree Offenses, no. 5', venues: ['campus'] });
+    await setDoc(doc(db, 'offenses/anywhere'), { type: 'Bullying', category: 'Second Degree', sanction: '', section: 'Second Degree Offenses, no. 13', venues: ['campus', 'offcampus'] });
+  }));
+  const o = (id, type, offense) => ({ offenseId: id, type, offense });
+  it('an on-campus offense can be filed as on campus', async () => assertSucceeds(file(as('stu1'), 1, { venue: 'campus', jurisdiction: [], ...o('campus-only', 'Smoking inside the campus', 'First Degree') })));
+  it('a campus-only offense cannot be filed as off campus', async () => assertFails(file(as('stu1'), 1, { venue: 'offcampus', jurisdiction: ['victim'], ...o('campus-only', 'Smoking inside the campus', 'First Degree') })));
+  it('an offense that can happen anywhere can be filed as off campus', async () => assertSucceeds(file(as('stu1'), 1, { venue: 'offcampus', jurisdiction: ['victim'], route: 'cdb', ...o('anywhere', 'Bullying', 'Second Degree') })));
+  it('catalog entries without venues count as both', async () => assertSucceeds(file(as('stu1'), 1, { venue: 'offcampus', jurisdiction: ['name'] })));
+  it('staff can only save valid venues in the catalog', async () => {
+    const e = { type: 'Test offense', category: 'First Degree', sanction: '', section: 'x' };
+    await assertSucceeds(setDoc(doc(as('staff1'), 'offenses', 'test-a'), { ...e, venues: ['campus'] }));
+    await assertFails(setDoc(doc(as('staff1'), 'offenses', 'test-b'), { ...e, venues: ['moon'] }));
+    await assertFails(setDoc(doc(as('staff1'), 'offenses', 'test-c'), { ...e, venues: [] }));
+  });
+});
+
+describe('where it happened (off-campus and online offenses)', () => {
+  it('accepts an off-campus complaint that names a ground', async () => assertSucceeds(file(as('stu1'), 1, { venue: 'offcampus', jurisdiction: ['victim', 'name'] })));
+  it('rejects an off-campus complaint with no ground', async () => assertFails(file(as('stu1'), 1, { venue: 'offcampus', jurisdiction: [] })));
+  it('rejects grounds that are not in the policy', async () => assertFails(file(as('stu1'), 1, { venue: 'offcampus', jurisdiction: ['because'] })));
+  it('rejects grounds on an on-campus complaint', async () => assertFails(file(as('stu1'), 1, { venue: 'campus', jurisdiction: ['victim'] })));
+  it('rejects an unknown venue', async () => assertFails(file(as('stu1'), 1, { venue: 'moon' })));
 });
 
 describe('creating complaints (integrity)', () => {
@@ -220,6 +247,16 @@ describe('case handling (College Student Discipline Policy, Process)', () => {
   it('records the date the department’s decision reached the CDB, and rejects a bad date', async () => {
     await assertSucceeds(ST({ deptDecisionDate: '2026-10-12' }));
     await assertFails(ST({ deptDecisionDate: '12/10/2026' }));
+  });
+  it('SAEP can confirm jurisdiction on an off-campus case, not on an on-campus one', async () => {
+    await env.withSecurityRulesDisabled((c) => updateDoc(doc(c.firestore(), 'complaints', ID(1)), { venue: 'offcampus', jurisdiction: ['victim'] }));
+    await assertSucceeds(ST({ jurisdictionReview: 'confirmed' }));
+  });
+  it('rejects a jurisdiction review on an on-campus complaint', async () => assertFails(ST({ jurisdictionReview: 'confirmed' })));
+  it('declining jurisdiction must close the case', async () => {
+    await env.withSecurityRulesDisabled((c) => updateDoc(doc(c.firestore(), 'complaints', ID(1)), { venue: 'offcampus', jurisdiction: ['name'] }));
+    await assertFails(ST({ jurisdictionReview: 'declined' }));
+    await assertSucceeds(ST({ jurisdictionReview: 'declined', status: 'resolved', resolution: 'None of the five grounds applies.', decisionDate: TODAY }));
   });
   it('students cannot assess their own complaint', async () => assertFails(updateDoc(doc(as('stu1'), 'complaints', ID(1)), { assessedDegree: 'First Degree' })));
   it('accepts a notice with a three-day answer period', async () => assertSucceeds(ST({ noticeDate: '2026-10-10', answerDue: '2026-10-13', answer: '', parentsNotified: '', conferenceMode: '', conferencesHeld: 0 })));
