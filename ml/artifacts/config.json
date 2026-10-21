@@ -1,0 +1,11 @@
+{
+  "model": "intfloat/multilingual-e5-small",
+  "handbook_version": "saep-m-rev4-2026",
+  "handbook_hash": "edf7fe4d942227e2f2ffcb5606e957211cf5d7cfcb8fda13b37c352ce4988741",
+  "dimension": 384,
+  "chunks": 34,
+  "query_prefix": "query: ",
+  "passage_prefix": "passage: ",
+  "min_score": 0.8072,
+  "built_at": "2026-10-21T08:47:36+00:00"
+}
