@@ -29,3 +29,15 @@ The earlier manual said First Degree offenses are filed with the respondent's de
 - For department cases staff record when the department's decision copy reached the CDB (First Degree Interventions note).
 
 Still not modelled: a department role. Department-level conferences are handled outside UBridge; staff track only the forwarding and the decision copy. Ask the adviser if the department should get its own login.
+
+## 5. Where the PyTorch search service runs
+Firebase Hosting serves static files only, so PyTorch cannot run inside UBridge. The AI Guide's keyword search misses questions that share no words with the policy text, including every Filipino or Taglish question in the draft test set. The decision is where the PyTorch model runs.
+
+| Option | What it means |
+|---|---|
+| **Hugging Face Space (Docker)** (recommended) | Free CPU hosting, no billing card. Sleeps when unused, so the first question after a quiet period may fall back to keyword search. The app opens `/health` early and a workflow pings it. Nothing else changes on Firebase |
+| **Google Cloud Run** | Same Dockerfile, no sleeping problem with a minimum instance, but needs a billing account on the project, which goes against the Spark-plan decision above |
+| **Model in the browser (ONNX)** | No server, but the browser downloads a model of tens to hundreds of MB over UB Lipa's connection and the CSP must be loosened. Contradicts the lightweight, mobile-first claim in Chapter 2 |
+| **Keep keyword search only** | Nothing to host. Filipino and Taglish questions keep returning "couldn't find that" |
+
+Decision: Hugging Face Space, with keyword search as the fallback at all times. Dense results are used only when the service's content fingerprint matches the deployed `handbook.json`. The gold labels in `ml/eval/questions.jsonl` were re-pointed at the policy chunks (`CSDP-nn`) when the source changed from the Revision No. 7 manual; the team still has to review them and decide whether to fine-tune or use a ready-made multilingual model, based on the `test` numbers.

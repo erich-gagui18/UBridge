@@ -1,0 +1,15 @@
+{
+  "chunks": [
+    {
+      "id": "CDB-01",
+      "title": "1.1 VISION",
+      "text": "Line one\nLine “two” — ñ"
+    },
+    {
+      "id": "CDB-02",
+      "title": "",
+      "text": "Second"
+    }
+  ],
+  "hash": "fc4b94a7bef4db83e47241d79499a1dfa9d5a39a92b06d023564bbded0e7f936"
+}

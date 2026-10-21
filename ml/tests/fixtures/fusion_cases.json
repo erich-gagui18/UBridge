@@ -1,0 +1,9 @@
+[
+  { "name": "agreeing lists", "rankings": [["A", "B", "C"], ["A", "B", "C"]], "limit": 4, "expected": ["A", "B", "C"] },
+  { "name": "dense rescues an empty keyword result", "rankings": [[], ["CDB-21", "CDB-25"]], "limit": 4, "expected": ["CDB-21", "CDB-25"] },
+  { "name": "keyword only", "rankings": [["X", "Y"], []], "limit": 4, "expected": ["X", "Y"] },
+  { "name": "shared item wins over single votes", "rankings": [["A", "B", "C"], ["D", "B", "E"]], "limit": 4, "expected": ["B", "A", "D", "C"] },
+  { "name": "limit is applied", "rankings": [["A", "B", "C", "D"], ["E", "F", "G", "H"]], "limit": 3, "expected": ["A", "E", "B"] },
+  { "name": "ties keep first appearance order", "rankings": [["A"], ["B"]], "limit": 4, "expected": ["A", "B"] },
+  { "name": "both empty", "rankings": [[], []], "limit": 4, "expected": [] }
+]

@@ -1,0 +1,70 @@
+{"id": "Q01", "lang": "en", "kind": "in_scope", "split": "test", "q": "What are the first degree offenses?", "gold": ["CSDP-07", "CSDP-08", "CSDP-09", "CSDP-10"]}
+{"id": "Q02", "lang": "en", "kind": "in_scope", "split": "test", "q": "Who sits on the College Discipline Board?", "gold": ["CSDP-05"]}
+{"id": "Q03", "lang": "en", "kind": "in_scope", "split": "dev", "q": "What does the CDB do?", "gold": ["CSDP-23", "CSDP-30"]}
+{"id": "Q04", "lang": "en", "kind": "in_scope", "split": "test", "q": "Is smoking inside the campus an offense?", "gold": ["CSDP-07"]}
+{"id": "Q05", "lang": "en", "kind": "in_scope", "split": "test", "q": "What happens if I come to class without the proper uniform?", "gold": ["CSDP-07", "CSDP-11"]}
+{"id": "Q06", "lang": "en", "kind": "in_scope", "split": "dev", "q": "Can I dye my hair?", "gold": ["CSDP-10"]}
+{"id": "Q07", "lang": "en", "kind": "in_scope", "split": "test", "q": "Can a male student wear earrings?", "gold": ["CSDP-09"]}
+{"id": "Q08", "lang": "en", "kind": "in_scope", "split": "test", "q": "What is the penalty for vandalism?", "gold": ["CSDP-16", "CSDP-12"]}
+{"id": "Q09", "lang": "en", "kind": "in_scope", "split": "test", "q": "What offense is it if I break a school window or desk?", "gold": ["CSDP-12"]}
+{"id": "Q10", "lang": "en", "kind": "in_scope", "split": "test", "q": "What counts as bullying?", "gold": ["CSDP-13"]}
+{"id": "Q11", "lang": "en", "kind": "in_scope", "split": "test", "q": "Is cyberbullying covered by the code?", "gold": ["CSDP-13"]}
+{"id": "Q12", "lang": "en", "kind": "in_scope", "split": "dev", "q": "What are the sanctions for plagiarism?", "gold": ["CSDP-17", "CSDP-19"]}
+{"id": "Q13", "lang": "en", "kind": "in_scope", "split": "test", "q": "Is copying answers during an exam considered cheating under the code?", "gold": ["CSDP-17", "CSDP-12"]}
+{"id": "Q14", "lang": "en", "kind": "in_scope", "split": "test", "q": "Can a student be expelled?", "gold": ["CSDP-19", "CSDP-30"]}
+{"id": "Q15", "lang": "en", "kind": "in_scope", "split": "test", "q": "How long can a suspension last for a third degree offense?", "gold": ["CSDP-19"]}
+{"id": "Q16", "lang": "en", "kind": "in_scope", "split": "test", "q": "How many days of suspension for a second degree offense?", "gold": ["CSDP-16"]}
+{"id": "Q17", "lang": "en", "kind": "in_scope", "split": "test", "q": "What is disciplinary probation?", "gold": ["CSDP-27"]}
+{"id": "Q18", "lang": "en", "kind": "in_scope", "split": "dev", "q": "What is university censure?", "gold": ["CSDP-26"]}
+{"id": "Q19", "lang": "en", "kind": "in_scope", "split": "test", "q": "What does exclusion mean?", "gold": ["CSDP-29"]}
+{"id": "Q20", "lang": "en", "kind": "in_scope", "split": "test", "q": "Where do I file a complaint about a second degree offense?", "gold": ["CSDP-23"]}
+{"id": "Q21", "lang": "en", "kind": "in_scope", "split": "test", "q": "Who handles first degree offenses?", "gold": ["CSDP-07", "CSDP-23"]}
+{"id": "Q22", "lang": "en", "kind": "in_scope", "split": "dev", "q": "What happens after three first degree offenses?", "gold": ["CSDP-07", "CSDP-13"]}
+{"id": "Q23", "lang": "en", "kind": "in_scope", "split": "test", "q": "How many days does the respondent have to answer the complaint?", "gold": ["CSDP-24"]}
+{"id": "Q24", "lang": "en", "kind": "in_scope", "split": "test", "q": "What if the respondent does not submit an explanation?", "gold": ["CSDP-24"]}
+{"id": "Q25", "lang": "en", "kind": "in_scope", "split": "test", "q": "Are parents notified when a student is under 18?", "gold": ["CSDP-25"]}
+{"id": "Q26", "lang": "en", "kind": "in_scope", "split": "test", "q": "What happens if a student misses two disciplinary conferences?", "gold": ["CSDP-25"]}
+{"id": "Q27", "lang": "en", "kind": "in_scope", "split": "dev", "q": "How long does the CDB have to decide a case?", "gold": ["CSDP-30"]}
+{"id": "Q28", "lang": "en", "kind": "in_scope", "split": "test", "q": "How can I appeal a CDB decision?", "gold": ["CSDP-31"]}
+{"id": "Q29", "lang": "en", "kind": "in_scope", "split": "test", "q": "When does the CDB decision take effect?", "gold": ["CSDP-31"]}
+{"id": "Q30", "lang": "en", "kind": "in_scope", "split": "test", "q": "Can the school discipline me for something I posted online?", "gold": ["CSDP-20", "CSDP-06"]}
+{"id": "Q31", "lang": "en", "kind": "in_scope", "split": "test", "q": "Does the university have jurisdiction over off campus offenses?", "gold": ["CSDP-20"]}
+{"id": "Q32", "lang": "en", "kind": "in_scope", "split": "dev", "q": "What rights do I have during a disciplinary conference?", "gold": ["CSDP-24", "CSDP-25"]}
+{"id": "Q33", "lang": "en", "kind": "in_scope", "split": "test", "q": "Can I bring a parent or representative to my hearing?", "gold": ["CSDP-24", "CSDP-25"]}
+{"id": "Q34", "lang": "en", "kind": "out_of_scope", "split": "test", "q": "How is my personal information protected in a case?", "gold": []}
+{"id": "Q35", "lang": "en", "kind": "out_of_scope", "split": "test", "q": "How long should the school take to release my transcript of records?", "gold": []}
+{"id": "Q36", "lang": "en", "kind": "out_of_scope", "split": "test", "q": "Can I join student organizations?", "gold": []}
+{"id": "Q37", "lang": "en", "kind": "out_of_scope", "split": "dev", "q": "When should I be informed of my academic standing?", "gold": []}
+{"id": "Q38", "lang": "en", "kind": "out_of_scope", "split": "test", "q": "What are the duties of a student?", "gold": []}
+{"id": "Q39", "lang": "en", "kind": "in_scope", "split": "test", "q": "Is gambling allowed on campus?", "gold": ["CSDP-12"]}
+{"id": "Q40", "lang": "en", "kind": "in_scope", "split": "test", "q": "Can students bring a knife or weapons to school?", "gold": ["CSDP-12"]}
+{"id": "Q41", "lang": "en", "kind": "in_scope", "split": "test", "q": "What is the sanction for being drunk in class?", "gold": ["CSDP-17", "CSDP-19"]}
+{"id": "Q42", "lang": "en", "kind": "in_scope", "split": "dev", "q": "Is hazing an offense?", "gold": ["CSDP-17"]}
+{"id": "Q43", "lang": "en", "kind": "in_scope", "split": "test", "q": "What happens if someone sexually harasses another student?", "gold": ["CSDP-17", "CSDP-19"]}
+{"id": "Q44", "lang": "en", "kind": "in_scope", "split": "test", "q": "Is kissing in public inside the campus allowed?", "gold": ["CSDP-14"]}
+{"id": "Q45", "lang": "en", "kind": "in_scope", "split": "test", "q": "Are first degree offenses punished with suspension?", "gold": ["CSDP-11"]}
+{"id": "Q46", "lang": "en", "kind": "in_scope", "split": "test", "q": "What is the community service sanction?", "gold": ["CSDP-28"]}
+{"id": "Q47", "lang": "en", "kind": "in_scope", "split": "dev", "q": "Can a graduating student's honors be taken away?", "gold": ["CSDP-31"]}
+{"id": "Q48", "lang": "en", "kind": "in_scope", "split": "test", "q": "What are the purposes and objectives of the discipline policy?", "gold": ["CSDP-04"]}
+{"id": "Q49", "lang": "tl", "kind": "in_scope", "split": "test", "q": "Bawal ba manigarilyo sa loob ng campus?", "gold": ["CSDP-07"]}
+{"id": "Q50", "lang": "tl", "kind": "in_scope", "split": "dev", "q": "Ano ang parusa kapag nandaya sa exam?", "gold": ["CSDP-17", "CSDP-19", "CSDP-12"]}
+{"id": "Q51", "lang": "tl", "kind": "in_scope", "split": "test", "q": "Pwede ba akong ma-suspend kapag nakipag-away sa campus?", "gold": ["CSDP-12", "CSDP-16"]}
+{"id": "Q52", "lang": "tl", "kind": "in_scope", "split": "test", "q": "Paano mag-file ng reklamo laban sa estudyante?", "gold": ["CSDP-23"]}
+{"id": "Q53", "lang": "tl", "kind": "in_scope", "split": "dev", "q": "Kailangan bang abisuhan ang magulang ko kapag may reklamo laban sa akin?", "gold": ["CSDP-25"]}
+{"id": "Q54", "lang": "tl", "kind": "in_scope", "split": "test", "q": "Ilang araw ang binibigay para sumagot sa reklamo?", "gold": ["CSDP-24"]}
+{"id": "Q55", "lang": "tl", "kind": "in_scope", "split": "test", "q": "Pwede bang magsuot ng hikaw ang lalaki sa school?", "gold": ["CSDP-09"]}
+{"id": "Q56", "lang": "tl", "kind": "in_scope", "split": "test", "q": "Bawal ba mag-post ng masama tungkol sa teacher sa Facebook?", "gold": ["CSDP-12", "CSDP-15", "CSDP-20", "CSDP-07"]}
+{"id": "Q57", "lang": "tl", "kind": "in_scope", "split": "test", "q": "Ano ang mangyayari kung hindi ako sumipot sa dalawang hearing?", "gold": ["CSDP-25"]}
+{"id": "Q58", "lang": "tl", "kind": "out_of_scope", "split": "test", "q": "Ano ang karapatan ko bilang estudyante?", "gold": []}
+{"id": "Q59", "lang": "en", "kind": "out_of_scope", "split": "dev", "q": "What is the weather in Lipa today?", "gold": []}
+{"id": "Q60", "lang": "en", "kind": "out_of_scope", "split": "dev", "q": "How much is the tuition fee for BSIT?", "gold": []}
+{"id": "Q61", "lang": "en", "kind": "out_of_scope", "split": "dev", "q": "When is the enrollment period?", "gold": []}
+{"id": "Q62", "lang": "en", "kind": "out_of_scope", "split": "dev", "q": "How do I reset my UB portal password?", "gold": []}
+{"id": "Q63", "lang": "tl", "kind": "out_of_scope", "split": "dev", "q": "Anong oras ang uwian ng klase?", "gold": []}
+{"id": "Q64", "lang": "en", "kind": "out_of_scope", "split": "dev", "q": "What is the capital of France?", "gold": []}
+{"id": "Q65", "lang": "en", "kind": "out_of_scope", "split": "test", "q": "Who won the last UAAP basketball game?", "gold": []}
+{"id": "Q66", "lang": "en", "kind": "out_of_scope", "split": "test", "q": "How do I apply for a scholarship?", "gold": []}
+{"id": "Q67", "lang": "en", "kind": "out_of_scope", "split": "test", "q": "What are the library opening hours?", "gold": []}
+{"id": "Q68", "lang": "en", "kind": "out_of_scope", "split": "test", "q": "Can you write me a poem about the sea?", "gold": []}
+{"id": "Q69", "lang": "tl", "kind": "out_of_scope", "split": "test", "q": "Magkano ang pamasahe papuntang Batangas City?", "gold": []}
+{"id": "Q70", "lang": "en", "kind": "out_of_scope", "split": "test", "q": "What is the best programming language to learn?", "gold": []}

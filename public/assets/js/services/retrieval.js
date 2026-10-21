@@ -50,3 +50,27 @@ export function search({ docs, df, avg }, question) {
   const top = hits[0]?.s || 0;
   return hits.filter((x) => x.s >= top * 0.35).slice(0, TOP_K).map((x) => x.d);
 }
+
+export const RRF_K = 60;
+
+export function fuse(rankings, limit = TOP_K, k = RRF_K) {
+  const scores = new Map();
+  for (const ranking of rankings) ranking.forEach((id, i) => scores.set(id, (scores.get(id) || 0) + 1 / (k + i + 1)));
+  return [...scores.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit).map(([id]) => id);
+}
+
+export function mergeHits({ docs }, keywordDocs, semanticIds) {
+  if (!semanticIds) return keywordDocs;
+  const byId = new Map(docs.map((d) => [d.id, d]));
+  return fuse([keywordDocs.map((d) => d.id), semanticIds]).map((id) => byId.get(id)).filter(Boolean);
+}
+
+export async function contentHash(chunks) {
+  try {
+    const body = chunks.map((c) => [c.id, c.title || '', c.text].join('\x1f')).join('\x1e');
+    const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(body));
+    return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  } catch {
+    return '';
+  }
+}

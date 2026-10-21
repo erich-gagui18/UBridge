@@ -7,3 +7,7 @@ firebase-debug.log*
 # Never commit service-account / admin keys
 *-firebase-adminsdk-*.json
 serviceAccount*.json
+__pycache__/
+.pytest_cache/
+ml/models/
+.venv/

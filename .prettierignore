@@ -5,3 +5,5 @@ public/pages/*.html
 public/*.html
 handbook/
 package-lock.json
+ml/
+scripts/bm25-baseline.mjs

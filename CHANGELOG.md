@@ -1,5 +1,40 @@
 # Changelog
 
+## v8 (21 October 2026)
+
+Adds the optional PyTorch semantic search for the AI Guide (prepared as a separate "v7" branch) on top of the deployed v7 (College Student Discipline Policy). The app works exactly as before until `SEARCH_SERVICE_URL` is set.
+
+### Added
+- **PyTorch semantic search for the AI Guide** (optional).
+  - `ml/app/`: FastAPI search service. Verifies the Firebase ID token (verified `@ub.edu.ph` accounts only), CORS limited to the Hosting origins, 20 requests per user per minute, returns only chunk ids and scores, never logs questions. `/health` for warm-up.
+  - `ml/build_index.py`, `ml/evaluate.py`, `ml/make_pairs.py`, `ml/train.py`: index building with a calibrated rejection threshold, BM25 vs PyTorch vs hybrid evaluation, training-pair generation, and a plain PyTorch fine-tuning loop (in-batch negatives, seeded, dev-split model selection).
+  - `ml/eval/questions.jsonl`: 70 labelled questions (58 English, 12 Filipino/Taglish; `dev` and `test` splits), re-labelled for the policy text (see Changed). Drafted for the team to review.
+  - `ml/colab/UBridge_AI_Guide_PyTorch.ipynb`: smoke test, baseline, model comparison, fine-tuning, index build and download on Google Colab.
+  - `ml/Dockerfile`, `ml/README.md`: packaging for a Hugging Face Space (Docker) or Cloud Run.
+  - `public/assets/js/services/dense.js`: search client with a 4 second timeout, version and content-fingerprint check, and warm-up. `retrieval.js` gains `fuse` (reciprocal rank fusion), `mergeHits` and `contentHash`.
+  - `.github/workflows/ml-keepwarm.yml`: pings the service every six hours when the repository variable `SEARCH_SERVICE_URL` is set.
+  - `scripts/bm25-baseline.mjs` and `npm run ml:baseline`.
+- Tests: `tests/fusion.test.mjs` and `tests/dense.test.mjs` (in `npm test`, which now runs 62 tests, all passing); `ml/tests/` (`npm run ml:test`).
+
+### Changed
+- `guide.js`: runs keyword and semantic search in parallel and merges them; the Gemini answer step is unchanged. Results carry `retrieval: 'hybrid' | 'keyword'`. The policy scope text, prompt and fallback wording from v7 are kept.
+- `pages/ai-guide.js`: wakes the service when the page opens; shows "Matched by meaning and keywords." when both searches ran.
+- `firebase-config.js`: new `SEARCH_SERVICE_URL` (empty by default). `firebase.json`: CSP `connect-src` allows `https://*.hf.space` and `https://*.run.app`; tighten to your exact address once it is final.
+- **ML code and evaluation set re-pointed from the Revision No. 7 manual (`CDB-nn`, 41 chunks) to the policy (`CSDP-nn`, 34 chunks):**
+  - `ml/make_pairs.py` now reads the policy's offense labels ("First Degree Offenses, no. 4") and finds the offense and intervention chunks by their titles, so a re-chunk cannot leave stale chunk ids. All 45 offenses map to a chunk (303 training pairs).
+  - `ml/eval/questions.jsonl`: every `gold` id was re-assigned by reading the policy chunks. Six in-scope questions about topics the policy text does not contain (confidentiality of case information, release of transcripts, joining student organizations, academic standing, general student duties, general student rights) are now `out_of_scope` hard negatives. One question was reworded to match the policy ("What are the purposes and objectives of the discipline policy?"). Question ids, languages and splits are unchanged. All labels are still the team's to review.
+  - `ml/artifacts/bm25_results.json` and `report.md` regenerated on the policy: keyword search, test split, hit@4 68.3% overall, 82.4% English, 0.0% Filipino/Taglish, MRR@4 0.628, 72.7% of out-of-scope questions rejected.
+  - `ml/tests/test_helpers.py`: pair-generation test updated to the policy format, plus a test for the title-based interventions lookup.
+- `package.json` (`ml:baseline`, `ml:test`, new tests in `npm test`), `.gitignore`, `.prettierignore`, `README.md`, `docs/decisions.md` (section 5), `docs/chapter3-update.md`.
+- `pages/privacy.html`: lists the optional search service as a recipient of the AI Guide question (wording is conditional on the service being switched on; have the DPO confirm it before enabling).
+- `README.md` said the handbook had 41 chunks; `handbook.json` has 34. Corrected.
+- `docs/chapter3-update.md`: removed a stray "(Revision No. 7, 2023)" left in the AI service paragraph.
+
+### Notes
+- No change to `firestore.rules`. Redeploy Hosting only.
+- No semantic index exists yet. Run the Colab notebook, commit `index.npz`, `config.json` and `report.md` into `ml/artifacts/`, host the service, then set `SEARCH_SERVICE_URL`. Until then the guide uses keyword search only.
+- Not run where this version was prepared: the PyTorch code (`train.py`, the real encoder, service start-up with a model) and the FastAPI service tests, because PyTorch, FastAPI and pytest were not installed and there was no network. Run `ml/tests/test_train_smoke.py` first (the notebook does).
+
 ## v7 (21 October 2026)
 
 ### Changed

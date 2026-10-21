@@ -1,8 +1,9 @@
 import { UB } from '../app.js';
-import { answer, SCOPE } from '../services/guide.js';
+import { answer, SCOPE, warmUp } from '../services/guide.js';
 (async () => {
   await UB.ready;
   const { $, $$, esc } = UB;
+  warmUp();
   const tabs = $$('#tabs button'), panels = ['ask', 'recent', 'saved', 'faq'];
   const show = (p) => {
     tabs.forEach((b) => b.setAttribute('aria-selected', b.dataset.p === p));
@@ -55,7 +56,7 @@ import { answer, SCOPE } from '../services/guide.js';
     }
     const d = document.createElement('div');
     d.className = 'msg';
-    d.innerHTML = `<p class="ans">${esc(a.text).replace(/\n/g, '<br>')}</p>${sourcesHtml(a)}<p class="hint">Not an official ruling. The SAEP Office makes the final decision.</p>`;
+    d.innerHTML = `<p class="ans">${esc(a.text).replace(/\n/g, '<br>')}</p>${sourcesHtml(a)}<p class="hint">Not an official ruling. The SAEP Office makes the final decision.${a.retrieval === 'hybrid' ? ' Matched by meaning and keywords.' : ''}</p>`;
     const bm = d.querySelector('.src button');
     if (bm) bm.onclick = () => {
       UB.save('saved', [{ q, text: a.text, src: a.sources.map((s) => s.section).join('; ') }, ...UB.load('saved', [])]);

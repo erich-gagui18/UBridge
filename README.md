@@ -1,6 +1,6 @@
 # UBridge on Firebase (Hosting + Auth + Firestore)
 
-SAEP online complaint management system for UB-Lipa. Plain HTML/CSS/ES-module JavaScript, no build step.
+SAEP online complaint management system for UB-Lipa. Plain HTML/CSS/ES-module JavaScript, no build step. The system itself runs entirely on Firebase. Only the optional AI Guide search service in `ml/` (PyTorch) runs elsewhere; see "PyTorch semantic search".
 
 ## One-time setup
 1. Firebase console: create a project, add a Web app, paste its config into `public/assets/js/firebase-config.js`.
@@ -31,11 +31,71 @@ Sign up as a student, then in Firestore open `users/<uid>` and change `role` to 
 
 ## AI Guide (RAG over the College Student Discipline Policy)
 1. The source text is `handbook/discipline-policy.txt`, copied word for word from the policy (UB document SAEP M, Revision No. 4, pages 1 to 14; checked against the PDF). `npm run chunk` passes the label shown to users ("College Student Discipline Policy") and the chunk id prefix (`CSDP`).
-2. `npm run chunk` writes `public/assets/js/data/handbook.json` (41 chunks). Open it and compare a few chunks with the printed policy.
+2. `npm run chunk` writes `public/assets/js/data/handbook.json` (34 chunks). Open it and compare a few chunks with the printed policy. If you use the PyTorch search service, rebuild its index after every `npm run chunk` (the app ignores a stale index, so search falls back to keywords until you do).
 3. Firebase console > Build > AI Logic: enable it with the **Gemini Developer API** (the no-cost tier works on Spark). Check the model name in `GEMINI_MODEL` (firebase-config.js) against the console.
 4. App Check: create a reCAPTCHA v3 site key, register it under App Check > Apps > Web, paste the **site** key into `RECAPTCHA_SITE_KEY`, redeploy. Watch App Check metrics for a few days, then press **Enforce** for Firestore and AI Logic. Add the `localhost` debug token shown in the console if you test locally.
 
 The guide retrieves the best-matching chunks in the browser, sends only those to Gemini with an "answer only from this context" instruction, and shows the cited section from the chunk data. If Gemini is unavailable it shows the closest policy text instead.
+
+## PyTorch semantic search (optional service)
+**Why.** The keyword search only matches shared words. On the draft test set in `ml/eval/questions.jsonl` (70 questions, drafted for the team to review) it finds a correct chunk for 82% of English questions and for 0% of Filipino and Taglish questions, because the policy is English and no words overlap (`ml/artifacts/report.md`, test split). A PyTorch embedding model compares meaning instead of words.
+
+**How it fits.** Everything stays on Firebase except one small Python service:
+
+    AI Guide in the browser
+      |-- keyword search (BM25, in the browser, as before)
+      |-- question + Firebase login --> PyTorch search service (ml/, hosted outside Firebase)
+      v
+    both rankings merged (reciprocal rank fusion) -> top 4 chunks -> Gemini writes the answer (unchanged)
+
+The service returns only chunk ids and scores, never policy text or answers. If it is off, asleep, slow (more than 4 seconds), or built from a different `handbook.json`, the guide silently uses keyword search only, exactly as before. When both searches ran, the answer shows "Matched by meaning and keywords."
+
+**What is in `ml/`**
+
+| Path | What it is |
+|---|---|
+| `app/` | The FastAPI service: checks the Firebase login, encodes the question with the model, returns the closest chunk ids |
+| `eval/questions.jsonl` | 70 labelled questions: English and Filipino/Taglish, in scope and out of scope, split into `dev` (for tuning) and `test` (for the final numbers) |
+| `evaluate.py` | Compares keyword, PyTorch and hybrid search and writes `artifacts/report.md` |
+| `make_pairs.py`, `train.py` | Builds training pairs from the offense catalog and the policy headings and fine-tunes the embedding model with a plain PyTorch loop |
+| `build_index.py` | Encodes the 34 chunks and writes `artifacts/index.npz` and `artifacts/config.json` (model name, handbook fingerprint, rejection threshold) |
+| `colab/UBridge_AI_Guide_PyTorch.ipynb` | Runs all of the above on Google Colab, where the heavy work happens (a laptop without a GPU is not needed) |
+| `Dockerfile`, `README.md` | Packaging for a Hugging Face Space (Docker) or Google Cloud Run |
+
+**Setup, in order**
+1. **Review the test set.** Open `ml/eval/questions.jsonl` and check every `gold` chunk id against `handbook.json` (the ids are `CSDP-nn`; six questions that the policy does not answer are marked `out_of_scope` on purpose, see `CHANGELOG.md`). A question can list several acceptable chunks. Add questions the way students really ask them. Keep the `dev` and `test` split: tune on `dev`, report `test`. After any change run `npm run ml:baseline` to refresh the keyword baseline.
+2. **Run the Colab notebook.** Upload the project zip (or set `REPO_URL`), run the cells top to bottom. The smoke test in step 2 must pass first. Step 4 compares ready-made multilingual models, step 5 optionally fine-tunes one, step 6 builds the index. Download `ubridge-ml-artifacts.zip` and copy `index.npz`, `config.json` and `report.md` into `ml/artifacts/`. Commit them.
+3. **Create the service.** On huggingface.co make a new Space (SDK: Docker, blank template). Clone it, copy the contents of `ml/` into it (skip `tests`, `eval`, `colab`, `models`), then `git add .`, `git commit`, `git push`. Wait until the Space says Running. Its address is `https://<username>-<space-name>.hf.space`; open `/health` and check that it reports the model and `chunks: 34`. If you fine-tuned a model, publish it to the Hugging Face Hub from the notebook (`HUB_ID`) so the Space can download it. Cloud Run also works with the same Dockerfile but needs a billing account.
+4. **Point the app at it.** Set `SEARCH_SERVICE_URL` in `public/assets/js/firebase-config.js` to the Space address (https only; empty means keyword search only). The CSP in `firebase.json` already allows `https://*.hf.space` and `https://*.run.app`; replace those two with your exact address once it is final.
+5. **Redeploy Hosting** (`firebase deploy --only hosting` or push to `main`).
+6. **Check it.** Sign in, open the AI Guide and ask "Bawal ba manigarilyo sa loob ng campus?". Before the service, keyword search alone returned "couldn't find that"; now the answer should cite the First Degree offenses and show "Matched by meaning and keywords."
+
+**Run it on your own computer (optional)**
+
+    cd ml
+    pip install -r requirements-dev.txt
+    REQUIRE_AUTH=false uvicorn app.server:app --port 7860        (Windows PowerShell: $env:REQUIRE_AUTH="false"; uvicorn app.server:app --port 7860)
+    curl -s localhost:7860/search -H "Content-Type: application/json" -d "{\"question\":\"Bawal ba manigarilyo?\"}"
+
+The browser client only accepts https addresses, so use `curl` for local checks. The first start downloads the model.
+
+**Service settings** (environment variables, all optional)
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `FIREBASE_PROJECT_ID` | `ubridge-76eee` | Project whose login tokens are accepted |
+| `ALLOWED_ORIGINS` | the two Hosting addresses and `localhost:5005` | Browsers allowed to call the service |
+| `REQUIRE_AUTH` | `true` | Set `false` only for local tests |
+| `RATE_LIMIT_PER_MINUTE` | `20` | Per signed-in user |
+| `TOP_K` | `4` | Chunks returned |
+
+**Security and privacy.** Every search needs a Firebase ID token from a verified `@ub.edu.ph` account, the same rule as the app. Browsers from other sites are blocked by CORS. The service never logs question text, never stores anything, and never sees complaint records: only the question typed into the AI Guide is sent. The policy text stays in the browser; the service holds only vectors.
+
+**Free hosting limits.** Free Hugging Face Spaces go to sleep when unused and then take a while to wake, so the first question after a quiet period can use keyword search only. Opening the AI Guide wakes the service early. `.github/workflows/ml-keepwarm.yml` also pings `/health` every six hours when you add a repository variable named `SEARCH_SERVICE_URL` (GitHub > Settings > Secrets and variables > Actions > Variables). Check Hugging Face's current free-tier limits before the defense and wake the service a few minutes ahead.
+
+**Evaluation for the paper.** `python evaluate.py --models <model names>` (or the notebook) reports, per system, hit@1, hit@4, MRR@4, the share of in-scope questions that got no result, the share of out-of-scope questions correctly rejected, and hit@4 by language. The rejection threshold is calibrated on `dev` and the numbers are reported on `test`. State the limits plainly: the test set is small (41 in-scope questions), the gold labels were written by the team, training pairs are generated from the same policy text, and the policy is UB document SAEP M, Revision No. 4.
+
+**When `handbook.json` changes** (new revision of the policy, edited text): run `npm run chunk`, then `python build_index.py` (or the notebook) and commit the new `index.npz` and `config.json`, then redeploy the Space. Until then the app notices the mismatch and uses keyword search only.
 
 ## Courses and departments
 `public/assets/js/data/academics.json` feeds the course and department pickers on the profile page and the respondent section of the complaint form. It lists the eight UBLC colleges and 37 programs from Student Handbook Revision No. 8 (issue date 21 January 2026): Graduate School, College of Law, College of Education, Arts and Sciences, College of Criminal Justice Education, College of Management and Tourism, College of Engineering and Architecture, College of Information Technology, Entertainment and Communication, and College of Health Sciences. Names of the colleges and course labels that were already in the list are unchanged, so saved profiles and complaints still match. BS Forensic Science (BSFS) is not in Revision No. 8; it is kept from the earlier list and should be confirmed with the Registrar's Office (delete its line if it is not offered). Profiles that saved a course no longer in the list open under \"Others (not listed)\" with the saved text intact, and the person can re-pick the course. Redeploy Hosting after editing the file.
@@ -48,7 +108,9 @@ Staff changes create a document in `notifications/` for the person who filed the
 
 ## Tests and formatting
     npm install
-    npm test            # AI Guide keyword matching and the course/department list (plain Node)
+    npm test            # AI Guide keyword matching, hybrid merge, search client, mail drafts, case process, offense list, course/department list (plain Node)
+    npm run ml:baseline # re-run the keyword baseline over ml/eval/questions.jsonl
+    npm run ml:test     # Python tests for the search service (pip install -r ml/requirements-dev.txt first)
     npm run test:rules  # Firestore rules, in the Emulator Suite (needs Java)
     npm run format      # Prettier (run once before committing; run format:check in review)
 
@@ -57,9 +119,11 @@ Staff changes create a document in `notifications/` for the person who filed the
     firebase.js       Firebase init, App Check
     firebase-config.js, data.js    configuration and constants
     lib/              dom, dates (Philippine time), local storage, UI (toast/modal), layout (sidebar, bell)
-    services/         auth, complaints, notifications, offenses, guide (Gemini), retrieval (pure, tested)
+    services/         auth, complaints, notifications, offenses, guide (Gemini), retrieval (pure, tested), dense (PyTorch search client)
     pages/            one script per page
     data/             offenses.json (catalog seed), handbook.json (AI chunks), academics.json (UBLC colleges and programs)
+
+Outside `public/`: `ml/` is the PyTorch search service, training code and evaluation set (Python, not deployed to Hosting); `scripts/` holds the chunker and the keyword baseline.
 
 ## Data model
 See `docs/data-dictionary.md`.
