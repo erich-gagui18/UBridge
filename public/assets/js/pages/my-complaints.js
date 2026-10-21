@@ -23,7 +23,7 @@ import { UB } from '../app.js';
   const render = () => {
     const q = $('#q').value.trim().toLowerCase(), st = $('#st').value;
     const rows = data.filter((c) => (!st || c.status === st) && (!q || [c.id, c.student, c.sid, c.type, c.offenseOther, c.program, c.filedByName].some((x) => String(x ?? '').toLowerCase().includes(q))));
-    $('#rows').innerHTML = rows.map((c) => `<tr><td>${esc(c.id)}</td><td><b>${esc(c.student)}</b><small>${esc(c.sid)} · ${esc([c.program, c.section].filter(Boolean).join(' '))}</small></td>${staff ? `<td>${esc(c.filedByName)}<small>${esc(c.filedByRole || '')}</small></td>` : ''}<td><span class="chip ${UB.degClass(c.offense)}">${esc(c.offense)}</span></td><td>${UB.fmt(c.filed)}</td><td>${UB.chip(c.status)}</td><td><button class="link" data-id="${esc(c.id)}">View</button></td></tr>`).join('');
+    $('#rows').innerHTML = rows.map((c) => `<tr><td>${esc(c.id)}</td><td><b>${esc(c.student)}</b><small>${esc(c.sid)} · ${esc([c.program, c.section].filter(Boolean).join(' '))}</small></td>${staff ? `<td>${esc(c.filedByName)}<small>${esc(c.filedByRole || '')}</small></td>` : ''}<td><span class="chip ${UB.degClass(UB.proc.degreeOf(c))}">${esc(UB.proc.degreeOf(c) === 'Unclassified' ? 'To be assessed' : UB.proc.degreeOf(c))}</span></td><td>${UB.fmt(c.filed)}</td><td>${UB.chip(c.status)}</td><td><button class="link" data-id="${esc(c.id)}">View</button></td></tr>`).join('');
     $('#none').hidden = !loaded || rows.length > 0;
     stats();
   };
@@ -207,7 +207,7 @@ const modalHtml = (c) => {
 
             <dt>Category</dt>
             <dd>
-              ${esc(c.offense === 'Unclassified' ? 'Unclassified (SAEP to assess)' : c.offense)}
+              ${esc(UB.proc.degreeOf(c) === 'Unclassified' ? 'Unclassified (SAEP to assess)' : UB.proc.degreeOf(c))}${c.assessedDegree && c.assessedDegree !== c.offense ? ` <small class="muted">· filed as ${esc(c.offense === 'Unclassified' ? 'Others' : c.offense)}</small>` : ''}
               ${o?.section ? ` <small class="muted">${esc(o.section)}</small>` : ''}
             </dd>
 
@@ -360,7 +360,7 @@ document.addEventListener('click', function (event) {
   $('#q').oninput = render; $('#st').onchange = render;
   $('#rows').onclick = (e) => { const b = e.target.closest('[data-id]'); if (b) open(b.dataset.id); };
   if (staff) $('#sync').onclick = async () => {
-    if (!(await UB.confirm('Publish the offense list?', 'This writes data/offenses.json to Firestore so students can pick from it. Check that it matches the College Discipline Board Manual first. Entries no longer in the file are removed.', 'Publish'))) return;
+    if (!(await UB.confirm('Publish the offense list?', 'This writes data/offenses.json to Firestore so students can pick from it. Check that it matches the College Student Discipline Policy first. Entries no longer in the file are removed.', 'Publish'))) return;
     try { const r = await UB.syncOffenses(); UB.toast(r.provisional ? `Published ${r.count} types, ${r.provisional} still marked provisional in offenses.json` : `Published ${r.count} offense types`, r.provisional ? 'bad' : ''); offenses = Object.fromEntries((await UB.loadOffenses()).map((o) => [o.id, o])); }
     catch { UB.toast('Couldn’t publish the offense list.', 'bad'); }
   };

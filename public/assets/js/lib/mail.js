@@ -2,6 +2,7 @@
 // and it opens in that person's own email app (mailto:). Staff then confirm they sent it and UBridge records it.
 // Pure functions (no Firebase imports) so they can be tested with plain Node.
 import { fmt } from './dates.js';
+import { CONTACT } from '../data.js';
 
 export const KINDS = {
   notice: 'Notice to the respondent',
@@ -26,8 +27,10 @@ const MODES = { 'face-to-face': 'Face-to-face', online: 'Online' };
 
 const offenseName = (c) => (c.offenseOther ? `${c.type}: ${c.offenseOther}` : c.type);
 const sign = (me) => `${me?.name || 'SAEP Office'}\n${me?.position || 'SAEP Office'}\nSAEP Office, University of Batangas – Lipa`;
+// The degree is the one SAEP assessed (policy, Process step 1); until then, the one that follows from the filed offense.
+const degreeLabel = (c) => c.assessedDegree || (c.offense && c.offense !== 'Unclassified' ? c.offense : '');
 const caseBlock = (c) =>
-  [`Case no.: ${c.id}`, `Offense: ${offenseName(c)}${c.offense && c.offense !== 'Unclassified' ? ` (${c.offense})` : ''}`, `Date of incident: ${fmt(c.date)}`, `Place: ${c.location}`].join('\n');
+  [`Case no.: ${c.id}`, `Offense: ${offenseName(c)}${degreeLabel(c) ? ` (${degreeLabel(c)})` : ''}`, `Date of incident: ${fmt(c.date)}`, `Place: ${c.location}`].join('\n');
 const CONFIDENTIAL = 'This matter is confidential. Please do not share this message.';
 
 /**
@@ -48,7 +51,11 @@ The SAEP Office has received a complaint that names you as the respondent and ha
 
 ${caseBlock(c)}
 
-Please send your written explanation by replying to this email within 72 hours of receiving it${c.answerDue ? ` (on or before ${fmt(c.answerDue)})` : ''}. Replies are accepted by email only. If we do not receive your explanation in that time, the SAEP Office will contact you again.
+A copy of the complaint, with the statement of the complainant and of any witnesses, is [attached / included below].
+
+You have not less than three (3) days to answer${c.answerDue ? ` (on or before ${fmt(c.answerDue)})` : ''}. Please send your written explanation to the SAEP Office or email it to ${CONTACT.email}. If we do not receive it in that time, an entry of general denial will be entered in your favor.
+
+You may be assisted by counsel if you wish. If you are below 18 years old, your parent or guardian will also be notified.
 
 ${CONFIDENTIAL}
 
@@ -61,7 +68,7 @@ We have not yet received your written explanation for the complaint below${c.ans
 
 ${caseBlock(c)}
 
-Please reply to this email as soon as possible. If you cannot respond, tell us the reason, or contact the SAEP Office.
+Please send it to the SAEP Office or reply to this email as soon as possible. If it is not received, an entry of general denial will be entered in your favor. If you cannot respond, tell us the reason, or contact the SAEP Office.
 
 ${CONFIDENTIAL}
 
@@ -81,7 +88,7 @@ Time: [time]
 Mode: ${mode}
 Venue or meeting link: [venue or link]
 
-Please confirm that you received this message by replying to this email. If you cannot attend, tell us as early as possible.
+Please confirm that you received this message by replying to this email. If you cannot attend, tell us as early as possible. Failure to attend two (2) consecutive disciplinary conferences means waiving your rights, and the Board will automatically render a decision.
 
 ${CONFIDENTIAL}
 
@@ -102,7 +109,9 @@ What was discussed:
 Decision: ${c.resolution || '[decision]'}${c.decisionDate ? `\nDecision date: ${fmt(c.decisionDate)}` : ''}
 Interventions: ${ivs.length ? ivs.join('; ') : '[interventions]'}
 
-The decision takes effect five (5) days after you receive it, unless you appeal in writing to the University President within that time.
+${ivs.includes('Expulsion') ? 'Expulsion may not be imposed without the approval of the Commission on Higher Education.' : 'The decision takes effect five (5) days after you receive it, unless you appeal in writing to the University President, stating your grounds, within that time.'}
+${ivs.includes('Suspension') ? '\nDuring a suspension you must report daily to the SAEP Office. Conditions for readmission will be stated in writing by the CDB.\n' : ''}${ivs.includes('Community service') ? '\nCommunity service is coordinated with the External Programs Coordinator.\n' : ''}
+A copy of the decision is also furnished to your parent or guardian, the Registrar’s Office, the VPSAS and the Office of the President.
 
 Documents you need to submit for these interventions:
 ${docs.map((d) => `- ${d}`).join('\n')}
@@ -115,12 +124,12 @@ ${sign(me)}`;
     subject = `First Degree complaint for your information, case ${c.id}`;
     body = `${hi}
 
-A First Degree complaint has been filed against a student of your college. Under the College Discipline Board Manual, First Degree offenses are handled first by the respondent's department, so the SAEP Office is informing you.
+SAEP has assessed a complaint against a student of your college as a First Degree offense. Under the College Student Discipline Policy, SAEP forwards First Degree offenses to the respondent's department.
 
 Respondent: ${c.student} (${c.sid}), ${c.program}
 ${caseBlock(c)}
 
-Please coordinate with the SAEP Office on the next steps.
+Please document the disciplinary conference your department holds and forward a copy of the decision to the College Discipline Board. The College Discipline Board handles the third commission of any First Degree offense. Please coordinate with the SAEP Office on the next steps.
 
 ${CONFIDENTIAL}
 

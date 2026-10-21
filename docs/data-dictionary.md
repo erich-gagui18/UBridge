@@ -19,13 +19,13 @@ Cloud Firestore is a document database, so this replaces the ERD in Chapter 3. T
 
 A complaint's complainant fields (`cSid`, `cCourse`, `cDept`, `cContact`, `filedByName`) must equal these profile values when it is filed, so a profile has to be complete first.
 
-## offenses/{offenseId}  (catalog from the College Discipline Board Manual, Handbook Revision No. 7)
+## offenses/{offenseId}  (catalog from the College Student Discipline Policy, SAEP M Revision No. 4)
 | Field | Type | Notes |
 |---|---|---|
 | type | string (2–80) | Offense name shown in the form |
-| category | string | `First Degree`, `Second Degree` or `Third Degree` (CDB Manual sections 4.1, 4.3, 4.5). Complaints filed before this change may still hold `Minor`, `Major` or `Grave` in `offense`; they stay readable |
+| category | string | `First Degree`, `Second Degree` or `Third Degree` (the three offense lists of the policy). Complaints filed before this change may still hold `Minor`, `Major` or `Grave` in `offense`; they stay readable |
 | sanction | string (≤1000) | Sanction text as written in the handbook |
-| section | string (≤60) | Manual reference, e.g. `CDB Manual § 4.3.13`. Ids look like `cdb-4-3-13` |
+| section | string (≤60) | List and item number as printed in the policy, e.g. `Second Degree Offenses, no. 13`. Ids look like `cdb-4-3-13` (kept from the earlier manual so old complaints still match) |
 
 Read by any signed-in UB user; written only by staff. Seeded from `public/assets/js/data/offenses.json`.
 
@@ -42,6 +42,8 @@ Read by any signed-in UB user; written only by staff. Seeded from `public/assets
 | offenseId, type, offense | string | Catalog id, its type and category. Rules check they match the catalog. The "Others" choice uses `offenseId` `others`, type `Others (not listed)` and category `Unclassified` (no catalog entry) |
 | offenseOther | string (3–100) | Only with Others: what the complainant says happened. Absent for catalog offenses |
 | route | string | `department` for First Degree, `cdb` otherwise; set at filing, can only move from `department` to `cdb` |
+| assessedDegree | string | SAEP's assessment of the degree (`First Degree`, `Second Degree`, `Third Degree`) or ''. Second and Third Degree require `route` = `cdb`. Overrides the degree of the filed offense when set |
+| deptDecisionDate | string YYYY-MM-DD or '' | Date the respondent's department's decision copy reached the CDB (department cases) |
 | noticeDate, answerDue | string YYYY-MM-DD or '' | Notice to the respondent and answer deadline (at least 3 days after the notice) |
 | answer | string | '' (awaiting), `received` or `general-denial` |
 | parentsNotified | string YYYY-MM-DD or '' | Date parents or guardians were notified |

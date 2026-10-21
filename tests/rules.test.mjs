@@ -207,9 +207,21 @@ describe('updating cases (accountability and non-repudiation)', () => {
   });
 });
 
-describe('case handling (CDB Manual 5.1)', () => {
+describe('case handling (College Student Discipline Policy, Process)', () => {
   beforeEach(seedCase);
   const ST = (changes) => staffEdit(as('staff1'), 1, changes, { to: changes.status || 'submitted' });
+  it('SAEP can assess a case as Second Degree when it moves to the CDB', async () => assertSucceeds(ST({ assessedDegree: 'Second Degree', route: 'cdb' })));
+  it('a Second or Third Degree assessment cannot stay with the department', async () => {
+    await assertFails(ST({ assessedDegree: 'Second Degree', route: 'department' }));
+    await assertFails(ST({ assessedDegree: 'Third Degree' }));
+  });
+  it('a First Degree assessment can stay with the department', async () => assertSucceeds(ST({ assessedDegree: 'First Degree' })));
+  it('rejects an assessed degree that is not one of the three degrees', async () => assertFails(ST({ assessedDegree: 'Minor', route: 'cdb' })));
+  it('records the date the department’s decision reached the CDB, and rejects a bad date', async () => {
+    await assertSucceeds(ST({ deptDecisionDate: '2026-10-12' }));
+    await assertFails(ST({ deptDecisionDate: '12/10/2026' }));
+  });
+  it('students cannot assess their own complaint', async () => assertFails(updateDoc(doc(as('stu1'), 'complaints', ID(1)), { assessedDegree: 'First Degree' })));
   it('accepts a notice with a three-day answer period', async () => assertSucceeds(ST({ noticeDate: '2026-10-10', answerDue: '2026-10-13', answer: '', parentsNotified: '', conferenceMode: '', conferencesHeld: 0 })));
   it('accepts a longer answer period', async () => assertSucceeds(ST({ noticeDate: '2026-10-10', answerDue: '2026-10-20' })));
   it('rejects an answer period shorter than three days', async () => assertFails(ST({ noticeDate: '2026-10-10', answerDue: '2026-10-12' })));

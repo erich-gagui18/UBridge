@@ -1,4 +1,4 @@
-// AI Guide: retrieval over chunks of the College Discipline Board Manual, then Gemini through Firebase AI Logic.
+// AI Guide: retrieval over chunks of the College Student Discipline Policy, then Gemini through Firebase AI Logic.
 // The model only sees the retrieved chunks and must cite them; the UI shows the cited sections from the
 // chunk data itself, never from text the model wrote.
 import { app } from '../firebase.js';
@@ -6,7 +6,7 @@ import { getAI, getGenerativeModel, GoogleAIBackend, Schema } from '../sdk/ai.js
 import { GEMINI_MODEL } from '../firebase-config.js';
 import { buildIndex, search } from './retrieval.js';
 
-export const SCOPE = 'the College Discipline Board Manual in the UB Student Handbook (Revision No. 7, 2023)';
+export const SCOPE = 'the UB College Student Discipline Policy (SAEP M, Revision No. 4, approved March 25, 2026)';
 const MAX_Q = 300;
 
 let indexPromise;
@@ -21,7 +21,7 @@ function loadIndex() {
 }
 
 /* ---------- generation ---------- */
-const SYSTEM = `You answer student questions about the University of Batangas Student Handbook.
+const SYSTEM = `You answer student questions about the University of Batangas College Student Discipline Policy (UB document SAEP M, Revision No. 4).
 Rules:
 1. Use ONLY the text inside CONTEXT. Never use outside knowledge and never guess offenses, categories or sanctions.
 2. If CONTEXT does not clearly answer the question, set answerable to false and leave answer empty.
@@ -62,10 +62,10 @@ export async function answer(question) {
     const index = await loadIndex();
     found = { docs: index.docs.length, hits: search(index, q) };
   } catch {
-    return { text: 'The handbook text couldn’t be loaded. Refresh the page and try again.', sources: [], mode: 'empty' };
+    return { text: 'The policy text couldn’t be loaded. Refresh the page and try again.', sources: [], mode: 'empty' };
   }
   if (!found.docs) {
-    return { text: 'The handbook text hasn’t been added to this deployment yet, so the guide can’t answer.', sources: [], mode: 'empty' };
+    return { text: 'The policy text hasn’t been added to this deployment yet, so the guide can’t answer.', sources: [], mode: 'empty' };
   }
   if (!found.hits.length) return { text: NOT_FOUND, sources: [], mode: 'none' };
 
@@ -82,10 +82,10 @@ export async function answer(question) {
   } catch {
     /* fall through to the extractive answer below */
   }
-  // AI unavailable (quota, App Check, offline) or its answer wasn't grounded: show the closest handbook text itself.
+  // AI unavailable (quota, App Check, offline) or its answer wasn't grounded: show the closest policy text itself.
   const top = found.hits[0];
   return {
-    text: `The AI summary isn’t available right now. This is the closest handbook text:\n\n${top.text.slice(0, 600)}${top.text.length > 600 ? '…' : ''}`,
+    text: `The AI summary isn’t available right now. This is the closest text from the policy:\n\n${top.text.slice(0, 600)}${top.text.length > 600 ? '…' : ''}`,
     sources: [src(top)],
     mode: 'extract',
   };

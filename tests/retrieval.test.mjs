@@ -28,7 +28,7 @@ test('stop words alone return nothing', () => {
   assert.deepEqual(search(index, 'what is the'), []);
 });
 
-// The shipped handbook.json is the College Discipline Board Manual (Revision No. 7); make sure the guide can find the degrees.
+// The shipped handbook.json is the UB College Student Discipline Policy (SAEP M, Revision No. 4); make sure the guide can find the degrees.
 import { readFileSync } from 'node:fs';
 test('shipped handbook finds plagiarism under Third Degree offenses', () => {
   const { chunks } = JSON.parse(readFileSync(new URL('../public/assets/js/data/handbook.json', import.meta.url), 'utf8'));

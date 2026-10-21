@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // Turn plain-text exports of handbook text into public/assets/js/data/handbook.json.
 //
-//   node scripts/chunk-handbook.mjs handbook/cdb-manual.txt
+//   node scripts/chunk-handbook.mjs handbook/discipline-policy.txt --label "College Student Discipline Policy" --prefix CSDP --version saep-m-rev4-2026
 //
-// The label comes from the file name: section-VII.txt -> "Section VII", cdb-manual.txt -> "CDB Manual".
+// The label (shown to the person as the cited source) comes from --label, or from the file name: section-VII.txt -> "Section VII",
+// cdb-manual.txt -> "CDB Manual". --prefix sets the chunk id prefix (CSDP-01, CSDP-02, ...).
 // A line is treated as a heading when it matches --heading (default: two-level numbered lines such as "4.1 FIRST DEGREE OFFENSES"
 // or lines written in ALL CAPS). Three-level numbers such as 4.1.1 are body text, not headings. Text under a heading is kept word for word (only whitespace is tidied) and split at paragraph breaks into chunks
 // of about --max characters (default 900). Check the output against the printed handbook before you rely on it.
@@ -18,11 +19,13 @@ const opt = (name, dflt) => {
 };
 const OUT = opt('--out', 'public/assets/js/data/handbook.json');
 const MAX = Number(opt('--max', 900));
-const VERSION = opt('--version', 'cdb-rev7-2023');
+const VERSION = opt('--version', 'unversioned');
+const LABEL = opt('--label', '');
+const PREFIX = opt('--prefix', '');
 const HEADING = new RegExp(opt('--heading', '^\\s*(?:\\d+\\.\\d+\\s+\\S.{2,100}|[A-Z][A-Z0-9 ,&/()\\-]{5,100})\\s*$'));
 const files = args;
 if (!files.length) {
-  console.error('Usage: node scripts/chunk-handbook.mjs <cdb-manual.txt | section-VII.txt> [...] [--out file] [--max 900] [--heading regex] [--version label]');
+  console.error('Usage: node scripts/chunk-handbook.mjs <policy.txt> [...] [--label "Shown source name"] [--prefix ID] [--out file] [--max 900] [--heading regex] [--version label]');
   process.exit(1);
 }
 
@@ -31,11 +34,11 @@ for (const file of files) {
   const stem = basename(file).replace(/\.[^.]+$/, '');
   const m = stem.match(/^section[-_ ]?([ivxlc]+)$/i);
   // section-VII.txt -> "Section VII"; any other name (cdb-manual.txt) -> words capitalised, short words upper-case ("CDB Manual").
-  const label = m
+  const label = LABEL || (m
     ? `Section ${m[1].toUpperCase()}`
-    : stem.split(/[-_ ]+/).filter(Boolean).map((w) => (w.length <= 3 ? w.toUpperCase() : w[0].toUpperCase() + w.slice(1))).join(' ');
+    : stem.split(/[-_ ]+/).filter(Boolean).map((w) => (w.length <= 3 ? w.toUpperCase() : w[0].toUpperCase() + w.slice(1))).join(' '));
   if (!label) throw new Error(`Cannot read a label from the file name: ${file}`);
-  const roman = m ? m[1].toUpperCase() : label.split(' ')[0].toUpperCase();
+  const roman = PREFIX || (m ? m[1].toUpperCase() : label.split(' ')[0].toUpperCase());
   const section = label;
   let title = '', buf = [], seq = 0;
   const flush = () => {

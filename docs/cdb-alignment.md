@@ -1,36 +1,32 @@
-# CDB Manual alignment (Student Handbook Revision No. 7)
+# Alignment with the College Student Discipline Policy
 
-Source: UB Student Handbook, Revision No. 7 (issue date April 11, 2023), College Discipline Board Manual (handbook pages 134 to 154 of the PDF; manual pages 1 to 15).
+Source: UB document **SAEP M, Revision No. 4**, "7.0 College Student Discipline Policy" (revision date 03/17/2026, approved 03/25/2026), confirmed by the team as the current policy. It replaces the earlier Student Handbook Revision No. 7 manual as UBridge's source. The word-for-word text is `handbook/discipline-policy.txt` (checked against the PDF); the old text is in `handbook/archive/`.
 
-## What the system now follows
-| Manual | UBridge |
-|---|---|
-| § 4.1, 4.3, 4.5: First (19), Second (18), Third (8) Degree offenses | `public/assets/js/data/offenses.json`, 45 entries, ids `cdb-<section>`; category names are the degrees; dropdown grouped by degree |
-| § 4.2, 4.4, 4.6: interventions per degree | `sanction` field per offense, text copied from the manual (vandalism adds the restoration payment of § 4.4.3) |
-| § 5.1.1: complaint form F-SAEP-07; Second/Third Degree and third commission of First Degree go to SAEP or `cdb@ub.edu.ph` | Form footer; a notice appears when a First Degree offense is selected |
-| § 5.1.2 to 5.1.6: notice, explanation (not less than 3 days), conference, decision within 10 days | Status pipeline Submitted, In review, For hearing, Resolved with hearing date and resolution note |
-| § 3.4.8 to 3.4.10: Data Privacy Act, consent by filling the form | Consent checkbox and wording, privacy notice, Firestore rules |
-| Whole manual | `handbook/cdb-manual.txt` (verbatim) chunked into `handbook.json` for the AI Guide |
+"Process step N" means the numbered step N of the policy's PROCESS section.
 
-## Case handling added in v3 (staff record it in the case dialog)
-| Manual | UBridge |
-|---|---|
-| § 5.1.1.1 and 5.1.1.2: First Degree with the respondent's department; Second, Third Degree and third commission of a First Degree with SAEP/CDB | `route` (`department` or `cdb`) is set when the complaint is filed from its degree and checked by the rules. Staff can escalate to `cdb`, never back. The case dialog shows the respondent's First Degree commission count, so a third commission is flagged |
-| § 5.1.2: written notice, at least 3 days to answer, general denial if no answer | `noticeDate`, `answerDue` (rules require at least 3 days after the notice), `answer`. After the due date with no answer the case shows that a general denial applies |
-| § 5.1.3: notice to parents or guardians | `parentsNotified` date |
-| § 5.1.4: disciplinary conference, face-to-face or online | Hearing date, `conferenceMode`, `conferencesHeld` |
-| § 5.1.6: decision within 10 days of the last conference, effective 5 days after receipt unless appealed | `decisionDate` (required to resolve), `interventions` (the 7 of § 5.1.5), written decision in the resolution note. The dialog shows the 10-day decision due date and the 5-day effective date |
-| § 5.1.6: appeal to the University President | `appeal` (filed, upheld, modified, reversed) and `appealDate`, only after a decision |
+## What changed against the earlier manual, and what UBridge does now
+| Policy | Earlier manual | UBridge |
+|---|---|---|
+| Process 1: every complaint is filed to SAEP (saep.ubbc@ / saep.ublc@ub.edu.ph), SAEP **initially assesses the degree**; First Degree is forwarded to the respondent's department, Second and Third to the CDB | First Degree filed with the department | Anyone can file any offense. Staff record **SAEP assessment: degree** in the case form; Second/Third Degree moves the case to the CDB (enforced by the rules). Cases filed as "Others" show "Awaiting SAEP to assess" until assessed |
+| First Degree: the CDB handles the **third commission** | same | Counted per respondent student number, using the assessed degree |
+| First Degree Interventions note: the department documents its conference and forwards a copy of the decision to the CDB | not stated | Staff record the date the copy was received (`deptDecisionDate`) |
+| Contacts: saep.ubbc@ub.edu.ph / saep.ublc@ub.edu.ph | cdb@ub.edu.ph | `CONTACT.email` = saep.ublc@ub.edu.ph; privacy page and notice emails use it. `cdb@ub.edu.ph` is no longer used |
+| Offense wording: First no. 3 "physically or online"; no. 13 "anywhere in the campus"; elevation "as a higher degree offense"; offenses cover social media platforms | older wording | Catalog labels and sanction text updated; AI Guide text regenerated |
+| Second Degree suspension: "1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge" | "1 - 3 days suspension..." | Catalog sanction text updated |
+| Process 2: notice has a copy of the complaint with the statement of the complainant and witnesses, not less than 3 days, assistance of counsel, answer filed with the SAEP Office **or** emailed, **general denial** if no answer | email only, no denial wording | Notice and follow-up drafts rewritten. The notice has a `[attached / included below]` placeholder staff must resolve. Rules still enforce at least 3 days |
+| Process 4: two missed conferences waive rights and the Board decides | same | Shown in the form hint and the schedule email |
+| Process 6: copies of the decision go to the respondent, parent/guardian, **Registrar's Office, VPSAS**, Office of the President; effective in 5 days unless appealed (not for expulsion); President's decision immediately executory except expulsion | respondent, parent, President | Decision email and form hint list all recipients; expulsion shows the CHED approval note instead of an effectivity date |
+| Process 5: suspension means reporting daily to the SAEP Office, readmission conditions in writing by the CDB; community service coordinated with the External Programs Coordinator | same | Added to the decision email when those interventions are chosen |
 
-Each change goes through the existing batch: history entry (with an automatic plain-language remark), staff-only audit entry and an in-app notification to the filer.
+## Matches already in place
+- 45 offenses: 19 First, 18 Second, 8 Third Degree, with the interventions for each degree.
+- Statuses map to the flowchart: Submitted (filing), In review (SAEP assessment), For hearing (notice, parents, conference), Resolved (interventions, decision, appeal).
+- 10-day decision deadline, 5-day effectivity and appeal date, parents notified when under 18, case history and audit trail.
+- AI Guide answers only from the policy text and cites the part used.
 
-## Still not modelled (mention in the limitations)
-- Respondent login or an upload of the respondent's explanation (staff only record that it was received).
-- A department-head role. First Degree cases are still filed to SAEP, which records the department's handling.
-- Automatic computation of the parent-notice requirement from the respondent's age (staff decide).
-- Two consecutive missed conferences waiving the respondent's rights (staff keep the count and decide).
-
-## Verify before real use
-1. Revision No. 8 (2026) lists "Student Discipline" under SAEP and a College Discipline Board Committee but does not reprint the manual. Ask the SAEP Office whether the degree classification and the offense list are unchanged.
-2. Compare `handbook/cdb-manual.txt` with the printed manual once. Source typos (for example "guild of the offender") are kept on purpose.
-3. Offense names in the dropdown are short labels written for UBridge; the manual's own wording is in the AI Guide text and the `section` reference.
+## Not modelled (decide with the adviser and SAEP)
+- A login for departments: First Degree conferences held by departments happen outside UBridge.
+- Off-campus and online jurisdiction: UBridge records the place and description but does not test the five jurisdiction conditions.
+- Withholding and revocation of awards and privileges (Process step 7): recorded only in the resolution note.
+- CDB voting (at least 2 members) and separate opinions: kept in the written decision, not in the system.
+- The F-SAEP-07 form itself: its layout is not in the policy PDF, so the form fields follow what the team already mapped.

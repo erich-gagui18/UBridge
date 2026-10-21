@@ -19,23 +19,23 @@ Pushing to `main` also deploys Hosting through the GitHub workflow. **Rules are 
 ## First deploy after the workflow update (do these in order)
 1. `firebase deploy --only firestore:rules`
 2. Make a SAEP staff account (below), sign in as staff, open **All cases**, and press **Sync offense list**. Students can't file until the `offenses` collection exists.
-3. `public/assets/js/data/offenses.json` now holds the 45 offenses of the College Discipline Board Manual (Student Handbook Revision No. 7, First/Second/Third Degree). Confirm with the SAEP Office that the list is still current (see `docs/cdb-alignment.md`), then press **Sync offense list**. Sync also removes catalog entries that are no longer in the file, such as the old placeholders.
-4. `handbook.json` is already generated from the manual; run `npm run chunk` again only if `handbook/cdb-manual.txt` changes (see "AI Guide").
+3. `public/assets/js/data/offenses.json` holds the 45 offenses of the UB College Student Discipline Policy (SAEP M, Revision No. 4, approved 03/25/2026: 19 First, 18 Second, 8 Third Degree) with their interventions (see `docs/cdb-alignment.md`). Press **Sync offense list** after deploying so the dropdown shows the updated wording and interventions. Sync also removes catalog entries that are no longer in the file.
+4. `handbook.json` is already generated from the policy; run `npm run chunk` again only if `handbook/discipline-policy.txt` changes (see "AI Guide").
 
 ## Make a SAEP Staff account
 Sign up as a student, then in Firestore open `users/<uid>` and change `role` to `staff`. Staff can't be self-assigned; the rules only allow student or faculty at sign-up.
 
 ## Leftovers
-- `CONTACT.email` in `public/assets/js/data.js` is set to the UB Lipa SAEP address listed in Handbook Revision No. 8. Confirm it with the SAEP Office. CDB complaint forms are emailed to `cdb@ub.edu.ph` (CDB Manual § 5.1.1.2).
+- `CONTACT.email` in `public/assets/js/data.js` is `saep.ublc@ub.edu.ph`, the Lipa SAEP address printed in the discipline policy (Process step 1; the Batangas City address is `saep.ubbc@ub.edu.ph`).
 - Once the first push succeeds, ask your teammates to clone the repo so there is more than one copy.
 
-## AI Guide (RAG over the College Discipline Board Manual)
-1. The source text is `handbook/cdb-manual.txt`, copied word for word from the manual in Student Handbook Revision No. 7 (pages 1 to 15 of the manual). The file name sets the label shown to users ("CDB Manual"). Other files named `section-VII.txt` style are labelled "Section VII".
-2. `npm run chunk` writes `public/assets/js/data/handbook.json` (41 chunks). Open it and compare a few chunks with the printed manual.
+## AI Guide (RAG over the College Student Discipline Policy)
+1. The source text is `handbook/discipline-policy.txt`, copied word for word from the policy (UB document SAEP M, Revision No. 4, pages 1 to 14; checked against the PDF). `npm run chunk` passes the label shown to users ("College Student Discipline Policy") and the chunk id prefix (`CSDP`).
+2. `npm run chunk` writes `public/assets/js/data/handbook.json` (41 chunks). Open it and compare a few chunks with the printed policy.
 3. Firebase console > Build > AI Logic: enable it with the **Gemini Developer API** (the no-cost tier works on Spark). Check the model name in `GEMINI_MODEL` (firebase-config.js) against the console.
 4. App Check: create a reCAPTCHA v3 site key, register it under App Check > Apps > Web, paste the **site** key into `RECAPTCHA_SITE_KEY`, redeploy. Watch App Check metrics for a few days, then press **Enforce** for Firestore and AI Logic. Add the `localhost` debug token shown in the console if you test locally.
 
-The guide retrieves the best-matching chunks in the browser, sends only those to Gemini with an "answer only from this context" instruction, and shows the cited section from the chunk data. If Gemini is unavailable it shows the closest handbook text instead.
+The guide retrieves the best-matching chunks in the browser, sends only those to Gemini with an "answer only from this context" instruction, and shows the cited section from the chunk data. If Gemini is unavailable it shows the closest policy text instead.
 
 ## Courses and departments
 `public/assets/js/data/academics.json` feeds the course and department pickers on the profile page and the respondent section of the complaint form. It lists the eight UBLC colleges and 37 programs from Student Handbook Revision No. 8 (issue date 21 January 2026): Graduate School, College of Law, College of Education, Arts and Sciences, College of Criminal Justice Education, College of Management and Tourism, College of Engineering and Architecture, College of Information Technology, Entertainment and Communication, and College of Health Sciences. Names of the colleges and course labels that were already in the list are unchanged, so saved profiles and complaints still match. BS Forensic Science (BSFS) is not in Revision No. 8; it is kept from the earlier list and should be confirmed with the Registrar's Office (delete its line if it is not offered). Profiles that saved a course no longer in the list open under \"Others (not listed)\" with the saved text intact, and the person can re-pick the course. Redeploy Hosting after editing the file.

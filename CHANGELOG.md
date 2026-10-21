@@ -1,5 +1,25 @@
 # Changelog
 
+## v7 (21 October 2026)
+
+### Changed
+- **Source is now the UB College Student Discipline Policy** (document SAEP M, Revision No. 4, revised 03/17/2026, approved 03/25/2026). The earlier Revision No. 7 manual text moved to `handbook/archive/`.
+  - `data/offenses.json`: 45 offenses re-checked against the policy; item wording, section labels ("First Degree Offenses, no. 4") and interventions updated. Ids are unchanged so existing complaints still match. Press **Sync offense list** after deploying.
+  - `data/handbook.json`: regenerated from `handbook/discipline-policy.txt` (`npm run chunk`); AI Guide scope, prompts and page text now name the policy.
+  - Contacts: `saep.ublc@ub.edu.ph` replaces `cdb@ub.edu.ph` everywhere.
+  - Email drafts follow the policy: counsel, answer to the SAEP Office or by email, general denial, two missed conferences, decision copies to the Registrar's Office and VPSAS, expulsion needs CHED approval, suspension and community service conditions.
+  - References such as "CDB Manual § 5.1.x" became "Process step N".
+- Process: the third First Degree commission is counted using the assessed degree.
+
+### Added
+- **SAEP assessment** (Process step 1): staff record the degree of the offense; Second and Third Degree move the case to the CDB. New fields `assessedDegree` and `deptDecisionDate` (rules, UI, report, data dictionary).
+- `tests/process.test.mjs` (9 tests), new mail tests, and 6 new rules tests.
+
+### Notes
+- Deploy Firestore rules with Hosting: `firebase deploy --only hosting,firestore:rules`, then press **Sync offense list**.
+- Rules tests need the Firebase emulator (`npm run test:rules`) and were not run in this build.
+- See `docs/cdb-alignment.md` for the clause-by-clause comparison and what is still not modelled.
+
 ## v6 (9 October 2026)
 
 ### Added

@@ -32,11 +32,48 @@ test('respondent emails go to the respondent; the department notice starts with 
   assert.equal(draft('department', c, me).to, '');
 });
 
-test('the notice asks for an explanation within 72 hours by email and shows the due date', () => {
+test('the notice follows the policy: not less than 3 days, where to answer, counsel, general denial, due date', () => {
   const b = draft('notice', c, me).body;
-  assert.match(b, /72 hours/);
-  assert.match(b, /email only/);
+  assert.match(b, /not less than three \(3\) days/);
+  assert.match(b, /saep\.ublc@ub\.edu\.ph/);
+  assert.match(b, /assisted by counsel/);
+  assert.match(b, /general denial/);
   assert.match(b, /2026/);
+});
+
+test('the notice cannot be sent until staff say how the complaint copy is delivered', () => {
+  assert.match(check(draft('notice', c, me)), /\[attached \/ included below\]/);
+});
+
+test('the follow-up warns that a general denial will be entered', () => {
+  assert.match(draft('followup', c, me).body, /general denial/);
+});
+
+test('the schedule email states the two-missed-conferences rule', () => {
+  assert.match(draft('schedule', c, me).body, /two \(2\) consecutive/);
+});
+
+test('the decision email lists the people who receive a copy and handles expulsion and suspension', () => {
+  const b = draft('decision', c, me).body;
+  assert.match(b, /Registrar’s Office, the VPSAS and the Office of the President/);
+  assert.match(b, /five \(5\) days/);
+  const exp = draft('decision', { ...c, interventions: ['expulsion'] }, me).body;
+  assert.match(exp, /Commission on Higher Education/);
+  assert.doesNotMatch(exp, /takes effect five/);
+  const sus = draft('decision', { ...c, interventions: ['suspension'] }, me).body;
+  assert.match(sus, /report daily to the SAEP Office/);
+});
+
+test('the case block shows the degree SAEP assessed, not only the one that was filed', () => {
+  const b = draft('notice', { ...c, offense: 'Unclassified', assessedDegree: 'Second Degree' }, me).body;
+  assert.match(b, /\(Second Degree\)/);
+  assert.doesNotMatch(draft('notice', { ...c, offense: 'Unclassified' }, me).body, /\(Unclassified\)/);
+});
+
+test('the department notice says SAEP assessed it, and asks for the decision copy', () => {
+  const b = draft('department', c, me).body;
+  assert.match(b, /SAEP has assessed/);
+  assert.match(b, /forward a copy of the decision to the College Discipline Board/);
 });
 
 test('the decision email lists interventions and the documents to submit', () => {

@@ -31,7 +31,7 @@ service cloud.firestore {
     // Calendar date (YYYY-MM-DD) as a timestamp, for day arithmetic.
     function dateTs(s) { return timestamp.date(int(s[0:4]), int(s[5:7]), int(s[8:10])); }
     function dateOrEmpty(s) { return s is string && (s == '' || isDate(s)); }
-    // CDB Manual 5.1: routing, notice (answer time of at least 3 days), conference, decision and appeal. Every field is optional
+    // College Student Discipline Policy (SAEP M Rev. 4), Process: SAEP assessment and routing, notice (answer time of at least 3 days), conference, decision and appeal. Every field is optional
     // so older cases still validate; the app always sends them together.
     function processOk(n, old) {
       return (!('route' in n) || n.route == 'cdb' || n.route == old.get('route', n.route))
@@ -49,7 +49,11 @@ service cloud.firestore {
             && n.interventions.hasOnly(['reprimand', 'censure', 'probation', 'community', 'suspension', 'exclusion', 'expulsion'])))
         && (!('appeal' in n) || n.appeal in ['', 'filed', 'upheld', 'modified', 'reversed'])
         && (!('appealDate' in n) || dateOrEmpty(n.appealDate))
-        && (!('appeal' in n) || n.appeal == '' || (n.status == 'resolved' && 'appealDate' in n && n.appealDate != ''));
+        && (!('appeal' in n) || n.appeal == '' || (n.status == 'resolved' && 'appealDate' in n && n.appealDate != ''))
+        // SAEP initially assesses the degree of the offense (policy, Process step 1). Second and Third Degree belong to the CDB.
+        && (!('assessedDegree' in n) || n.assessedDegree in ['', 'First Degree', 'Second Degree', 'Third Degree'])
+        && (!('assessedDegree' in n) || n.assessedDegree in ['', 'First Degree'] || n.route == 'cdb')
+        && (!('deptDecisionDate' in n) || dateOrEmpty(n.deptDecisionDate));
     }
 
     // "Others": no catalog entry and no category. SAEP classifies it later, so the complainant must describe it.
@@ -120,7 +124,7 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Offense catalog taken from the College Discipline Board Manual (Student Handbook Revision No. 7, sections 4.1 to 4.6). Everyone signed in can read it; only staff edit it.
+    // Offense catalog taken from the College Student Discipline Policy (SAEP M, Revision No. 4): the three offense lists. Everyone signed in can read it; only staff edit it.
     match /offenses/{oid} {
       allow read: if signedIn();
       allow create, update: if isStaff() && oid.matches('^[a-z0-9-]{2,60}$')
@@ -145,7 +149,7 @@ service cloud.firestore {
       function staffEdit() {
         let n = request.resource.data;
         return isStaff()
-          && n.diff(resource.data).affectedKeys().hasOnly(['status', 'hearingDate', 'resolution', 'updatedAt', 'updatedBy', 'hCount', 'route', 'noticeDate', 'answerDue', 'answer', 'parentsNotified', 'conferenceMode', 'conferencesHeld', 'decisionDate', 'interventions', 'appeal', 'appealDate'])
+          && n.diff(resource.data).affectedKeys().hasOnly(['status', 'hearingDate', 'resolution', 'updatedAt', 'updatedBy', 'hCount', 'route', 'noticeDate', 'answerDue', 'answer', 'parentsNotified', 'conferenceMode', 'conferencesHeld', 'decisionDate', 'interventions', 'appeal', 'appealDate', 'assessedDegree', 'deptDecisionDate'])
           && n.status in ['submitted', 'review', 'hearing', 'resolved']
           && n.updatedAt == request.time && n.updatedBy == request.auth.uid
           && n.hCount == resource.data.get('hCount', 0) + 1

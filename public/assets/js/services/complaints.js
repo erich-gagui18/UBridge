@@ -71,7 +71,7 @@ export async function createComplaint(me, v, files) {
     t.set(doc(db, 'complaints', id), {
       ...v,
       filed: todayPH(),
-      route: v.offense === 'First Degree' ? 'department' : 'cdb', // CDB Manual § 5.1.1: First Degree starts with the respondent's department
+      route: v.offense === 'First Degree' ? 'department' : 'cdb', // Policy, Process step 1: SAEP assesses the complaint, then forwards First Degree to the respondent's department; the CDB handles the rest
       status: 'submitted',
       filedBy: me.uid,
       filedByName: me.name,

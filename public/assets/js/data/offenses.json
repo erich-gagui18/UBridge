@@ -1,50 +1,365 @@
 {
-  "_note": "Source: UB Student Handbook, Revision No. 7 (issue date April 11, 2023), College Discipline Board Manual, sections 4.1 to 4.6. Offense names are short labels written for the dropdown; the full wording is in handbook/cdb-manual.txt. Categories are the manual's First, Second and Third Degree. Revision No. 8 (2026) does not reprint the manual, so confirm with the SAEP Office that this list is still current before real use, then press 'Sync offense list' on the SAEP All cases page.",
+  "_note": "Source: UB College Student Discipline Policy, document SAEP M, Revision No. 4 (revision date 03/17/2026, approved 03/25/2026), sections FIRST/SECOND/THIRD DEGREE OFFENSES and their INTERVENTIONS. 'section' gives the list and the item number as printed in the policy. Offense names are short labels written for the dropdown; the policy's own wording is in handbook/discipline-policy.txt. Ids (cdb-4-N-M) are kept from the earlier Revision No. 7 list so existing complaints still match: 4-1 = First Degree, 4-3 = Second Degree, 4-5 = Third Degree, M = the item number. Press 'Sync offense list' on the SAEP All cases page after changing this file.",
   "offenses": [
-    {"id": "cdb-4-1-1", "type": "Shouting, boisterous conduct or disturbances", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.1", "provisional": false},
-    {"id": "cdb-4-1-2", "type": "Using sound amplification equipment without written permission", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.2", "provisional": false},
-    {"id": "cdb-4-1-3", "type": "Writing, drawing or posting printed material for malicious purposes", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.3", "provisional": false},
-    {"id": "cdb-4-1-4", "type": "Uniform violation (not worn, incomplete or improper)", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.4", "provisional": false},
-    {"id": "cdb-4-1-5", "type": "Smoking inside the campus", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.5", "provisional": false},
-    {"id": "cdb-4-1-6", "type": "Indecent or malicious words or acts against fellow students", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.6", "provisional": false},
-    {"id": "cdb-4-1-7", "type": "Pornographic materials (possessing, displaying, distributing, accessing)", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.7", "provisional": false},
-    {"id": "cdb-4-1-8", "type": "Discourteous or disruptive cellphone use during classes", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.8", "provisional": false},
-    {"id": "cdb-4-1-9", "type": "Misuse or tampering of identification card", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.9", "provisional": false},
-    {"id": "cdb-4-1-10", "type": "Refusing to identify oneself or comply with an official’s order or summons", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.10", "provisional": false},
-    {"id": "cdb-4-1-11", "type": "Violating posted university, college, department or organization rules", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.11", "provisional": false},
-    {"id": "cdb-4-1-12", "type": "Unauthorized entry to a performance or spectator area", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.12", "provisional": false},
-    {"id": "cdb-4-1-13", "type": "Littering on campus", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.13", "provisional": false},
-    {"id": "cdb-4-1-14", "type": "Loitering along corridors during class hours", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.14", "provisional": false},
-    {"id": "cdb-4-1-15", "type": "Violation of the canteen’s Clean As You Go (CLAYGO) policy", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.15", "provisional": false},
-    {"id": "cdb-4-1-16", "type": "Unauthorized posting of notices, announcements, tarpaulins or streamers", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.16", "provisional": false},
-    {"id": "cdb-4-1-17", "type": "Male students: earrings, headgear or inappropriate accessories", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.17", "provisional": false},
-    {"id": "cdb-4-1-18", "type": "Female students: more than one set of earrings or inappropriate accessories", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.18", "provisional": false},
-    {"id": "cdb-4-1-19", "type": "Inappropriate haircut, hair color, jewelry, piercings or visible tattoos", "category": "First Degree", "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if student is below 18 years old) for information and consultation.", "section": "CDB Manual § 4.1.19", "provisional": false},
-    {"id": "cdb-4-3-1", "type": "Brawl inside or near the campus", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.1", "provisional": false},
-    {"id": "cdb-4-3-2", "type": "Gambling inside the campus", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.2", "provisional": false},
-    {"id": "cdb-4-3-3", "type": "Carrying deadly weapons or explosives inside the campus", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.3", "provisional": false},
-    {"id": "cdb-4-3-4", "type": "Disrespect or threat toward faculty members or school personnel", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.4", "provisional": false},
-    {"id": "cdb-4-3-5", "type": "Vandalism of school property", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion; In case of vandalism, payment sufficient to restore the property to original state shall be required. Payment shall be assessed by MAGS Office to be paid to the Cashier’s Office.", "section": "CDB Manual § 4.3.5", "provisional": false},
-    {"id": "cdb-4-3-6", "type": "False report of a bomb, fire, disaster or other emergency", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.6", "provisional": false},
-    {"id": "cdb-4-3-7", "type": "Altering, forging or misusing university records or documents", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.7", "provisional": false},
-    {"id": "cdb-4-3-8", "type": "Submitting false records of academic achievement", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.8", "provisional": false},
-    {"id": "cdb-4-3-9", "type": "Acquiring or using testing materials without faculty permission", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.9", "provisional": false},
-    {"id": "cdb-4-3-10", "type": "Wrongful or unauthorized use of University property or facilities", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.10", "provisional": false},
-    {"id": "cdb-4-3-11", "type": "Unlawful taking or wrongful sale or gift of University property", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.11", "provisional": false},
-    {"id": "cdb-4-3-12", "type": "Three commissions of First Degree offenses", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.12", "provisional": false},
-    {"id": "cdb-4-3-13", "type": "Bullying (verbal, physical or cyber)", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.13", "provisional": false},
-    {"id": "cdb-4-3-14", "type": "Public displays of affection in uniform or with school ID", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.14", "provisional": false},
-    {"id": "cdb-4-3-15", "type": "Concerted activities that disrupt or stop classes", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.15", "provisional": false},
-    {"id": "cdb-4-3-16", "type": "Unauthorized soliciting or collecting of money or selling of tickets", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.16", "provisional": false},
-    {"id": "cdb-4-3-17", "type": "Gross disrespect that ridicules or mocks the school community", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.17", "provisional": false},
-    {"id": "cdb-4-3-18", "type": "Threatening fellow students (verbal, written or social media)", "category": "Second Degree", "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion", "section": "CDB Manual § 4.3.18", "provisional": false},
-    {"id": "cdb-4-5-1", "type": "Academic dishonesty (plagiarism, fabrication, deception, sabotage)", "category": "Third Degree", "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion", "section": "CDB Manual § 4.5.1", "provisional": false},
-    {"id": "cdb-4-5-2", "type": "Unauthorized bringing, possession or use of liquor or illegal drugs", "category": "Third Degree", "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion", "section": "CDB Manual § 4.5.2", "provisional": false},
-    {"id": "cdb-4-5-3", "type": "Attending classes or activities under the influence of alcohol or drugs", "category": "Third Degree", "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion", "section": "CDB Manual § 4.5.3", "provisional": false},
-    {"id": "cdb-4-5-4", "type": "Physically assaulting faculty members or school personnel", "category": "Third Degree", "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion", "section": "CDB Manual § 4.5.4", "provisional": false},
-    {"id": "cdb-4-5-5", "type": "Participation in hazing", "category": "Third Degree", "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion", "section": "CDB Manual § 4.5.5", "provisional": false},
-    {"id": "cdb-4-5-6", "type": "Sexual harassment, sexual misconduct or similar immoral acts", "category": "Third Degree", "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion", "section": "CDB Manual § 4.5.6", "provisional": false},
-    {"id": "cdb-4-5-7", "type": "Obtaining goods, services or funds from the University by fraud", "category": "Third Degree", "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion", "section": "CDB Manual § 4.5.7", "provisional": false},
-    {"id": "cdb-4-5-8", "type": "Subversion, insurgency or acts punishable under the penal code", "category": "Third Degree", "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion", "section": "CDB Manual § 4.5.8", "provisional": false}
+    {
+      "id": "cdb-4-1-1",
+      "type": "Shouting, boisterous conduct or disturbances",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 1",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-2",
+      "type": "Using sound amplification equipment without written permission",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 2",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-3",
+      "type": "Writing, drawing or posting (physically or online) for malicious purposes",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 3",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-4",
+      "type": "Uniform violation (not worn, incomplete or improper)",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 4",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-5",
+      "type": "Smoking inside the campus",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 5",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-6",
+      "type": "Indecent or malicious words or acts against fellow students",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 6",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-7",
+      "type": "Pornographic materials (possessing, displaying, distributing, accessing)",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 7",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-8",
+      "type": "Discourteous or disruptive cellphone use during classes",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 8",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-9",
+      "type": "Misuse or tampering of identification card",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 9",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-10",
+      "type": "Refusing to identify oneself or comply with an official’s order or summons",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 10",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-11",
+      "type": "Violating posted university, college, department or organization rules",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 11",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-12",
+      "type": "Unauthorized entry to a performance or spectator area",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 12",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-13",
+      "type": "Littering anywhere in the campus",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 13",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-14",
+      "type": "Loitering along corridors during class hours",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 14",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-15",
+      "type": "Violation of the canteen’s Clean As You Go (CLAYGO) policy",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 15",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-16",
+      "type": "Unauthorized posting of notices, announcements, tarpaulins or streamers",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 16",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-17",
+      "type": "Male students: earrings, headgear or inappropriate accessories",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 17",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-18",
+      "type": "Female students: more than one set of earrings or inappropriate accessories",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 18",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-1-19",
+      "type": "Inappropriate haircut, hair color, jewelry, piercings or visible tattoos",
+      "category": "First Degree",
+      "sanction": "Disciplinary reprimand; University censure; Summoning the parents/ guardian (if the student is below 18 years old) for information and consultation.",
+      "section": "First Degree Offenses, no. 19",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-1",
+      "type": "Brawl inside or near the campus",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 1",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-2",
+      "type": "Gambling inside the campus",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 2",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-3",
+      "type": "Carrying deadly weapons or explosives inside the campus",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 3",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-4",
+      "type": "Disrespect or threat toward faculty members or school personnel",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 4",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-5",
+      "type": "Vandalism of school property",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; In case of vandalism, payment sufficient to restore the property to original state shall be required. Payment shall be assessed by MAGS Office to be paid to the Cashier’s Office; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 5",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-6",
+      "type": "False report of a bomb, fire, disaster or other emergency",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 6",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-7",
+      "type": "Altering, forging or misusing university records or documents",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 7",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-8",
+      "type": "Submitting false records of academic achievement",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 8",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-9",
+      "type": "Acquiring or using testing materials without faculty permission",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 9",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-10",
+      "type": "Wrongful or unauthorized use of University property or facilities",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 10",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-11",
+      "type": "Unlawful taking or wrongful sale or gift of University property",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 11",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-12",
+      "type": "Three commissions of First Degree offenses",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 12",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-13",
+      "type": "Bullying (verbal, physical or cyber)",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 13",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-14",
+      "type": "Public displays of affection in uniform or with school ID",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 14",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-15",
+      "type": "Concerted activities that disrupt or stop classes",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 15",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-16",
+      "type": "Unauthorized soliciting or collecting of money or selling of tickets",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 16",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-17",
+      "type": "Gross disrespect that ridicules or mocks the school community",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 17",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-3-18",
+      "type": "Threatening fellow students (verbal, written or social media)",
+      "category": "Second Degree",
+      "sanction": "University Censure; Disciplinary Probation; 1 - 3 days suspension or equivalent depending on the gravity of the offense and findings of discipline in-charge; Community Service; Exclusion.",
+      "section": "Second Degree Offenses, no. 18",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-5-1",
+      "type": "Academic dishonesty (plagiarism, fabrication, deception, sabotage)",
+      "category": "Third Degree",
+      "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion.",
+      "section": "Third Degree Offenses, no. 1",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-5-2",
+      "type": "Unauthorized bringing, possession or use of liquor or illegal drugs",
+      "category": "Third Degree",
+      "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion.",
+      "section": "Third Degree Offenses, no. 2",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-5-3",
+      "type": "Attending classes or activities under the influence of alcohol or drugs",
+      "category": "Third Degree",
+      "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion.",
+      "section": "Third Degree Offenses, no. 3",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-5-4",
+      "type": "Physically assaulting faculty members or school personnel",
+      "category": "Third Degree",
+      "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion.",
+      "section": "Third Degree Offenses, no. 4",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-5-5",
+      "type": "Participation in hazing",
+      "category": "Third Degree",
+      "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion.",
+      "section": "Third Degree Offenses, no. 5",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-5-6",
+      "type": "Sexual harassment, sexual misconduct or similar immoral acts",
+      "category": "Third Degree",
+      "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion.",
+      "section": "Third Degree Offenses, no. 6",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-5-7",
+      "type": "Obtaining goods, services or funds from the University by fraud",
+      "category": "Third Degree",
+      "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion.",
+      "section": "Third Degree Offenses, no. 7",
+      "provisional": false
+    },
+    {
+      "id": "cdb-4-5-8",
+      "type": "Subversion, insurgency or acts punishable under the penal code",
+      "category": "Third Degree",
+      "sanction": "Community Service; Minimum of 4 days suspension to a maximum of 7 days suspension as may be determined by the CDB; Expulsion; Exclusion.",
+      "section": "Third Degree Offenses, no. 8",
+      "provisional": false
+    }
   ]
 }
