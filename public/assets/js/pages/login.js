@@ -16,6 +16,61 @@ $('#showPw').onclick = (e) => {
   p.type = show ? 'text' : 'password';
   e.target.textContent = show ? 'Hide' : 'Show';
 };
+
+/* Sign-up password strength UI */
+const passwordChecks = [
+  { id: 'reqLength', test: (v) => v.length >= 8 },
+  { id: 'reqUpper', test: (v) => /[A-Z]/.test(v) },
+  { id: 'reqLower', test: (v) => /[a-z]/.test(v) },
+  { id: 'reqNumber', test: (v) => /[0-9]/.test(v) },
+  { id: 'reqSpecial', test: (v) => /[^A-Za-z0-9]/.test(v) },
+];
+
+const updatePasswordStrength = () => {
+  const password = $('#pw').value;
+  const fill = $('#passwordStrengthFill');
+  const label = $('#passwordStrengthLabel');
+
+  if (!fill || !label) return;
+
+  let passed = 0;
+
+  passwordChecks.forEach((check) => {
+    const item = $('#' + check.id);
+    const met = check.test(password);
+
+    if (met) passed++;
+
+    if (item) {
+      item.classList.toggle('met', met);
+      const icon = item.querySelector('.requirement-icon');
+      if (icon) icon.textContent = met ? '✓' : '○';
+    }
+  });
+
+  if (!password) {
+    label.textContent = 'Enter a password';
+    fill.style.width = '0%';
+    fill.style.backgroundColor = 'var(--muted)';
+    return;
+  }
+
+  const levels = [
+    { text: 'Very weak', color: '#c62828' },
+    { text: 'Weak', color: '#e16a32' },
+    { text: 'Fair', color: '#d5a526' },
+    { text: 'Good', color: '#659b43' },
+    { text: 'Strong', color: '#21834a' },
+  ];
+
+  label.textContent = levels[Math.max(0, passed - 1)].text;
+  fill.style.width = `${passed * 20}%`;
+  fill.style.backgroundColor =
+    levels[Math.max(0, passed - 1)].color;
+};
+
+$('#pw').addEventListener('input', updatePasswordStrength);
+
 $('#signup').onclick = (e) => {
   e.preventDefault();
   up = !up;

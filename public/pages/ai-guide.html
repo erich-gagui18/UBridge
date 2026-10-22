@@ -1,15 +1,196 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Guide · UBridge</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%236b1a1c'/%3E%3Ctext x='16' y='22' font-size='15' font-weight='800' text-anchor='middle' fill='%23d9bd45' font-family='Arial'%3EUB%3C/text%3E%3C/svg%3E"><link rel="stylesheet" href="../assets/css/styles.css"></head>
-<body data-page="ai-guide"><div id="app"><main id="main">
-<div class="tabs" role="tablist" id="tabs"><button role="tab" aria-selected="true" data-p="ask">Ask the guide</button><button role="tab" aria-selected="false" data-p="recent">Recent questions</button><button role="tab" aria-selected="false" data-p="saved">Bookmarked answers</button><button role="tab" aria-selected="false" data-p="faq">FAQ</button></div>
-<div id="ask"><section class="hero" id="hero"><span class="logo">UB</span><h1>Hi UBian! What are you trying to figure out?</h1><p>Ask about offense degrees, sanctions or how a complaint is handled. Every answer shows the handbook section it came from.</p>
-<form class="ask" id="f0"><input id="q0" aria-label="Your question" placeholder="e.g. What counts as an inappropriate uniform?"><button class="btn primary">Ask</button></form><p class="scope" id="scope">Scope: the UB College Student Discipline Policy (SAEP M, Revision No. 4, approved March 25, 2026) only</p></section>
-<div class="sugg" id="sugg"><button class="card" data-q="What sanctions apply to Second Degree offenses?"><b>Discipline Policy</b>Interventions for each degree of offense, as written in the policy</button><button class="card" data-q="What is the difference between First, Second and Third Degree offenses?"><b>Discipline Policy</b>How First, Second and Third Degree offenses differ</button><button class="card" data-q="How does the College Discipline Board handle a complaint?"><b>Discipline Policy</b>Steps from filing to decision</button></div>
-<div class="thread" id="thread" aria-live="polite" hidden></div><form class="composer" id="f1" hidden><input id="q1" aria-label="Your question" placeholder="Type your question…"><button class="btn primary">Send</button></form></div>
-<div id="recent" hidden></div><div id="saved" hidden></div><div id="faq" class="faq" hidden><input id="fq" type="search" placeholder="Search the FAQ" aria-label="Search the FAQ" style="margin-bottom:14px"><p class="muted" style="margin-bottom:12px">Last updated: October 2026</p>
-<details><summary>How do I file a complaint?</summary><p>Sign in, open <a href="file-complaint.html">File a complaint</a>, complete the steps, accept the privacy notice and submit. You get a case number such as SAEP-2026-001 to track it.</p></details>
-<details><summary>What do the statuses mean?</summary><p>Submitted: SAEP has received it. In review: SAEP is assessing the degree of the offense and routing the complaint. For hearing: it moved to a hearing. Resolved: the case is closed.</p></details>
-<details><summary>Can I edit a complaint after submitting?</summary><p>Not from your account. Contact the SAEP Office if something needs correcting.</p></details>
-<details><summary>Who can see my complaint?</summary><p>Only you and SAEP staff. See the <a href="privacy.html">Privacy Notice</a>.</p></details>
-<details><summary>What evidence can I attach?</summary><p>Evidence uploads are not available yet, so no files are stored. Describe the evidence in your complaint and bring the originals to the SAEP Office with your case number. When uploads are switched on, you can attach PNG, JPG or PDF files, up to 10 MB each and 5 files.</p></details>
-<details><summary>Is the AI Guide an official ruling?</summary><p>No. It answers only from the UB College Student Discipline Policy (SAEP M, Revision No. 4), shows the part it used, and says so when it can’t find an answer. SAEP makes the final decision.</p></details></div>
-</main></div><script type="module" src="../assets/js/pages/ai-guide.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Guide · UBridge</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%236b1a1c'/%3E%3Ctext x='16' y='22' font-size='15' font-weight='800' text-anchor='middle' fill='%23d9bd45' font-family='Arial'%3EUB%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="../assets/css/ai-guide-ui.css">
+</head>
+<body data-page="ai-guide">
+  <div id="app">
+    <main id="main">
+
+      <div class="tabs" role="tablist" id="tabs" aria-label="AI Guide sections">
+        <button role="tab" aria-selected="true" data-p="ask">Ask the guide</button>
+        <button role="tab" aria-selected="false" data-p="recent">Recent questions</button>
+        <button role="tab" aria-selected="false" data-p="saved">Bookmarked answers</button>
+        <button role="tab" aria-selected="false" data-p="faq">FAQ &amp; handbook</button>
+      </div>
+
+      <section id="ask" class="guide-panel">
+
+        <section class="welcome" id="hero">
+          <div class="welcome-orb" aria-hidden="true">
+            <span>UB</span>
+          </div>
+
+          <span class="guide-eyebrow">
+            <span class="status-dot"></span>
+            UBRIDGE · SAEP AI GUIDE
+          </span>
+
+          <h1>
+            Hi UBian!
+            <span>What can I help you with today?</span>
+          </h1>
+
+          <p class="welcome-copy">
+            Ask about the University of Batangas College Student Discipline Policy.
+            Get clear guidance with references to the relevant handbook sections.
+          </p>
+
+          <div class="welcome-note">
+            <span aria-hidden="true">✦</span>
+            Answers are based on the approved SAEP discipline policy.
+          </div>
+        </section>
+
+        <section class="suggestion-section" id="sugg-wrap" aria-labelledby="suggestion-title">
+          <div class="section-heading">
+            <div>
+              <span class="section-kicker">GET STARTED</span>
+              <h2 id="suggestion-title">Explore common questions</h2>
+            </div>
+            <p>Choose a topic to ask the guide</p>
+          </div>
+
+          <div class="sugg" id="sugg">
+
+            <button class="card topic-card" type="button"
+              data-q="What sanctions apply to Second Degree offenses?">
+              <span class="topic-icon" aria-hidden="true">⚖</span>
+              <span class="topic-title">Discipline Policy</span>
+              <span class="topic-description">
+                Interventions and sanctions for each degree of offense.
+              </span>
+              <span class="topic-action">
+                Ask this prompt <span aria-hidden="true">↗</span>
+              </span>
+            </button>
+
+            <button class="card topic-card" type="button"
+              data-q="How does the College Discipline Board handle a complaint?">
+              <span class="topic-icon" aria-hidden="true">☷</span>
+              <span class="topic-title">Filing Process</span>
+              <span class="topic-description">
+                Understand the steps from filing a complaint to the final decision.
+              </span>
+              <span class="topic-action">
+                Ask this prompt <span aria-hidden="true">↗</span>
+              </span>
+            </button>
+
+            <button class="card topic-card" type="button"
+              data-q="What is the difference between First, Second and Third Degree offenses?">
+              <span class="topic-icon" aria-hidden="true">⚑</span>
+              <span class="topic-title">Sanctions &amp; Appeals</span>
+              <span class="topic-description">
+                Learn how offense degrees and related interventions differ.
+              </span>
+              <span class="topic-action">
+                Ask this prompt <span aria-hidden="true">↗</span>
+              </span>
+            </button>
+
+          </div>
+        </section>
+
+        <div class="thread" id="thread" aria-live="polite" hidden></div>
+
+        <form class="composer" id="f1">
+          <label class="sr-only" for="q1">
+            Ask a question about the SAEP discipline policy
+          </label>
+
+          <input
+            id="q1"
+            aria-label="Your question"
+            autocomplete="off"
+            placeholder="Ask about SAEP policy, sanctions, or filing guidance…"
+          >
+
+          <button class="send-button" type="submit" aria-label="Send question">
+            <span>Ask guide</span>
+            <span class="send-arrow" aria-hidden="true">➤</span>
+          </button>
+        </form>
+
+        <p class="composer-note">
+          <span aria-hidden="true">◆</span>
+          <span id="scope">Direct reference: UB College Student Discipline Policy (SAEP M, Rev. 4) only</span>
+          <span class="note-separator">•</span>
+          <span>SAEP makes the final decision.</span>
+        </p>
+
+      </section>
+
+      <section id="recent" class="content-panel" hidden></section>
+      <section id="saved" class="content-panel" hidden></section>
+
+      <section id="faq" class="faq content-panel" hidden>
+        <div class="faq-intro">
+          <span class="section-kicker">QUICK HELP</span>
+          <h1>Frequently asked questions</h1>
+          <p>Search common questions about complaints and the discipline process.</p>
+        </div>
+
+        <input id="fq" type="search" placeholder="Search the FAQ…" aria-label="Search the FAQ">
+
+        <p class="muted faq-updated">Last updated: October 2026</p>
+
+        <details>
+          <summary>How do I file a complaint?</summary>
+          <p>
+            Sign in, open <a href="file-complaint.html">File a complaint</a>,
+            complete the steps, accept the privacy notice and submit.
+            You get a case number such as SAEP-2026-001 to track it.
+          </p>
+        </details>
+
+        <details>
+          <summary>What do the statuses mean?</summary>
+          <p>
+            Submitted: SAEP has received it. In review: SAEP is assessing the
+            degree of the offense and routing the complaint. For hearing: it
+            moved to a hearing. Resolved: the case is closed.
+          </p>
+        </details>
+
+        <details>
+          <summary>Can I edit a complaint after submitting?</summary>
+          <p>Not from your account. Contact the SAEP Office if something needs correcting.</p>
+        </details>
+
+        <details>
+          <summary>Who can see my complaint?</summary>
+          <p>Only you and SAEP staff. See the <a href="privacy.html">Privacy Notice</a>.</p>
+        </details>
+
+        <details>
+          <summary>What evidence can I attach?</summary>
+          <p>
+            Evidence uploads are not available yet, so no files are stored.
+            Describe the evidence in your complaint and bring the originals
+            to the SAEP Office with your case number. When uploads are switched
+            on, you can attach PNG, JPG or PDF files, up to 10 MB each and 5 files.
+          </p>
+        </details>
+
+        <details>
+          <summary>Is the AI Guide an official ruling?</summary>
+          <p>
+            No. It answers only from the UB College Student Discipline Policy
+            (SAEP M, Revision No. 4), shows the part it used, and says so when
+            it can’t find an answer. SAEP makes the final decision.
+          </p>
+        </details>
+      </section>
+
+    </main>
+  </div>
+
+  <script type="module" src="../assets/js/pages/ai-guide.js"></script>
+</body>
+</html>
