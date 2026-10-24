@@ -55,31 +55,91 @@
         </div>
 
         <div class="field">
-          <label for="pw">Password</label>
-          <div class="pw">
-            <input id="pw" type="password" maxlength="128" autocomplete="current-password" aria-describedby="ePw">
-            <button type="button" id="showPw" aria-label="Show password">Show</button>
-          </div>
-          <p class="err" id="ePw"></p>
-        </div>
+  <label for="pw">Password</label>
 
-        <p class="err" id="eForm" role="alert"></p>
-        <button type="button" class="link" id="resend" hidden>Resend verification email</button>
-        <button class="btn primary block" id="go">Sign in</button>
-      </form>
-
-      <p class="center">
-        <span id="swTxt">No account yet?</span>
-        <a href="#" id="signup">Sign up</a>
-      </p>
-
-      <div class="or">or</div>
-      <button class="btn block" id="google" type="button">Continue with Google</button>
-
-      <p class="hint">Use your @ub.edu.ph account. SAEP Staff access is assigned by the office.</p>
-    </section>
+  <div class="pw">
+    <input
+      id="pw"
+      type="password"
+      maxlength="128"
+      autocomplete="current-password"
+      aria-describedby="ePw"
+    >
+    <button
+      type="button"
+      id="showPw"
+      aria-label="Show password"
+    >Show</button>
   </div>
 
-  <script type="module" src="../assets/js/pages/login.js"></script>
+  <!-- Password strength UI: shown during sign-up -->
+  <div class="signup-password-ui" id="signupPasswordUI">
+    <div class="password-strength-heading">
+      <span>Password strength</span>
+      <strong id="passwordStrengthLabel">Enter a password</strong>
+    </div>
+
+    <div class="password-strength-track" aria-hidden="true">
+      <div
+        class="password-strength-fill"
+        id="passwordStrengthFill"
+      ></div>
+    </div>
+
+    <p class="password-requirements-title">
+      Password requirements
+    </p>
+
+    <ul class="password-requirements">
+      <li id="reqLength">
+        <span class="requirement-icon">○</span>
+        At least 8 characters
+      </li>
+      <li id="reqUpper">
+        <span class="requirement-icon">○</span>
+        One uppercase letter
+      </li>
+      <li id="reqLower">
+        <span class="requirement-icon">○</span>
+        One lowercase letter
+      </li>
+      <li id="reqNumber">
+        <span class="requirement-icon">○</span>
+        One number
+      </li>
+      <li id="reqSpecial">
+        <span class="requirement-icon">○</span>
+        One special character
+      </li>
+    </ul>
+  </div>
+
+  <p class="err" id="ePw"></p>
+</div>
+
+<p class="err" id="eForm" role="alert"></p>
+<button type="button" class="link" id="resend" hidden>
+  Resend verification email
+</button>
+<button class="btn primary block" id="go">Sign in</button>
+</form>
+
+<p class="center">
+  <span id="swTxt">No account yet?</span>
+  <a href="#" id="signup">Sign up</a>
+</p>
+
+<div class="or">or</div>
+<button class="btn block" id="google" type="button">
+  Continue with Google
+</button>
+
+<p class="hint">
+  Use your @ub.edu.ph account. SAEP Staff access is assigned by the office.
+</p>
+</section>
+</div>
+
+<script type="module" src="../assets/js/pages/login.js"></script>
 </body>
 </html>

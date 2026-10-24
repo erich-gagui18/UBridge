@@ -957,3 +957,177 @@ fieldset.venue legend{padding:0;margin-bottom:6px}
 .place-toggle label:has(input:focus-visible){outline:2px solid var(--gold);outline-offset:1px}
 [data-theme=dark] .place-toggle label:has(input:checked){color:var(--gold)}
 #jurBox{margin-top:10px;animation:cbin .2s ease both}
+
+
+
+/* ==========================================
+   SIGN-UP PASSWORD STRENGTH jm
+   ========================================== */
+
+.auth .signup-password-ui {
+  display: none;
+  margin: 12px 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 13px;
+}
+
+.auth .auth-wrap.is-signup .signup-password-ui {
+  display: block;
+  animation: signupPasswordReveal 300ms ease both;
+}
+
+@keyframes signupPasswordReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.password-strength-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 9px;
+  color: var(--ink);
+}
+
+.password-strength-heading strong {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.password-strength-track {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--line);
+}
+
+.password-strength-fill {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--muted);
+  transition: width 250ms ease, background-color 250ms ease;
+}
+
+.password-requirements-title {
+  margin: 12px 0 7px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.password-requirements {
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.password-requirements li {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  color: var(--muted);
+  transition: color 180ms ease;
+}
+
+.password-requirements .requirement-icon {
+  width: 15px;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
+.password-requirements li.met,
+.password-requirements li.met .requirement-icon {
+  color: #21834a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth .signup-password-ui,
+  .password-strength-fill,
+  .password-requirements li {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+
+
+/* Dashboard section navigation */
+body[data-page="dashboard"] .dashboard-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 5px;
+  margin: 0 0 24px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--surface);
+  box-shadow: 0 5px 18px rgba(50, 20, 20, .05);
+}
+
+body[data-page="dashboard"] .dashboard-tab {
+  padding: 11px 22px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .25s ease, color .25s ease,
+              transform .25s ease;
+}
+
+body[data-page="dashboard"] .dashboard-tab:hover {
+  color: var(--maroon);
+  background: var(--sunk);
+}
+
+body[data-page="dashboard"] .dashboard-tab.active {
+  color: #fff;
+  background: #6b1a1c;
+  box-shadow: 0 3px 9px rgba(107, 26, 28, .18);
+}
+
+body[data-page="dashboard"] .dashboard-tab:active {
+  transform: scale(.97);
+}
+
+body[data-page="dashboard"] #stats,
+body[data-page="dashboard"] #analytics,
+body[data-page="dashboard"] #recent {
+  scroll-margin-top: 95px;
+}
+
+@media (max-width: 520px) {
+  body[data-page="dashboard"] .dashboard-tabs {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  body[data-page="dashboard"] .dashboard-tab {
+    flex: 1;
+    padding: 10px 9px;
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-page="dashboard"] .dashboard-tab {
+    transition: none;
+  }
+}
+
