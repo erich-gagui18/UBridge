@@ -125,7 +125,8 @@ export function shell({ me, local, isStaff, logout, missing = [] }) {
   app.className = 'shell';
   app.innerHTML = `<aside class="side" id="side" aria-label="Main navigation"><div class="brand"><span class="logo">UB</span><div>UBridge<small>SAEP Complaints</small></div></div>
       <nav class="nav">${nav.map(([p, l, i]) => `<a href="${p}.html" ${p === page ? 'aria-current="page"' : ''}>${icon(i)}${l}</a>`).join('')}</nav>
-      <a class="me" href="profile.html" aria-label="Open my profile"><span class="avatar">${esc(me.name[0])}</span><div><b>${esc(me.name)}</b><small>${roleLbl}${missing.length ? ' · profile incomplete' : ''}</small></div></a></aside>
+      <a class="me" href="profile.html" aria-label="Open my profile"><span class="avatar">${esc(me.name[0])}</span><div><b>${esc(me.name)}</b><small>${roleLbl}${missing.length ? ' · profile incomplete' : ''}</small></div></a>
+      <div class="side-legal"><a href="privacy.html" target="_blank" rel="noopener">Privacy Notice</a><a href="terms.html" target="_blank" rel="noopener">Terms of Use</a></div></aside>
       <div class="content"><header class="top"><div class="grow"><button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu" aria-controls="side">${icon('menu')}</button><span>University of Batangas – Lipa</span></div>
       <div style="display:flex;gap:8px"><button class="icon-btn bell" id="bellBtn" aria-label="Notifications">${icon('bell')}<span class="badge" id="bellBadge" hidden>0</span></button><button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode"></button><button class="icon-btn" id="outBtn" aria-label="Sign out">${icon('out')}</button></div></header><div class="scrim" id="scrim"></div></div>`;
   $('.content').append(main);

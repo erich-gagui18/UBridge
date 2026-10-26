@@ -70,11 +70,17 @@ const updatePasswordStrength = () => {
 };
 
 $('#pw').addEventListener('input', updatePasswordStrength);
+$('#agree').addEventListener('change', (e) => {
+  if (e.target.checked) flag('eAgree', '', e.target);
+});
 
 $('#signup').onclick = (e) => {
   e.preventDefault();
   up = !up;
   $('#nameF').hidden = !up;
+  $('#agreeF').hidden = !up;
+  $('#agree').checked = false;
+  flag('eAgree', '', $('#agree'));
   $('#staffTab').hidden = up;
   if (up && role === 'staff') $('[data-role=student]').click();
   $('#ttl').textContent = up ? 'Create your account' : 'Welcome back';
@@ -124,7 +130,7 @@ $('#google').onclick = () =>
     UB.google(role, (r, mail) =>
       UB.confirm(
         'Create a new account?',
-        `${mail} has no UBridge account yet. Create a ${roleName[r] || r} account? Your role can’t be changed afterwards.`,
+        `${mail} has no UBridge account yet. Create a ${roleName[r] || r} account? Your role can’t be changed afterwards. By creating it you agree to the Terms of Use and the Privacy Notice linked under the form.`,
         'Create account',
       ),
     ),
@@ -165,6 +171,7 @@ $('#f').onsubmit = (e) => {
       : '',
     pw,
   );
-  if (!n || !a || !b) return (!n ? nm : !a ? em : pw).focus();
+  const g = !up || flag('eAgree', $('#agree').checked ? '' : 'Agree to the Terms of Use and Privacy Notice to create an account', $('#agree'));
+  if (!n || !a || !b || !g) return (!n ? nm : !a ? em : !b ? pw : $('#agree')).focus();
   run(() => (up ? UB.signUp(nm.value.trim(), v, pw.value, role) : UB.signIn(v, pw.value, role)));
 };

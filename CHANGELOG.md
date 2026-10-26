@@ -1,5 +1,26 @@
 # Changelog
 
+## v10 (26 October 2026)
+
+The Privacy Notice and Terms of Use links now work and are part of the app, not just pages that exist.
+
+### Fixed
+- **The Privacy Notice and the Terms of Use opened as blank pages.** `styles.css` hid `<main>` on every page without `.ready`, and only app pages ever get that class, so both legal pages were invisible to everyone (including Google's branding check). The rule is now `body[data-page]:not(.ready):not(.auth) main`, so only signed-in app pages are gated.
+- `pages/privacy.html` said version `2026-10c` while `PRIVACY_VERSION` (saved on every complaint) was `2026-10e`; the page now says `2026-10e`.
+- Legal links were the browser's default blue (hard to read in dark mode); they now use the app's maroon, gold in dark mode.
+
+### Added
+- **Sign-up asks for agreement.** An "I agree to the Terms of Use and have read the Privacy Notice" box on the sign-up form (not on sign-in); the account is not created until it is ticked. A new Google account gets the same notice in its confirmation dialog.
+- **Links inside the app:** Privacy Notice and Terms of Use at the bottom of the sidebar on every signed-in page, and the complaint consent now names both documents.
+- All of these open in a new tab, so a half-filled sign-up or complaint form is not lost.
+- `pages/legal.js`: the legal pages follow the light or dark theme chosen in the app. It does not import `app.js`, so signed-out visitors are not redirected to sign-in.
+- `TERMS_VERSION` in `data.js`, and `tests/legal.test.mjs` (7 tests, in `npm test`, which now runs 87): the version on each page matches its constant, the legal pages are not hidden, the links exist and open in a new tab, and sign-up requires the box.
+
+### Notes
+- No change to `firestore.rules`; redeploy Hosting only (push to `main`).
+- Agreement at sign-up is enforced in the browser and is not stored on the account (the `users` rules accept only `name`, `email`, `role`, `createdAt`). The accepted privacy version is still saved with each complaint. Storing it per account would need a rules change.
+- Checked in a real browser with the Firebase libraries stubbed (23 checks: sign-up blocked and allowed, sidebar links, dark theme, back link, mobile width). Real sign-in was not exercised.
+
 ## v9 (26 October 2026)
 
 SAEP staff can save an email as a draft in their own Gmail from the **Email Drafts** box. Off until `GMAIL_CLIENT_ID` is set; the email-app link keeps working either way.

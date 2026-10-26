@@ -117,6 +117,13 @@
   <p class="err" id="ePw"></p>
 </div>
 
+<!-- Shown during sign-up only: the Terms of Use say that creating an account means agreeing to them -->
+<div class="field check" id="agreeF" hidden>
+  <input type="checkbox" id="agree" aria-describedby="eAgree">
+  <label for="agree" class="req">I agree to the <a href="terms.html" target="_blank" rel="noopener">Terms of Use</a> and have read the <a href="privacy.html" target="_blank" rel="noopener">Privacy Notice</a>.</label>
+  <p class="err" id="eAgree"></p>
+</div>
+
 <p class="err" id="eForm" role="alert"></p>
 <button type="button" class="link" id="resend" hidden>
   Resend verification email
@@ -138,7 +145,7 @@
   Use your @ub.edu.ph account. SAEP Staff access is assigned by the office.
 </p>
 <p class="hint">
-  <a href="privacy.html">Privacy Notice</a> · <a href="terms.html">Terms of Use</a>
+  <a href="privacy.html" target="_blank" rel="noopener">Privacy Notice</a> · <a href="terms.html" target="_blank" rel="noopener">Terms of Use</a>
 </p>
 </section>
 </div>
