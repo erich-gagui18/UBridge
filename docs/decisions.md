@@ -46,3 +46,15 @@ Firebase Hosting serves static files only, so PyTorch cannot run inside UBridge.
 | **Keep keyword search only**                  | Nothing to host. Filipino and Taglish questions keep returning "couldn't find that"                                                                                                                                        |
 
 Decision: Hugging Face Space, with keyword search as the fallback at all times. Dense results are used only when the service's content fingerprint matches the deployed `handbook.json`. The gold labels in `ml/eval/questions.jsonl` were re-pointed at the policy chunks (`CSDP-nn`) when the source changed from the Revision No. 7 manual; the team still has to review them and decide whether to fine-tune or use a ready-made multilingual model, based on the `test` numbers.
+
+## 6. Gmail drafts for staff emails
+
+**Decision.** Staff emails can be saved as a draft in the staff member's own Gmail through the Gmail API. UBridge still never sends mail, and the existing confirmation step and `emails` log (no rule change) stay as they are.
+
+**Why a draft and not a send.** The SAEP Office edits and checks every message that names a respondent. A draft keeps that review in Gmail, where staff can also attach the complaint copy the notice mentions. Sending from the browser would remove that step, and it would also add a case where a confidential message goes out by one wrong click.
+
+**Why `gmail.compose`.** Saving a draft needs `gmail.compose` (or broader), which Google classifies as restricted. `gmail.send` is lighter (sensitive) but cannot create a draft. This is acceptable only because the app stays an Internal app of the University's Google Workspace, or an External app in Testing mode with named staff accounts. If the University later wants every student or faculty member to use it, this scope would need Google's security assessment, and `mailto:` or `gmail.send` would be the fallback.
+
+**Why Google Identity Services and not Firebase sign-in.** Staff may sign in with email and password, so a second Google sign-in through Firebase Auth would risk replacing the staff session. The Identity Services token flow gives an access token for one scope, kept only in page memory, and leaves the Firebase session alone. No server and no client secret are involved, so Spark is enough.
+
+**Limits.** The draft is plain text. Attachments are not added (the notice still says "[attached / included below]" for staff to resolve). The Gmail link that opens a draft directly is not part of Google's documented API; if it ever stops working, `draftUrl()` in `lib/gmail.js` can return the Drafts folder link only.

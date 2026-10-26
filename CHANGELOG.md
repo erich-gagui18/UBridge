@@ -1,5 +1,26 @@
 # Changelog
 
+## v9 (26 October 2026)
+
+SAEP staff can save an email as a draft in their own Gmail from the **Email Drafts** box. Off until `GMAIL_CLIENT_ID` is set; the email-app link keeps working either way.
+
+### Added
+- `lib/gmail.js` (pure): RFC 2822 message builder (UTF-8 body in base64, RFC 2047 subject, CRLF, header-injection safe) and a Gmail API client with injectable `fetch` and token: create draft, replace the earlier draft instead of duplicating, retry once on an expired token, plain error codes.
+- `services/gmail.js`: Google Identity Services token flow for the single scope `gmail.compose`, token kept in memory only, account must end in `@ub.edu.ph`.
+- `tests/gmail.test.mjs` (18 tests, in `npm test`, which now runs 80, all passing). Includes a round trip of all five real UBridge drafts.
+- README "Gmail drafts (optional)" with the Google Cloud setup and a troubleshooting table; `docs/decisions.md` section 6.
+
+### Changed
+- `pages/my-complaints.js`: compose dialog has **Create Gmail draft** (primary when enabled) next to **Open in my email app** and **Copy text**; after saving it shows **Open draft in Gmail**, then the same "Did you send it?" confirmation and log as before.
+- `app.js`: `UB.gmail`. `firebase-config.js`: `GMAIL_CLIENT_ID` (empty).
+- `firebase.json` CSP: `script-src https://accounts.google.com/gsi/client`, `style-src https://accounts.google.com/gsi/style`, `connect-src https://accounts.google.com/gsi/` (the Gmail API itself is already covered by `https://*.googleapis.com`).
+- `pages/privacy.html`: lists Gmail as a recipient for staff who use the button. `lib/mail.js` header comment.
+
+### Notes
+- No change to `firestore.rules`; redeploy Hosting only.
+- Needs Google Cloud setup first (README). `gmail.compose` is a restricted scope: use an Internal app, or External in Testing with named staff; do not publish.
+- Not run where this was prepared: the real Google sign-in and Gmail calls (they need your client ID), `npm run format`, `npm run test:rules`.
+
 ## v8 (21 October 2026)
 
 Adds the optional PyTorch semantic search for the AI Guide (prepared as a separate "v7" branch) on top of the deployed v7 (College Student Discipline Policy). The app works exactly as before until `SEARCH_SERVICE_URL` is set.

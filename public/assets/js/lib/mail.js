@@ -1,5 +1,6 @@
 // Email drafts for SAEP staff. UBridge never sends mail: it fills in a draft, the staff member edits and confirms it,
-// and it opens in that person's own email app (mailto:). Staff then confirm they sent it and UBridge records it.
+// and it opens in that person's own email app (mailto:) or is saved as a draft in their own Gmail (lib/gmail.js).
+// Staff then confirm they sent it and UBridge records it.
 // Pure functions (no Firebase imports) so they can be tested with plain Node.
 import { fmt } from './dates.js';
 import { CONTACT } from '../data.js';

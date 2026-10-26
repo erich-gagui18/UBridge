@@ -25,3 +25,7 @@ export const RECAPTCHA_SITE_KEY = '';
 export const GEMINI_MODEL = 'gemini-3.5-flash';
 
 export const SEARCH_SERVICE_URL = '';
+
+// Gmail drafts for SAEP staff (optional). Paste the OAuth 2.0 Web client ID from Google Cloud Console > Google Auth Platform > Clients
+// (see "Gmail drafts" in README.md). Empty = the "Create Gmail draft" button is hidden and staff keep using "Open in my email app".
+export const GMAIL_CLIENT_ID = '386534021400-1erbuj5kaude19cts473qkeen8objic8.apps.googleusercontent.com';

@@ -18,6 +18,8 @@ import * as authSvc from './services/auth.js';
 import * as cases from './services/complaints.js';
 import * as proc from './lib/process.js';
 import * as mail from './lib/mail.js';
+import { gmailMsg } from './lib/gmail.js';
+import * as gmailSvc from './services/gmail.js';
 import * as profileSvc from './services/profile.js';
 import { loadAcademics } from './services/academics.js';
 import { pickerHtml, pairPicker } from './lib/picker.js';
@@ -161,5 +163,6 @@ export const UB = (() => {
     pairPicker,
     proc,
     mail,
+    gmail: { enabled: gmailSvc.enabled, preload: gmailSvc.preload, saveDraft: gmailSvc.saveDraft, msg: gmailMsg },
   };
 })();
