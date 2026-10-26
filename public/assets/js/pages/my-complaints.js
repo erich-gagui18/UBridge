@@ -82,8 +82,7 @@ import { UB } from '../app.js';
     ];
     return `<ol class="hist" aria-label="Status history" aria-live="polite">${items.join('')}</ol>`;
   };
-  // Email drafts (staff only). UBridge does not send mail: staff edit the draft, save it to their own Gmail (or open it in their
-  // email app), send it themselves and confirm they sent it.
+  // Email drafts (staff only). UBridge does not send mail: staff edit the draft, open it in their own email app and confirm they sent it.
   const emailLogHtml = () => {
     const l = cur?.emails || [];
     return l.length
@@ -95,7 +94,7 @@ import { UB } from '../app.js';
     if (box) box.innerHTML = emailLogHtml();
   };
   const mailboxHtml = (c) => `<div class="staffbox mailbox"><h3>Email</h3>
-      <p class="muted">${UB.gmail.enabled ? 'Pick a message, edit it, then save it as a draft in your Gmail (or open it in your email app) and send it yourself.' : 'Pick a message, edit it, then open it in your email app and send it yourself.'} UBridge keeps a record once you confirm.</p>
+      <p class="muted">Pick a message, edit it, then open it in your email app and send it yourself. UBridge keeps a record once you confirm.</p>
       <div class="field"><label for="mk">Message</label><select id="mk" data-nodirty>${Object.entries(UB.mail.KINDS)
         .map(
           ([k, l]) =>
@@ -110,16 +109,13 @@ import { UB } from '../app.js';
   // The compose dialog: edit, then open in the email app, then confirm it was sent.
   const compose = (c, kind) => {
     const d = UB.mail.draft(kind, c, UB.me, { cc: UB.CONTACT.email || '' });
-    const gm = UB.gmail.enabled;
-    let gmailDraft = null; // the Gmail draft made in this dialog, replaced (not duplicated) if the text is changed and saved again
-    UB.gmail.preload(); // load Google's sign-in now so its window opens straight from the button click
     const field = (id, label, v, tag = 'input') =>
       `<div class="field"><label for="${id}">${label}</label>${tag === 'textarea' ? `<textarea id="${id}" rows="14" maxlength="${UB.mail.LIMITS.body}">${esc(v)}</textarea>` : `<input id="${id}" value="${esc(v)}" autocomplete="off">`}</div>`;
     const editHtml =
       () => `<h2>${esc(UB.mail.KINDS[kind])}</h2><p class="muted">${esc(c.id)}. Check the text, change anything you need and replace the [bracketed] parts. Nothing is sent from here.</p>
       ${field('mTo', 'To', d.to)}${field('mCc', 'Cc', d.cc)}${field('mSubj', 'Subject', d.subject)}${field('mBody', 'Message', d.body, 'textarea')}
       <p class="err" id="mErr" role="alert"></p>
-      <div class="actions"><button class="btn" data-close>Cancel</button><button class="btn" id="mCopy" type="button">Copy text</button><button class="btn${gm ? '' : ' primary'}" id="mOpen" type="button">Open in my email app</button>${gm ? '<button class="btn primary" id="mGmail" type="button">Create Gmail draft</button>' : ''}</div>`;
+      <div class="actions"><button class="btn" data-close>Cancel</button><button class="btn" id="mCopy" type="button">Copy text</button><button class="btn primary" id="mOpen" type="button">Open in my email app</button></div>`;
     const m = UB.modal(editHtml(), UB.mail.KINDS[kind]);
     m.el.querySelector('.modal').classList.add('wide');
     let sent = null;
@@ -138,25 +134,6 @@ import { UB } from '../app.js';
           UB.toast('Email text copied');
         } catch {
           UB.toast('Couldn’t copy. Select the text and copy it manually.', 'bad');
-        }
-      } else if (e.target.closest('#mGmail')) {
-        const x = read(),
-          err = UB.mail.check(x);
-        m.el.querySelector('#mErr').textContent = err;
-        if (err) return;
-        const b = e.target.closest('#mGmail');
-        b.disabled = true;
-        b.textContent = 'Saving draft…';
-        try {
-          gmailDraft = await UB.gmail.saveDraft(x, gmailDraft?.draftId, UB.me?.email);
-          sent = x;
-          m.set(`<h2>Your Gmail draft is ready</h2><p class="muted">It is saved in the Drafts folder of ${esc(gmailDraft.account)}. Open it, check it and send it from Gmail. Then come back and confirm so the case keeps a record.</p>
-          <p class="err" id="mErr" role="alert"></p>
-          <div class="actions"><a class="btn" href="${esc(gmailDraft.url)}" target="_blank" rel="noopener">Open draft in Gmail</a><button class="btn" id="mBack" type="button">Not yet, go back</button><button class="btn primary" id="mSent" type="button">Yes, I sent it</button></div>`);
-        } catch (ex) {
-          b.disabled = false;
-          b.textContent = 'Create Gmail draft';
-          m.el.querySelector('#mErr').textContent = UB.gmail.msg(ex);
         }
       } else if (e.target.closest('#mOpen')) {
         const x = read(),

@@ -111,33 +111,7 @@ The browser client only accepts https addresses, so use `curl` for local checks.
 
 ## Emails to respondents (staff)
 
-Open a case as SAEP staff and use the **Email** box: pick a message (notice, follow-up, conference schedule, conference summary and decision, or notice to the Dean and Program Head), press **Write email**, edit the draft, then **Create Gmail draft** (once Gmail is set up, see below) or **Open in my email app**. UBridge does not send anything itself. After you send it yourself, press **Yes, I sent it** and the case keeps a record (to, subject, text, who, when) in `complaints/{id}/emails`. Parts in [brackets] must be filled in before the draft can be opened. The Cc line starts with `CONTACT.email` from `data.js` so the office keeps a copy. The drafts leave out the complainant's name and the complaint description on purpose. **Deploy the rules** (`firebase deploy --only firestore:rules`) because this adds the `emails` subcollection.
-
-## Gmail drafts (optional)
-
-With a Google OAuth client ID set, the compose dialog gets a **Create Gmail draft** button. It saves the edited message as a draft in the staff member's own `@ub.edu.ph` Gmail (Gmail API `users.drafts.create`). The staff member opens it from the dialog's **Open draft in Gmail** link, checks it, sends it from Gmail and then presses **Yes, I sent it**, so the case record works exactly as before. If the text is changed and saved again, the same draft is replaced, not duplicated. Without a client ID the button is hidden and **Open in my email app** is used.
-
-- **Permission asked:** `gmail.compose` only (create and replace drafts, send drafts). Google lists it as a *restricted* scope. UBridge never reads the mailbox, never sends by itself, and keeps the access token only in page memory (about an hour).
-- **Why not the lighter `gmail.send`:** it can only send, not save a draft for the staff member to review first.
-- **Account check:** the draft is only created if the Google account that signed in ends in `@ub.edu.ph`.
-
-**Setup (once, by the project owner)**
-
-1. Google Cloud Console, project `ubridge-76eee` (the Firebase project): APIs & Services > Library > enable **Gmail API**.
-2. Google Auth Platform > Audience. Pick **Internal** if the project belongs to the University's Google Workspace organization (no verification, only people in that organization can sign in). Otherwise pick **External** and keep the publishing status on **Testing**, then add every SAEP staff `@ub.edu.ph` address under **Test users** (up to 100; Google shows an "unverified app" screen, press Advanced > Continue, and asks again about every 7 days). Do not press Publish: a restricted scope in production needs Google's security review.
-3. Google Auth Platform > Data access > add the scope `https://www.googleapis.com/auth/gmail.compose`.
-4. Google Auth Platform > Clients > Create client > **Web application**. Authorized JavaScript origins: `https://ubridge-76eee.web.app`, `https://ubridge-76eee.firebaseapp.com` and, for local tests, `http://localhost:5005`. No redirect URI and no client secret are needed.
-5. Paste the client ID into `GMAIL_CLIENT_ID` in `public/assets/js/firebase-config.js` (a client ID is public; never commit a client secret), commit and push to `main`.
-6. Test as a staff member: open a case > Email > Write email > **Create Gmail draft** > Allow > open the draft.
-
-| Problem | Likely cause |
-|---|---|
-| `Error 400: origin_mismatch` | The site address is missing from Authorized JavaScript origins (step 4) |
-| `access_denied` or "has not completed the verification process" | The account is not a Test user (step 2), or press Advanced > Continue |
-| `org_internal` | The account is outside the Workspace organization that owns the project |
-| "Access blocked" by an administrator | The Workspace admin has to allow the app (Admin console > Security > API controls) |
-| Message says the Gmail API is not turned on | Step 1 |
-| Nothing opens | The browser blocked the Google pop-up; allow pop-ups for the site |
+Open a case as SAEP staff and use the **Email** box: pick a message (notice, follow-up, conference schedule, conference summary and decision, or notice to the Dean and Program Head), press **Write email**, edit the draft, then **Open in my email app**. UBridge does not send anything itself. After you send it from your own email app, press **Yes, I sent it** and the case keeps a record (to, subject, text, who, when) in `complaints/{id}/emails`. Parts in [brackets] must be filled in before the draft can be opened. The Cc line starts with `CONTACT.email` from `data.js` so the office keeps a copy. The drafts leave out the complainant's name and the complaint description on purpose. **Deploy the rules** (`firebase deploy --only firestore:rules`) because this adds the `emails` subcollection.
 
 ## Notifications
 
@@ -146,7 +120,7 @@ Staff changes create a document in `notifications/` for the person who filed the
 ## Tests and formatting
 
     npm install
-    npm test            # AI Guide keyword matching, hybrid merge, search client, mail drafts, Gmail draft builder and client, case process, offense list, course/department list (plain Node)
+    npm test            # AI Guide keyword matching, hybrid merge, search client, mail drafts, case process, offense list, course/department list (plain Node)
     npm run ml:baseline # re-run the keyword baseline over ml/eval/questions.jsonl
     npm run ml:test     # Python tests for the search service (pip install -r ml/requirements-dev.txt first)
     npm run test:rules  # Firestore rules, in the Emulator Suite (needs Java)
@@ -157,8 +131,8 @@ Staff changes create a document in `notifications/` for the person who filed the
     app.js            entry point used by pages: UB.* facade, auth state, page shell
     firebase.js       Firebase init, App Check
     firebase-config.js, data.js    configuration and constants
-    lib/              dom, dates (Philippine time), local storage, UI (toast/modal), layout (sidebar, bell), mail (drafts), gmail (MIME + Gmail API client, pure)
-    services/         auth, complaints, notifications, offenses, gmail (Google sign-in for drafts), guide (Gemini), retrieval (pure, tested), dense (PyTorch search client)
+    lib/              dom, dates (Philippine time), local storage, UI (toast/modal), layout (sidebar, bell)
+    services/         auth, complaints, notifications, offenses, guide (Gemini), retrieval (pure, tested), dense (PyTorch search client)
     pages/            one script per page
     data/             offenses.json (catalog seed), handbook.json (AI chunks), academics.json (UBLC colleges and programs)
 
