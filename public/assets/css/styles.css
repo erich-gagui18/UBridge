@@ -304,10 +304,47 @@ body[data-page]:not(.ready):not(.auth) main{visibility:hidden}
 .ans{white-space:normal}
 .legal{max-width:760px;margin:0 auto;padding:28px 18px 60px}
 .legal h1{margin-bottom:6px}.legal h2{margin:26px 0 8px}.legal p,.legal li{margin-bottom:8px}.legal ul{padding-left:22px}
-.legal .todo{background:var(--gold-soft);padding:1px 6px;border-radius:4px}
+.legal .todo{background:var(--gold-soft);padding:1px 6px;border-radius:4px}.legal code{background:var(--sunk);padding:1px 6px;border-radius:4px;font-size:.92em}
 /* Legal links: same maroon (gold in dark mode) as the app's other links. The browser's default blue was hard to read on the dark theme. */
 .legal a,.field.check label a,.auth-form .hint a{color:var(--maroon);text-underline-offset:3px}
 [data-theme=dark] .legal a,[data-theme=dark] .field.check label a,[data-theme=dark] .auth-form .hint a{color:var(--gold)}
+
+/* Public home page (index.html): readable without signing in, and it does not redirect. */
+.home main{max-width:none;padding:0;animation:none}
+.home-wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.home-bar{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.home-bar-in{display:flex;align-items:center;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;padding-top:10px;padding-bottom:10px}
+.home-brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-weight:800;font-size:18px;line-height:1.2}
+.home-brand small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.home-nav{display:flex;align-items:center;gap:6px 18px;flex-wrap:wrap}
+.home-nav a:not(.btn){color:var(--maroon);font-weight:700;text-decoration:none;padding:6px 0}
+.home-nav a:not(.btn):hover{text-decoration:underline;text-underline-offset:3px}
+.home-hero{background:linear-gradient(160deg,var(--maroon),var(--maroon-d));color:#fff}
+.home-hero-in{display:flex;align-items:center;justify-content:space-between;gap:32px;padding-top:56px;padding-bottom:56px}
+.home-hero-text{flex:1 1 520px;max-width:660px}
+.home-hero .kick{color:var(--gold);font-weight:700}
+.home-hero h1{font-size:clamp(28px,4.4vw,42px);margin:8px 0 14px}
+.home-lead{font-size:17px}
+.home-cta{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0 14px}
+.home-hero .btn.primary{background:var(--gold);border-color:var(--gold);color:var(--maroon-d)}
+.home-hero .btn:not(.primary){background:transparent;border-color:rgba(255,255,255,.6);color:#fff}
+.home-hero .btn:not(.primary):hover{background:rgba(255,255,255,.14)}
+.home-note{font-size:14px;opacity:.9}
+.home-logo{width:240px;height:auto;flex:none;filter:drop-shadow(0 12px 18px rgba(0,0,0,.25))}
+.home-sec{padding:48px 0}.home-sec-alt{background:var(--sunk)}
+.home-sec h2{font-size:26px;margin-bottom:18px}
+.home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.home-grid-2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.home-card{padding:20px}.home-card h3{margin:0 0 8px;font-size:17px}
+.home code{background:var(--sunk);padding:1px 6px;border-radius:4px;font-size:.92em}
+.home-lead-sm{max-width:720px;margin-bottom:18px;color:var(--muted)}
+.home-fine{margin-top:18px;font-size:14px;color:var(--muted);max-width:820px}
+.home-list{padding-left:22px;display:grid;gap:10px;max-width:820px}
+.home-sec a,.home-foot a{color:var(--maroon);text-underline-offset:3px}
+.home-foot{border-top:1px solid var(--line);padding:22px 0;color:var(--muted);font-size:14px}
+.home-foot-in{display:flex;justify-content:space-between;gap:10px 24px;flex-wrap:wrap}.home-foot nav{display:flex;gap:16px;flex-wrap:wrap}
+[data-theme=dark] .home-nav a:not(.btn),[data-theme=dark] .home-sec a,[data-theme=dark] .home-foot a{color:var(--gold)}
+@media(max-width:760px){.home-hero-in{flex-direction:column-reverse;align-items:flex-start;gap:20px;padding-top:32px;padding-bottom:36px}.home-logo{width:120px}.home-sec{padding:36px 0}}
 h3{font-size:15px;font-weight:700;margin:14px 0 6px}
 
 /* F-SAEP-07 form */

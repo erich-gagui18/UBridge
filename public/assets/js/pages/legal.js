@@ -1,5 +1,5 @@
-// Shared by the Privacy Notice and the Terms of Use. Both pages are public (Google's consent screen and signed-out
-// visitors open them), so this file must NOT import app.js: that would send signed-out visitors to the sign-in page.
+// Shared by the public pages: the home page (index.html), the Privacy Notice and the Terms of Use. Google's consent
+// screen and signed-out visitors open them, so this file must NOT import app.js: that would send them to the sign-in page.
 // It only does what the pages cannot do alone: follow the theme the person picked inside UBridge.
 try {
   const saved = JSON.parse(localStorage.getItem('ub.theme'));

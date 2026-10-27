@@ -1,5 +1,23 @@
 # Changelog
 
+## v11 (27 October 2026)
+
+Brings the public pages in line with Google's home page requirements for the OAuth branding check ([help page](https://support.google.com/cloud/answer/13807376)).
+
+### Changed
+- **`public/index.html` is now a real home page** instead of a redirect to the login page. Google requires the home page to be a static URL that does not redirect, is visible without signing in, describes the app, explains why it asks for Google data, and links to the privacy policy. It covers what UBridge does, who can use it, how Google sign-in and the optional Gmail drafts use Google data, and links to the Privacy Notice, Terms of Use and sign-in. The Search Console verification tag stays on this page.
+- **Home page URL for the consent screen is now `https://ubridge-76eee.web.app/`** (README step updated). The sign-in page stays at `pages/login.html`.
+- **`pages/privacy.html` (version `2026-10f`, `PRIVACY_VERSION` bumped):** new "Google user data" section (what Google gives UBridge, exactly how the `gmail.compose` permission is used, what is kept, the Google API Services User Data Policy Limited Use statement, how to remove access). The "Case records" line now mentions the staff-only record of emails SAEP staff say they sent, which was stored but not disclosed.
+- `legal.js` also serves the home page (theme). Home page styles are in `styles.css`.
+
+### Tests
+- `tests/legal.test.mjs` (9 tests; `npm test` runs 89): the home page has no redirect, is not an app page, keeps the verification tag, links the policies and the Google data section, and the privacy notice carries the Google data disclosure.
+
+### Notes
+- No change to `firestore.rules`; redeploy Hosting only (push to `main`).
+- The privacy wording about Gmail is written from what the code does today (it reads the account's email address and creates or replaces drafts; nothing else). Have the DPO review it, and update it if the Gmail feature changes.
+- Google also requires the home page to be on a domain you own and have verified. That is a console step (Search Console) and, if Google will not accept `web.app`, a University-owned domain.
+
 ## v10 (26 October 2026)
 
 The Privacy Notice and Terms of Use links now work and are part of the app, not just pages that exist.

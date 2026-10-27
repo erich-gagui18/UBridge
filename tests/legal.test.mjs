@@ -42,6 +42,29 @@ test('the "hide until ready" rule only gates app pages, so the public legal page
   [privacy, terms].forEach((h) => assert.doesNotMatch(h, /data-page=/));
 });
 
+const home = read('index.html');
+
+test('the home page is a real static page: no redirect, no sign-in, links to the policies, says how Google data is used', () => {
+  assert.doesNotMatch(home, /http-equiv="refresh"/i); // Google: the home page URL cannot redirect to another page
+  assert.doesNotMatch(home, /data-page=/); // not an app page, so it is never hidden or sent to sign-in
+  assert.match(home, /name="google-site-verification" content="[\w-]+"/); // Search Console ownership tag, on the root page
+  assert.match(home, /rel="canonical" href="https:\/\/ubridge-76eee\.web\.app\/"/);
+  ['pages/privacy.html', 'pages/terms.html', 'pages/login.html', 'pages/privacy.html#google-data'].forEach((p) =>
+    assert.ok(home.includes(`href="${p}"`), `home page links ${p}`),
+  );
+  assert.match(home, /<h1>[^<]*UBridge/);
+  assert.match(home, /gmail\.compose/);
+  assert.match(home, /Limited Use/);
+  assert.ok(home.includes('src="assets/js/pages/legal.js"') && exists('assets/js/pages/legal.js'));
+});
+
+test('the Privacy Notice discloses what Google user data is used and the Limited Use statement', () => {
+  assert.match(privacy, /<h2 id="google-data">/);
+  assert.match(privacy, /gmail\.compose/);
+  assert.match(privacy, /Limited Use/);
+  assert.ok(privacy.includes('https://developers.google.com/terms/api-services-user-data-policy'));
+});
+
 test('sign-up needs the agreement checkbox, and the sign-in footer links open in a new tab', () => {
   assert.match(login, /id="agreeF" hidden/);
   assert.match(login, /<input type="checkbox" id="agree"/);
