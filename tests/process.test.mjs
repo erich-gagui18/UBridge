@@ -9,6 +9,10 @@ import {
   describeChanges,
   processChanged,
   processRows,
+  nextStep,
+  suggestedKind,
+  checkMove,
+  effectOfEmail,
 } from '../public/assets/js/lib/process.js';
 
 // Minimal stand-in for the staff form: querySelector('#id') returns {value}, querySelectorAll returns the checked boxes.
@@ -161,4 +165,103 @@ test('the case rows show the assessment, and expulsion replaces the 5-day effect
     }),
     /effective/,
   );
+});
+
+
+// ---- Case flow: next step, move checks, and what an email changes -------------------------------------------------
+const cdb = { ...base, offense: 'Second Degree', route: 'cdb', status: 'review', filed: '2026-10-01' };
+const T = '2026-10-10';
+
+test('next step follows the policy for a CDB case, from notice to decision', () => {
+  assert.equal(nextStep({ ...cdb, status: 'submitted' }, { today: T }).kind, 'notice');
+  // notice sent, waiting for the answer
+  const waiting = nextStep({ ...cdb, noticeDate: '2026-10-08', answerDue: '2026-10-11' }, { today: T });
+  assert.equal(waiting.level, 'wait');
+  // deadline passed with no answer: general denial, reminder email offered
+  const late = nextStep({ ...cdb, noticeDate: '2026-10-01', answerDue: '2026-10-04' }, { today: T });
+  assert.match(late.title, /general denial/);
+  assert.equal(late.kind, 'followup');
+  // answered, no conference yet
+  const ans = { ...cdb, noticeDate: '2026-10-01', answerDue: '2026-10-04', answer: 'received' };
+  assert.match(nextStep(ans, { today: T }).title, /Schedule the disciplinary conference/);
+  // conference set but the schedule email was not sent
+  const hear = { ...ans, status: 'hearing', hearingDate: '2026-10-20' };
+  assert.equal(nextStep(hear, { today: T }).kind, 'schedule');
+  assert.equal(nextStep(hear, { today: T, emails: [{ kind: 'schedule' }] }).level, 'wait');
+  // conference date reached: decision due in ten days, then overdue
+  assert.match(nextStep({ ...hear, hearingDate: '2026-10-08' }, { today: T, emails: [{ kind: 'schedule' }] }).detail, /2026|18 Oct/);
+  assert.equal(nextStep({ ...hear, hearingDate: '2026-09-20' }, { today: T, emails: [{ kind: 'schedule' }] }).level, 'warn');
+});
+
+test('next step: Others needs an assessment, off campus needs a jurisdiction review, declined closes', () => {
+  assert.match(nextStep({ ...cdb, offense: 'Unclassified' }, { today: T }).title, /Assess the degree/);
+  assert.match(nextStep({ ...cdb, venue: 'offcampus', jurisdiction: ['name'] }, { today: T }).title, /jurisdiction/);
+  assert.match(nextStep({ ...cdb, venue: 'offcampus', jurisdictionReview: 'declined' }, { today: T }).title, /Close the case/);
+  assert.equal(nextStep({ ...cdb, status: 'resolved', jurisdictionReview: 'declined' }, { today: T }).level, 'done');
+});
+
+test('next step: First Degree goes to the department; the third commission goes to the CDB', () => {
+  const d = { ...base, route: 'department', status: 'submitted' };
+  assert.equal(nextStep(d, { today: T }).kind, 'department');
+  assert.match(nextStep({ ...d, noticeDate: '2026-10-02' }, { today: T }).title, /department’s decision/);
+  assert.equal(nextStep(d, { today: T, commission: 3 }).level, 'warn');
+  assert.equal(suggestedKind(d), 'department');
+});
+
+test('next step after the decision: decision email, then the copies, then done; appeals are tracked', () => {
+  const r = { ...cdb, status: 'resolved', decisionDate: '2026-10-21', interventions: ['reprimand'] };
+  assert.equal(nextStep(r, { today: T }).kind, 'decision');
+  assert.equal(nextStep(r, { today: T, emails: [{ kind: 'decision' }] }).kind, 'copy');
+  assert.equal(nextStep(r, { today: T, emails: [{ kind: 'decision' }, { kind: 'copy' }] }).level, 'done');
+  assert.equal(nextStep({ ...r, appeal: 'filed' }, { today: T }).level, 'wait');
+  assert.match(nextStep({ ...r, interventions: ['expulsion'] }, { today: T, emails: [{ kind: 'decision' }, { kind: 'copy' }] }).detail, /Commission on Higher Education/);
+});
+
+test('moves: no conference without a notice, none before the answer deadline, no decision before the conference', () => {
+  const v = { assessedDegree: 'Second Degree', route: 'cdb', noticeDate: '', answerDue: '', answer: '', interventions: [] };
+  assert.match(checkMove(cdb, v, { status: 'hearing', hearingDate: '2026-10-20' }, T).errors[0], /notice/);
+  const v2 = { ...v, noticeDate: '2026-10-08', answerDue: '2026-10-11' };
+  assert.match(checkMove(cdb, v2, { status: 'hearing', hearingDate: '2026-10-10' }, T).errors[0], /answer deadline/);
+  assert.equal(checkMove(cdb, { ...v2, answer: 'received' }, { status: 'hearing', hearingDate: '2026-10-10' }, T).errors.length, 0);
+  const v3 = { ...v2, answer: 'received', decisionDate: '2026-10-09', interventions: ['reprimand'] };
+  assert.match(checkMove(cdb, v3, { status: 'resolved', hearingDate: '2026-10-12' }, T).errors[0], /before the conference/);
+});
+
+test('moves: Others and undecided off-campus cases cannot reach the hearing; declining may close them', () => {
+  const v = { assessedDegree: '', route: 'cdb', noticeDate: '2026-10-01', answerDue: '', answer: 'received', interventions: [] };
+  const oth = { ...cdb, offense: 'Unclassified' };
+  assert.match(checkMove(oth, v, { status: 'hearing', hearingDate: '2026-10-20' }, T).errors[0], /Assess the degree/);
+  const off = { ...cdb, venue: 'offcampus', jurisdiction: ['victim'] };
+  const v2 = { ...v, assessedDegree: 'Second Degree', jurisdictionReview: '' };
+  assert.match(checkMove(off, v2, { status: 'hearing', hearingDate: '2026-10-20' }, T).errors[0], /jurisdiction/);
+  const closing = checkMove(off, { ...v2, jurisdictionReview: 'declined', decisionDate: '2026-10-10' }, { status: 'resolved', hearingDate: '' }, T);
+  assert.equal(closing.errors.length, 0);
+  assert.equal(closing.warnings.length, 0);
+});
+
+test('moves: resolving without a conference, a notice or an intervention, or late, only warns', () => {
+  const v = { assessedDegree: 'Second Degree', route: 'cdb', noticeDate: '', answerDue: '', answer: '', decisionDate: '2026-11-30', interventions: [], conferencesHeld: 0 };
+  const w = checkMove(cdb, v, { status: 'resolved', hearingDate: '' }, T);
+  assert.equal(w.errors.length, 0);
+  assert.ok(w.warnings.some((x) => /conference/.test(x)));
+  assert.ok(w.warnings.some((x) => /notice/.test(x)));
+  assert.ok(w.warnings.some((x) => /intervention/.test(x)));
+  const late = checkMove(cdb, { ...v, noticeDate: '2026-10-01', interventions: ['reprimand'] }, { status: 'resolved', hearingDate: '2026-10-10' }, T);
+  assert.ok(late.warnings.some((x) => /more than 10 days/.test(x)));
+  const gd = checkMove(cdb, { ...v, answer: 'general-denial', answerDue: '2026-10-15', noticeDate: '2026-10-10' }, { status: 'review', hearingDate: '' }, T);
+  assert.ok(gd.warnings.some((x) => /answer period has not ended/.test(x)));
+});
+
+test('sending the notice records the notice date, a three-day answer deadline and moves the case to In review', () => {
+  const fx = effectOfEmail('notice', { ...cdb, status: 'submitted' }, '2026-10-10');
+  assert.equal(fx.status, 'review');
+  assert.equal(fx.process.noticeDate, '2026-10-10');
+  assert.equal(fx.process.answerDue, '2026-10-13');
+  assert.match(fx.label, /notice date/);
+  // already recorded: nothing to change
+  assert.equal(effectOfEmail('notice', { ...cdb, noticeDate: '2026-10-05', answerDue: '2026-10-08' }, T), null);
+  assert.equal(effectOfEmail('parents', cdb, T).process.parentsNotified, T);
+  assert.equal(effectOfEmail('parents', { ...cdb, parentsNotified: '2026-10-02' }, T), null);
+  assert.equal(effectOfEmail('department', { ...base, status: 'submitted' }, T).status, 'review');
+  assert.equal(effectOfEmail('copy', cdb, T), null);
 });

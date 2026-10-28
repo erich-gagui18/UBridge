@@ -132,3 +132,36 @@ test('a normal draft fits in a link, a very long one does not', () => {
   assert.ok(mailto({ ...d, cc: '' }).length < MAILTO_LIMIT);
   assert.ok(mailto({ ...d, body: 'x'.repeat(3000) }).length > MAILTO_LIMIT);
 });
+
+
+test('the notice proposes the three-day deadline when none is saved, and names it', () => {
+  const nd = { ...c, answerDue: '', noticeDate: '' };
+  assert.match(draft('notice', nd, me, { today: '2026-10-10' }).body, /on or before 13 Oct|on or before .*2026/);
+});
+
+test('the notice can carry the complaint statement, never the complainant’s name', () => {
+  const plain = draft('notice', c, me).body;
+  assert.ok(!plain.includes('SECRET DESCRIPTION'));
+  const inc = draft('notice', c, me, { include: true }).body;
+  assert.ok(inc.includes('SECRET DESCRIPTION'));
+  assert.ok(!inc.includes('Complainant Name'));
+  // the witnesses line is still a bracket, so it cannot be sent unread
+  assert.match(check(draft('notice', c, me, { include: true })), /\[attached \/ not applicable\]/);
+});
+
+test('parent or guardian notice and decision copy: policy wording, no address on file, copy needs the signed decision attached', () => {
+  const p = draft('parents', c, me);
+  assert.equal(p.to, '');
+  assert.match(p.body, /below 18 years old/);
+  assert.match(p.body, /counsel/);
+  assert.ok(!p.body.includes('SECRET DESCRIPTION'));
+  const k = draft('copy', c, me);
+  assert.equal(k.to, '');
+  assert.match(k.body, /Registrar/);
+  assert.match(k.body, /VPSAS/);
+  assert.match(k.body, /Office of the President/);
+  assert.match(k.body, /five \(5\) days/);
+  assert.match(check({ ...k, to: 'registrar@ub.edu.ph' }), /\[attach the signed decision\]/);
+  assert.match(draft('copy', { ...c, interventions: ['expulsion'] }, me).body, /Commission on Higher Education/);
+  assert.ok(KINDS.parents && KINDS.copy);
+});

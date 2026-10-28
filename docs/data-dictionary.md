@@ -94,7 +94,7 @@ The document id is the case's `hCount` at that change, the same id as the histor
 
 | Field      | Type             | Notes                                                        |
 | ---------- | ---------------- | ------------------------------------------------------------ |
-| kind       | string           | `notice`, `followup`, `schedule`, `decision` or `department` |
+| kind       | string           | `notice`, `followup`, `schedule`, `decision`, `department`, `parents` or `copy` |
 | to, cc     | string (≤300)    | Addresses as the staff member typed them (`cc` may be empty) |
 | subject    | string (1–200)   | Subject line                                                 |
 | body       | string (20–5000) | The message text that was prepared                           |

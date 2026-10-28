@@ -131,6 +131,7 @@ export const UB = (() => {
     watchAudit: cases.watchAudit,
     watchEmails: cases.watchEmails,
     logEmail: (caseId, d) => cases.logEmail(me, caseId, d),
+    recordEmailAndUpdate: (c, mail, change) => cases.recordEmailAndUpdate(me, c, mail, change),
     create: (v, files) => cases.createComplaint(me, v, files),
     updateCase: (c, change) => cases.updateCase(me, c, change),
     evidenceUrl: cases.evidenceUrl,
@@ -163,6 +164,6 @@ export const UB = (() => {
     pairPicker,
     proc,
     mail,
-    gmail: { enabled: gmailSvc.enabled, preload: gmailSvc.preload, saveDraft: gmailSvc.saveDraft, msg: gmailMsg },
+    gmail: { enabled: gmailSvc.enabled, preload: gmailSvc.preload, saveDraft: gmailSvc.saveDraft, draftExists: gmailSvc.draftExists, msg: gmailMsg },
   };
 })();

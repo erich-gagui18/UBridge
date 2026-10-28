@@ -1,22 +1,51 @@
 # Changelog
 
-## v11 (27 October 2026)
+## v12 (28 October 2026)
 
 Brings the public pages in line with Google's home page requirements for the OAuth branding check ([help page](https://support.google.com/cloud/answer/13807376)).
 
 ### Changed
 - **`public/index.html` is now a real home page** instead of a redirect to the login page. Google requires the home page to be a static URL that does not redirect, is visible without signing in, describes the app, explains why it asks for Google data, and links to the privacy policy. It covers what UBridge does, who can use it, how Google sign-in and the optional Gmail drafts use Google data, and links to the Privacy Notice, Terms of Use and sign-in. The Search Console verification tag stays on this page.
 - **Home page URL for the consent screen is now `https://ubridge-76eee.web.app/`** (README step updated). The sign-in page stays at `pages/login.html`.
-- **`pages/privacy.html` (version `2026-10f`, `PRIVACY_VERSION` bumped):** new "Google user data" section (what Google gives UBridge, exactly how the `gmail.compose` permission is used, what is kept, the Google API Services User Data Policy Limited Use statement, how to remove access). The "Case records" line now mentions the staff-only record of emails SAEP staff say they sent, which was stored but not disclosed.
+- **`pages/privacy.html` (version `2026-10g`, `PRIVACY_VERSION` bumped):** new "Google user data" section (what Google gives UBridge, exactly how the `gmail.compose` permission is used, what is kept, the Google API Services User Data Policy Limited Use statement, how to remove access). The "Case records" line now mentions the staff-only record of emails SAEP staff say they sent, which was stored but not disclosed.
 - `legal.js` also serves the home page (theme). Home page styles are in `styles.css`.
 
+### Case flow follow-ups (v11)
+- **The sent email and the case update are one commit.** Confirming "Yes, I sent it" used to write the email record first and the case change second, so a dropped connection could leave an email on record with no notice date. `recordEmailAndUpdate` (in `services/complaints.js`) writes the email, the case change, its history and audit entries and the notification in one batch; if it fails nothing is saved and the person can try again.
+- **The Gmail check is now disclosed.** `draftExists` asks Gmail whether UBridge's own draft is still in Drafts (it never reads a message). The home page, Privacy Notice and README said the mailbox is never read, so they now say exactly this.
+- A draft that is no longer in Drafts is not proof of sending (it may have been deleted), so it is not treated as proof: only the person's own "Yes, I sent it" records the email.
+
 ### Tests
-- `tests/legal.test.mjs` (9 tests; `npm test` runs 89): the home page has no redirect, is not an app page, keeps the verification tag, links the policies and the Google data section, and the privacy notice carries the Google data disclosure.
+- `tests/legal.test.mjs` (9 tests; `npm test` runs 103): the home page has no redirect, is not an app page, keeps the verification tag, links the policies and the Google data section, and the privacy notice carries the Google data disclosure.
 
 ### Notes
-- No change to `firestore.rules`; redeploy Hosting only (push to `main`).
+- No change to `firestore.rules` since v11; deploy `firebase deploy --only hosting,firestore:rules` once for v11's `parents` and `copy` email kinds (push to `main` deploys Hosting only).
 - The privacy wording about Gmail is written from what the code does today (it reads the account's email address and creates or replaces drafts; nothing else). Have the DPO review it, and update it if the Gmail feature changes.
 - Google also requires the home page to be on a domain you own and have verified. That is a console step (Search Console) and, if Google will not accept `web.app`, a University-owned domain.
+
+## v11 (27 October 2026)
+
+Update Case and Email Drafts now work as one flow that follows the policy's PROCESS section, instead of two separate forms.
+
+### Changed
+- **Update Case and the emails are connected.** Confirming "Yes, I sent it" now also updates the case: the notice records the notice date, a three-day answer deadline (the draft already names it) and moves a Submitted case to In review; the parent notice records the date; the department notice moves a Submitted case to In review. The confirmation screen says what will be recorded before you confirm. Before this, staff entered the same facts twice, and a notice written before the dates were saved went out without a deadline.
+- **Save keeps the dialog open.** It used to close, so staff had to reopen the case to write the email. The box and the Email tab now refresh with the saved case.
+- **Unsaved edits cannot go into an email.** Writing an email while Update Case has unsaved changes asks you to save first.
+- **Update Case checks the process before saving** (`checkMove` in `lib/process.js`). Refused: a conference without a notice date; a conference before the answer deadline when no explanation has arrived; a decision date before the conference; "Others" cases not yet assessed, or off-campus cases without a jurisdiction review, going to hearing or resolved. Warned (shown in the confirmation, staff may continue): resolving without a conference, notice or intervention; a decision more than 10 days after the last conference; a general denial entered before the deadline; skipping a stage.
+- **The suggested email follows the case**, not only its status: a First Degree case starts with the notice to the Dean and Program Head, and a resolved case with the decision, then the copies.
+- **Yes, I sent it checks Gmail.** If the draft is still in Drafts, the person is asked before it is recorded as sent (`draftExists`, works with the draft-only scope).
+
+### Added
+- **Next step box** (`nextStep` in `lib/process.js`) at the top of Update Case and Email: what the policy needs now (assess, review jurisdiction, notice, wait for the answer or enter the general denial, schedule, conference, decision, copies, appeal), with a button for the matching email and a reminder about the parent or guardian (Process step 3).
+- **Two emails the policy requires:** notice to the parent or guardian (Process step 3) and the copy of the decision to the Registrar's Office, the VPSAS and the Office of the President (Process step 6). New `kind` values `parents` and `copy`.
+- **Optional complaint statement in the notice** (Process step 2 says the notice carries a copy of the complaint): a tick box in the compose dialog, off by default. The complainant's name is never added. The witnesses line stays a [bracket] until staff settle it.
+- `docs/case-flow.md`: the end-to-end flow, which statuses mean what, and what is still not modelled.
+- Tests: 12 new (process flow, move checks, email effects, new email kinds, `draftExists`) in `npm test`, which now runs 99; one new rules test. A browser run with Firebase and Google stubbed checked 29 points of the flow end to end.
+
+### Notes
+- **Deploy the rules too:** `firebase deploy --only hosting,firestore:rules`. The emails rule accepts the two new kinds.
+- Not run where this was prepared: the real Google sign-in and Gmail calls, `npm run test:rules` (needs the emulator), `npm run format`.
+- No new fields on the complaint, so older cases work unchanged.
 
 ## v10 (26 October 2026)
 

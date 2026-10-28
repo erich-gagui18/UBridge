@@ -90,16 +90,29 @@ import { UB } from '../app.js';
       ? `<ul class="mails">${l.map((m) => `<li><details><summary><b>${esc(UB.mail.KINDS[m.kind] || m.kind)}</b><small class="muted"> · To ${esc(m.to)} · ${esc(m.byName || '')} · ${UB.fmtTs(m.at)}</small></summary><p><b>Subject:</b> ${esc(m.subject)}</p><pre class="mailbody">${esc(m.body)}</pre></details></li>`).join('')}</ul>`
       : '<p class="muted">No email recorded for this case yet.</p>';
   };
+  // "What now?" box (staff). Built from the case and the emails already recorded, following the policy's PROCESS section.
+  const nextHtml = (c) => {
+    const n = UB.proc.nextStep(c, { commission: UB.proc.commissionOf(c, data), emails: cur?.emails || [] });
+    const tag = { todo: 'Next step', wait: 'Waiting', warn: 'Needs attention', done: 'Done' }[n.level];
+    return `<div class="nextstep ${n.level}" role="status"><small class="ns-tag">${tag}</small><b>${esc(n.title)}</b><p>${esc(n.detail)}</p>${
+      n.kind ? `<button type="button" class="btn ns-mail" data-kind="${esc(n.kind)}">Write: ${esc(UB.mail.KINDS[n.kind])}</button>` : ''
+    }${n.reminders.length ? `<ul class="ns-rem">${n.reminders.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}</div>`;
+  };
+  const paintNext = () => {
+    const c = cur && data.find((x) => x.id === cur.id);
+    if (c) cur.m.el.querySelectorAll('.nextbox').forEach((b) => (b.innerHTML = nextHtml(c)));
+  };
   const paintEmails = () => {
     const box = cur?.m.el.querySelector('#emailLog');
     if (box) box.innerHTML = emailLogHtml();
+    paintNext();
   };
-  const mailboxHtml = (c) => `<div class="staffbox mailbox"><h3>Email</h3>
+  const mailboxHtml = (c) => `<div class="staffbox mailbox"><h3>Email</h3><div class="nextbox">${nextHtml(c)}</div>
       <p class="muted">${UB.gmail.enabled ? 'Pick a message, edit it, then save it as a draft in your Gmail (or open it in your email app) and send it yourself.' : 'Pick a message, edit it, then open it in your email app and send it yourself.'} UBridge keeps a record once you confirm.</p>
       <div class="field"><label for="mk">Message</label><select id="mk" data-nodirty>${Object.entries(UB.mail.KINDS)
         .map(
           ([k, l]) =>
-            `<option value="${k}" ${k === (UB.mail.KIND_FOR_STATUS[c.status] || 'notice') ? 'selected' : ''}>${esc(l)}</option>`,
+            `<option value="${k}" ${k === UB.proc.suggestedKind(c, { commission: UB.proc.commissionOf(c, data), emails: cur?.emails || [] }) ? 'selected' : ''}>${esc(l)}</option>`,
         )
         .join(
           '',
@@ -109,7 +122,15 @@ import { UB } from '../app.js';
 
   // The compose dialog: edit, then open in the email app, then confirm it was sent.
   const compose = (c, kind) => {
-    const d = UB.mail.draft(kind, c, UB.me, { cc: UB.CONTACT.email || '' });
+    let include = false; // notice only: put the complaint statement in the message
+    const make = () => UB.mail.draft(kind, c, UB.me, { cc: UB.CONTACT.email || '', include });
+    const d = make();
+    let made = d.body; // the last text UBridge generated, to tell whether staff changed it
+    // What confirming will also do to the case (notice date, answer due date, status), shown so staff are not surprised.
+    const fxNote = () => {
+      const f = UB.proc.effectOfEmail(kind, data.find((x) => x.id === c.id) || c);
+      return f ? `<p class="notice">When you confirm, UBridge will also ${esc(f.label)}.</p>` : '';
+    };
     const gm = UB.gmail.enabled;
     let gmailDraft = null; // the Gmail draft made in this dialog, replaced (not duplicated) if the text is changed and saved again
     UB.gmail.preload(); // load Google's sign-in now so its window opens straight from the button click
@@ -117,7 +138,12 @@ import { UB } from '../app.js';
       `<div class="field"><label for="${id}">${label}</label>${tag === 'textarea' ? `<textarea id="${id}" rows="14" maxlength="${UB.mail.LIMITS.body}">${esc(v)}</textarea>` : `<input id="${id}" value="${esc(v)}" autocomplete="off">`}</div>`;
     const editHtml =
       () => `<h2>${esc(UB.mail.KINDS[kind])}</h2><p class="muted">${esc(c.id)}. Check the text, change anything you need and replace the [bracketed] parts. Nothing is sent from here.</p>
-      ${field('mTo', 'To', d.to)}${field('mCc', 'Cc', d.cc)}${field('mSubj', 'Subject', d.subject)}${field('mBody', 'Message', d.body, 'textarea')}
+      ${field('mTo', 'To', d.to)}${field('mCc', 'Cc', d.cc)}${field('mSubj', 'Subject', d.subject)}${
+        kind === 'notice'
+          ? `<label class="chk"><input type="checkbox" id="mInc" ${include ? 'checked' : ''}> Put the complaint statement in the message (Process step 2). The complainant’s name is never added. Keep the message under ${UB.mail.LIMITS.body} characters.</label>`
+          : ''
+      }${field('mBody', 'Message', d.body, 'textarea')}
+      ${['department', 'parents', 'copy'].includes(kind) ? '<p class="muted">No address is on file for this recipient. Type it in To.</p>' : ''}
       <p class="err" id="mErr" role="alert"></p>
       <div class="actions"><button class="btn" data-close>Cancel</button><button class="btn" id="mCopy" type="button">Copy text</button><button class="btn${gm ? '' : ' primary'}" id="mOpen" type="button">Open in my email app</button>${gm ? '<button class="btn primary" id="mGmail" type="button">Create Gmail draft</button>' : ''}</div>`;
     const m = UB.modal(editHtml(), UB.mail.KINDS[kind]);
@@ -150,7 +176,7 @@ import { UB } from '../app.js';
         try {
           gmailDraft = await UB.gmail.saveDraft(x, gmailDraft?.draftId, UB.me?.email);
           sent = x;
-          m.set(`<h2>Your Gmail draft is ready</h2><p class="muted">It is saved in the Drafts folder of ${esc(gmailDraft.account)}. Open it, check it and send it from Gmail. Then come back and confirm so the case keeps a record.</p>
+          m.set(`<h2>Your Gmail draft is ready</h2><p class="muted">It is saved in the Drafts folder of ${esc(gmailDraft.account)}. Open it, check it and send it from Gmail. Then come back and confirm so the case keeps a record.</p>${fxNote()}
           <p class="err" id="mErr" role="alert"></p>
           <div class="actions"><a class="btn" href="${esc(gmailDraft.url)}" target="_blank" rel="noopener">Open draft in Gmail</a><button class="btn" id="mBack" type="button">Not yet, go back</button><button class="btn primary" id="mSent" type="button">Yes, I sent it</button></div>`);
         } catch (ex) {
@@ -178,7 +204,7 @@ import { UB } from '../app.js';
         const a = document.createElement('a');
         a.href = url;
         a.click();
-        m.set(`<h2>Did you send it?</h2><p class="muted">Your email app should have opened with the message. Send it from there, then come back and confirm so the case keeps a record.</p>
+        m.set(`<h2>Did you send it?</h2><p class="muted">Your email app should have opened with the message. Send it from there, then come back and confirm so the case keeps a record.</p>${fxNote()}
           <p class="err" id="mErr" role="alert"></p>
           <div class="actions"><button class="btn" id="mBack" type="button">Not yet, go back</button><button class="btn primary" id="mSent" type="button">Yes, I sent it</button></div>`);
       } else if (e.target.closest('#mBack')) {
@@ -193,15 +219,67 @@ import { UB } from '../app.js';
       } else if (e.target.closest('#mSent')) {
         const b = e.target.closest('#mSent');
         b.disabled = true;
+        // A Gmail draft disappears from Drafts once it is sent. If it is still there, say so before recording it as sent.
+        if (gmailDraft?.draftId) {
+          let still = false;
+          try {
+            still = await UB.gmail.draftExists(gmailDraft.draftId);
+          } catch {
+            /* Gmail could not be reached: skip the check, the person confirms by hand */
+          }
+          if (
+            still &&
+            !(await UB.confirm(
+              'Draft not sent yet?',
+              'The draft is still in the Drafts folder of your Gmail, so it looks unsent. Record it as sent anyway?',
+              'Record anyway',
+            ))
+          ) {
+            b.disabled = false;
+            return;
+          }
+        }
+        // The email record and what it means for the case (notice date, answer due, status) go in one commit, so
+        // staff do not enter it a second time under Update Case and the two can never disagree.
+        const fresh = data.find((x) => x.id === c.id) || c;
+        const fx = UB.proc.effectOfEmail(kind, fresh);
         try {
-          await UB.logEmail(c.id, sent);
-          UB.toast('Email recorded');
-          m.close();
+          if (fx)
+            await UB.recordEmailAndUpdate(
+              fresh,
+              sent,
+              {
+                status: fx.status,
+                hearingDate: fresh.hearingDate || '',
+                resolution: fresh.resolution || '',
+                remark: '',
+                process: fx.process,
+                notes: fx.notes,
+              },
+            );
+          else await UB.logEmail(c.id, sent);
         } catch {
           b.disabled = false;
-          m.el.querySelector('#mErr').textContent = 'Couldn’t record the email. Check your connection and try again.';
+          m.el.querySelector('#mErr').textContent = 'Couldn’t record the email. Nothing was saved. Check your connection and try again.';
+          return;
         }
+        UB.toast(fx ? 'Email recorded and the case updated' : 'Email recorded');
+        m.close();
       }
+    });
+    // Switching the option rebuilds the text. If staff already changed it, ask first so their edits are not lost.
+    m.el.addEventListener('change', async (e) => {
+      if (e.target.id !== 'mInc') return;
+      const box = m.el.querySelector('#mBody');
+      const turnOn = e.target.checked;
+      if (box.value.trim() !== made.trim() && !(await UB.confirm('Replace your changes?', 'The message text will be rebuilt and your edits to it will be lost.', 'Replace'))) {
+        e.target.checked = !turnOn;
+        return;
+      }
+      include = turnOn;
+      const nd = make();
+      made = nd.body;
+      box.value = nd.body;
     });
   };
 
@@ -214,6 +292,7 @@ import { UB } from '../app.js';
     const formContent = staff
       ? `<div class="staff-tab-container">
     <h3>Update this case</h3>
+    <div class="nextbox">${nextHtml(c)}</div>
 
     <div class="field">
       <label for="ns">Status</label>
@@ -436,6 +515,9 @@ import { UB } from '../app.js';
     if (pr.error) return UB.toast(pr.error, 'bad');
     const notes = UB.proc.describeChanges(c, pr.values),
       pChanged = UB.proc.processChanged(c, pr.values);
+    // The process must hold together before it is saved (notice before conference, assessment first, and so on).
+    const mv = UB.proc.checkMove(c, pr.values, { status, hearingDate });
+    if (mv.errors.length) return UB.toast(mv.errors[0], 'bad');
     if (status === 'hearing' && !hearingDate) return UB.toast('Choose the hearing date.', 'bad');
     if (status === 'resolved' && resolution.length < 5)
       return UB.toast('Add a resolution note (at least 5 characters).', 'bad');
@@ -453,15 +535,14 @@ import { UB } from '../app.js';
     if (
       !(await UB.confirm(
         'Save changes?',
-        `${c.id}: “${UB.STATUS[c.status]}” → “${UB.STATUS[status]}”. The filer will be notified in the app.`,
+        `${c.id}: “${UB.STATUS[c.status]}” → “${UB.STATUS[status]}”. The filer will be notified in the app.${mv.warnings.length ? ` Check first: ${mv.warnings.join(' ')}` : ''}`,
         'Save',
       ))
     )
       return;
     try {
       await UB.updateCase(c, { status, hearingDate, resolution, remark, process: pr.values, notes });
-      cur.dirty = false;
-      cur.m.close();
+      cur.dirty = false; // the dialog stays open and refreshes, so the next step and the Email tab use the saved case
       UB.toast('Case updated');
     } catch (e) {
       UB.toast(
@@ -532,10 +613,15 @@ import { UB } from '../app.js';
     });
     el.addEventListener('click', async (e) => {
       if (e.target.closest('#sv')) return save();
-      if (e.target.closest('#mkBtn')) {
+      const start = (kind) => {
         const c = data.find((x) => x.id === cur?.id);
-        return c && compose(c, el.querySelector('#mk').value);
-      }
+        if (!c) return;
+        if (cur.dirty) return UB.toast('Save your changes under Update Case first, so the email uses them.', 'bad');
+        compose(c, kind);
+      };
+      if (e.target.closest('#mkBtn')) return start(el.querySelector('#mk').value);
+      const nb = e.target.closest('.ns-mail');
+      if (nb) return start(nb.dataset.kind);
       const b = e.target.closest('[data-ev]');
       if (!b) return;
       const c = data.find((x) => x.id === cur?.id);

@@ -70,6 +70,9 @@ async function getToken(force) {
 
 const api = createGmailApi({ fetch: (...a) => fetch(...a), getToken });
 
+/** True while the draft made earlier is still in Drafts (so it has not been sent). Throws when Gmail cannot be reached. */
+export const draftExists = (draftId) => api.draftExists(draftId);
+
 /**
  * Save the draft in the staff member's own Gmail (or replace the one saved earlier in this dialog).
  * @param {{to,cc,subject,body}} d

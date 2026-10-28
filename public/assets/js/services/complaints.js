@@ -116,7 +116,12 @@ export async function createComplaint(me, v, files) {
  * an audit entry (who changed it, staff only) and an in-app notification, so they succeed or fail together
  * (the Firestore rules require them).
  */
-export async function updateCase(
+export async function updateCase(me, c, change) {
+  await caseBatch(me, c, change).commit();
+}
+
+/** The batch behind updateCase, returned uncommitted so a sent email can be recorded in the same commit. */
+function caseBatch(
   me,
   c,
   { status, remark = '', hearingDate = '', resolution = '', process = {}, notes = [] },
@@ -158,6 +163,16 @@ export async function updateCase(
     read: false,
     createdAt: serverTimestamp(),
   });
+  return b;
+}
+
+/**
+ * Record a sent email and the case change it causes (notice date, answer due, status) in ONE commit, so the email
+ * record and the case can never disagree if the connection drops half way.
+ */
+export async function recordEmailAndUpdate(me, c, mail, change) {
+  const b = caseBatch(me, c, change);
+  b.set(doc(collection(db, 'complaints', c.id, 'emails')), emailDoc(me, mail));
   await b.commit();
 }
 
@@ -185,14 +200,14 @@ export function watchEmails(caseId, onData, onError) {
 }
 
 /** Record that a staff member sent an email about a case (what was sent, to whom, by whom, when). */
-export const logEmail = (me, caseId, { kind, to, cc, subject, body }) =>
-  addDoc(collection(db, 'complaints', caseId, 'emails'), {
-    kind,
-    to,
-    cc,
-    subject,
-    body,
-    by: me.uid,
-    byName: me.name,
-    at: serverTimestamp(),
-  });
+const emailDoc = (me, { kind, to, cc, subject, body }) => ({
+  kind,
+  to,
+  cc,
+  subject,
+  body,
+  by: me.uid,
+  byName: me.name,
+  at: serverTimestamp(),
+});
+export const logEmail = (me, caseId, mail) => addDoc(collection(db, 'complaints', caseId, 'emails'), emailDoc(me, mail));

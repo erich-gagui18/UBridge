@@ -216,3 +216,13 @@ test('mime ends the body with CRLF and never contains a bare LF', () => {
   assert.ok(mime(d).endsWith('\r\n'));
   assert.ok(!/[^\r]\n/.test(mime(d)));
 });
+
+
+test('draftExists: true while the draft is in Drafts, false once Gmail no longer has it, and it throws on other errors', async () => {
+  const a = fake([reply(200, { id: 'r1' })]);
+  assert.equal(await a.api.draftExists('r1'), true);
+  assert.match(a.calls[0].url, /\/drafts\/r1\?format=minimal$/);
+  assert.equal(a.calls[0].method, 'GET');
+  assert.equal(await fake([reply(404, { error: { status: 'NOT_FOUND' } })]).api.draftExists('r1'), false);
+  await assert.rejects(fake([reply(429, { error: { status: 'RESOURCE_EXHAUSTED' } })]).api.draftExists('r1'), { code: 'gmail/quota' });
+});

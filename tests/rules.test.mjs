@@ -761,6 +761,10 @@ describe('emails staff sent about a case (record keeping)', () => {
   it('the record must name the staff member who made it', async () =>
     assertFails(setDoc(mailRef(as('staff1')), mailDoc({ by: 'stu1' }))));
   it('rejects an unknown kind', async () => assertFails(setDoc(mailRef(as('staff1')), mailDoc({ kind: 'spam' }))));
+  it('accepts the parent notice and the decision copy', async () => {
+    await assertSucceeds(setDoc(mailRef(as('staff1')), mailDoc({ kind: 'parents' })));
+    await assertSucceeds(setDoc(doc(as('staff1'), 'complaints', ID(1), 'emails', 'e2'), mailDoc({ kind: 'copy' })));
+  });
   it('rejects extra fields', async () => assertFails(setDoc(mailRef(as('staff1')), mailDoc({ attachment: 'x' }))));
   it('rejects a too-short body or a missing address', async () => {
     await assertFails(setDoc(mailRef(as('staff1')), mailDoc({ body: 'hi' })));

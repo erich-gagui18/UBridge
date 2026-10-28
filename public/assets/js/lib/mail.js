@@ -2,8 +2,9 @@
 // and it opens in that person's own email app (mailto:) or is saved as a draft in their own Gmail (lib/gmail.js).
 // Staff then confirm they sent it and UBridge records it.
 // Pure functions (no Firebase imports) so they can be tested with plain Node.
-import { fmt } from './dates.js';
+import { fmt, todayPH, addDays } from './dates.js';
 import { CONTACT } from '../data.js';
+import { ANSWER_DAYS } from './process.js';
 
 export const KINDS = {
   notice: 'Notice to the respondent',
@@ -11,8 +12,11 @@ export const KINDS = {
   schedule: 'Conference schedule',
   decision: 'Conference summary and decision',
   department: 'Notice to the Dean and Program Head',
+  parents: 'Notice to the parent or guardian',
+  copy: 'Copy of the decision (Registrar, VPSAS, President)',
 };
 /** Suggested draft for each case status. */
+// Used only when nothing better is known; lib/process.js suggestedKind() looks at the whole case.
 export const KIND_FOR_STATUS = { submitted: 'notice', review: 'notice', hearing: 'schedule', resolved: 'decision' };
 
 // Link length that email apps handle reliably. Longer drafts open without the body and the body is copied instead.
@@ -46,13 +50,24 @@ const caseBlock = (c) =>
 const CONFIDENTIAL = 'This matter is confidential. Please do not share this message.';
 
 /**
- * Build a draft. The complainant's name and the complaint description are left out on purpose;
- * staff can add them if the office decides the respondent should receive them.
+ * Build a draft. The complainant's name and the complaint description are left out unless `include` is true
+ * (notice only: the policy says the notice carries a copy of the complaint; the complainant's name is still never added).
+ * `today` only fixes the date used to propose the answer deadline (tests).
  * @returns {{kind, to, cc, subject, body}}
  */
-export function draft(kind, c, me, { cc = '' } = {}) {
-  const to = kind === 'department' ? '' : c.rEmail || '';
-  const hi = kind === 'department' ? `Dear Dean and Program Head, ${c.rDept || ''}`.trim() + ',' : `Dear ${c.student},`;
+export function draft(kind, c, me, { cc = '', include = false, today = todayPH() } = {}) {
+  // No address is on file for the department, the parent or guardian, or the offices that get the decision copy: staff type them.
+  const to = ['department', 'parents', 'copy'].includes(kind) ? '' : c.rEmail || '';
+  const hi =
+    kind === 'department'
+      ? `Dear Dean and Program Head, ${c.rDept || ''}`.trim() + ','
+      : kind === 'parents'
+        ? 'Dear Parent or Guardian,'
+        : kind === 'copy'
+          ? 'Dear Registrar’s Office, Vice President for Student Affairs and Services (VPSAS) and Office of the President,'
+          : `Dear ${c.student},`;
+  // The notice proposes the three-day answer deadline when none is saved yet; sending the email records it (lib/process.js effectOfEmail).
+  const due = c.answerDue || (kind === 'notice' && !c.noticeDate ? addDays(today, ANSWER_DAYS) : '');
   let subject, body;
 
   if (kind === 'notice') {
@@ -63,9 +78,9 @@ The SAEP Office has received a complaint that names you as the respondent and ha
 
 ${caseBlock(c)}
 
-A copy of the complaint, with the statement of the complainant and of any witnesses, is [attached / included below].
+${include ? `A copy of the complaint is included below.\n\nStatement of the complainant:\n${c.desc}\n\nThe statements of any witnesses are [attached / not applicable].` : 'A copy of the complaint, with the statement of the complainant and of any witnesses, is [attached / included below].'}
 
-You have not less than three (3) days to answer${c.answerDue ? ` (on or before ${fmt(c.answerDue)})` : ''}. Please send your written explanation to the SAEP Office or email it to ${CONTACT.email}. If we do not receive it in that time, an entry of general denial will be entered in your favor.
+You have not less than three (3) days to answer${due ? ` (on or before ${fmt(due)})` : ''}. Please send your written explanation to the SAEP Office or email it to ${CONTACT.email}. If we do not receive it in that time, an entry of general denial will be entered in your favor.
 
 You may be assisted by counsel if you wish. If you are below 18 years old, your parent or guardian will also be notified.
 
@@ -147,6 +162,40 @@ Respondent: ${c.student} (${c.sid}), ${c.program}
 ${caseBlock(c)}
 
 Please document the disciplinary conference your department holds and forward a copy of the decision to the College Discipline Board. The College Discipline Board handles the third commission of any First Degree offense. Please coordinate with the SAEP Office on the next steps.
+
+${CONFIDENTIAL}
+
+${sign(me)}`;
+  } else if (kind === 'parents') {
+    subject = `Notice of complaint against your ward, case ${c.id}`;
+    body = `${hi}
+
+The SAEP Office of the University of Batangas – Lipa has received a complaint against ${c.student}, your ward${c.rDept ? `, a student of ${c.rDept}` : ''}. Under the College Student Discipline Policy, the parents or guardians of a respondent who is below 18 years old are notified of the complaint.
+
+${caseBlock(c)}
+
+${c.answerDue ? `Your ward has until ${fmt(c.answerDue)} to give a written explanation to the SAEP Office. ` : 'Your ward will be asked for a written explanation. '}Your ward may be assisted by counsel if he or she wishes. A disciplinary conference will be scheduled and you will be told the date.
+
+Please contact the SAEP Office if you have questions.
+
+${CONFIDENTIAL}
+
+${sign(me)}`;
+  } else if (kind === 'copy') {
+    const ivs = (c.interventions || []).map((k) => IV[k] || k);
+    subject = `Copy of the decision, case ${c.id}`;
+    body = `${hi}
+
+Under the College Student Discipline Policy, a copy of the written decision of the College Discipline Board is furnished to you.
+
+Respondent: ${c.student} (${c.sid}), ${c.program}
+${caseBlock(c)}
+${c.hearingDate ? `Conference date: ${fmt(c.hearingDate)}\n` : ''}Decision: ${c.resolution || '[decision]'}${c.decisionDate ? `\nDecision date: ${fmt(c.decisionDate)}` : ''}
+Interventions: ${ivs.length ? ivs.join('; ') : '[interventions]'}
+
+${ivs.includes('Expulsion') ? 'Expulsion may not be imposed without the approval of the Commission on Higher Education.' : 'The decision is effective and executory five (5) days after the respondent receives it, unless an appeal is filed in writing with the University President.'}
+
+The signed written decision is attached: [attach the signed decision].
 
 ${CONFIDENTIAL}
 

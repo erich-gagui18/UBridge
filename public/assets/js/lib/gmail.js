@@ -142,5 +142,18 @@ export function createGmailApi({ fetch, getToken }) {
       const r = await call('POST', '/drafts', body);
       return { draftId: r.id, messageId: r.message?.id || '' };
     },
+    /**
+     * True while the draft is still in the Drafts folder. Gmail removes a draft when it is sent (or deleted),
+     * so false means "no longer a draft": most likely sent. Works with the draft-only scope.
+     */
+    async draftExists(draftId) {
+      try {
+        await call('GET', `/drafts/${encodeURIComponent(draftId)}?format=minimal`);
+        return true;
+      } catch (e) {
+        if (e.code === 'gmail/gone') return false;
+        throw e;
+      }
+    },
   };
 }

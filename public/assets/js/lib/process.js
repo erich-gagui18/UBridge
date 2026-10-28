@@ -300,3 +300,237 @@ export const processChanged = (c, n) =>
   n.appeal !== (c.appeal || '') ||
   n.appealDate !== (c.appealDate || '') ||
   [...n.interventions].sort().join() !== [...(c.interventions || [])].sort().join();
+
+/* ---------------------------------------------------------------------------------------------------------------
+ * Case flow: what to do next, what a status change needs, and what sending an email changes in the case.
+ * All pure (no DOM, no Firebase) so they are tested with plain Node. They only read the case; the Firestore rules
+ * still decide what may be saved.
+ * ------------------------------------------------------------------------------------------------------------- */
+const STATUS_ORDER = ['submitted', 'review', 'hearing', 'resolved'];
+const sentKinds = (emails) => new Set((emails || []).map((e) => e.kind));
+
+/**
+ * The next step for a case, following the policy's PROCESS section.
+ * @param {object} c the case
+ * @param {{today?:string, commission?:number, emails?:Array<{kind:string}>}} [o] emails = what staff already sent (kinds only matter)
+ * @returns {{level:'todo'|'wait'|'warn'|'done', title:string, detail:string, kind:string, reminders:string[]}}
+ *   kind is the email worth writing now ('' when none).
+ */
+export function nextStep(c, { today = todayPH(), commission = 0, emails = [] } = {}) {
+  const sent = sentKinds(emails),
+    r = routeOf(c),
+    deg = degreeOf(c),
+    reminders = [];
+  const out = (level, title, detail, kind = '') => ({ level, title, detail, kind, reminders });
+
+  if (c.status === 'resolved') {
+    if (c.jurisdictionReview === 'declined')
+      return out('done', 'Closed: outside the University’s jurisdiction', 'No further steps for this case.');
+    if (c.appeal === 'filed')
+      return out(
+        'wait',
+        'Appeal pending with the University President',
+        'When the President decides, record Decision upheld, modified or reversed (Process step 6).',
+      );
+    if (c.appeal) return out('done', 'Appeal decided', 'No further steps for this case.');
+    if (!sent.has('decision'))
+      return out(
+        'todo',
+        'Send the decision to the respondent',
+        'The decision is in writing and discusses the facts and the rules applied (Process step 6).',
+        'decision',
+      );
+    if (!sent.has('copy'))
+      return out(
+        'todo',
+        'Furnish copies of the decision',
+        'The Registrar’s Office, the VPSAS and the Office of the President each get a copy, and so does the parent or guardian of the respondent (Process step 6).',
+        'copy',
+      );
+    const exp = (c.interventions || []).includes('expulsion');
+    return out(
+      'done',
+      'Decision sent and copies furnished',
+      exp
+        ? 'Expulsion may not be imposed without the approval of the Commission on Higher Education.'
+        : c.decisionDate
+          ? `The decision takes effect on ${fmt(addDays(c.decisionDate, EFFECT_DAYS))} unless an appeal is filed with the University President.`
+          : 'Watch for an appeal to the University President.',
+    );
+  }
+
+  if (!c.parentsNotified) reminders.push('If the respondent is under 18, notify the parent or guardian (Process step 3).');
+
+  // Process step 1: SAEP assessment and, for off-campus or online offenses, the jurisdiction review.
+  if (deg === 'Unclassified' && !c.assessedDegree)
+    return out(
+      'todo',
+      'Assess the degree of the offense',
+      'The complainant chose “Others”. Record the degree under Case handling: First Degree goes to the respondent’s department, Second and Third Degree to the CDB (Process step 1).',
+    );
+  if (venueOf(c) === 'offcampus' && !c.jurisdictionReview)
+    return out(
+      'todo',
+      'Review the University’s jurisdiction',
+      'The offense happened off campus or online. Check the grounds the complainant gave, then confirm or decline jurisdiction under Case handling.',
+    );
+  if (c.jurisdictionReview === 'declined')
+    return out('todo', 'Close the case', 'Set the status to Resolved and explain in the decision note.');
+
+  if (r === 'department') {
+    if (commission >= 3)
+      return out(
+        'warn',
+        'Escalate to the CDB: third First Degree commission',
+        'The College Discipline Board handles the third commission of a First Degree offense. Change “Handled by” to SAEP / the College Discipline Board.',
+      );
+    if (!c.noticeDate && !sent.has('department'))
+      return out(
+        'todo',
+        'Forward the complaint to the department',
+        'SAEP forwards First Degree offenses to the respondent’s department. The department notifies the respondent, holds the conference and documents it (Process step 1).',
+        'department',
+      );
+    if (!c.deptDecisionDate)
+      return out(
+        'wait',
+        'Waiting for the department’s decision',
+        'The department sends a copy of its decision to the CDB. Record the date it arrives under Case handling.',
+      );
+    return out('todo', 'Resolve the case', 'Set the status to Resolved and enter the decision date and note.');
+  }
+
+  // Route: SAEP / College Discipline Board.
+  if (!c.noticeDate)
+    return out(
+      'todo',
+      'Send the notice of complaint',
+      'The respondent is notified in writing, with a copy of the complaint and not less than three (3) days to answer (Process step 2). Writing the email fills in the notice date and the answer due date for you.',
+      'notice',
+    );
+  if (!c.answer) {
+    if (c.answerDue && c.answerDue >= today)
+      return out(
+        'wait',
+        `Waiting for the respondent’s explanation (due ${fmt(c.answerDue)})`,
+        'When it arrives, record “Explanation received” under Case handling.',
+      );
+    return out(
+      'todo',
+      'No explanation by the deadline: enter a general denial',
+      'The answer period has ended. Under Process step 2 a general denial is entered in the respondent’s favor. Record it under Case handling, then schedule the conference. A reminder email is optional.',
+      sent.has('followup') ? '' : 'followup',
+    );
+  }
+  const onHearing = c.status === 'hearing' && c.hearingDate;
+  if (!onHearing)
+    return out(
+      'todo',
+      'Schedule the disciplinary conference',
+      'Set the status to “For hearing” and choose the date and mode (Process step 4). Then email the schedule to the respondent.',
+    );
+  if (!sent.has('schedule'))
+    return out('todo', 'Email the conference schedule', 'The respondent has not been told the date yet.', 'schedule');
+  if (c.hearingDate > today)
+    return out(
+      'wait',
+      `Disciplinary conference on ${fmt(c.hearingDate)}`,
+      'A respondent who misses two consecutive conferences waives the right to attend, and the Board decides (Process step 4).',
+    );
+  const due = addDays(c.hearingDate, DECISION_DAYS);
+  if (today > due)
+    return out(
+      'warn',
+      `Decision overdue (was due ${fmt(due)})`,
+      'The CDB decides within ten (10) days of the last conference (Process step 6). Set the status to Resolved, then enter the decision date, interventions and note.',
+    );
+  return out(
+    'todo',
+    'Record the decision',
+    `The conference date has passed. The CDB decides by ${fmt(due)} (Process step 6). Set the status to Resolved and enter the decision date, interventions and note.`,
+  );
+}
+
+/** Email worth writing now for this case (used to preselect the message). */
+export function suggestedKind(c, o = {}) {
+  const k = nextStep(c, o).kind;
+  if (k) return k;
+  return c.status === 'resolved' ? 'decision' : c.status === 'hearing' ? 'schedule' : routeOf(c) === 'department' ? 'department' : 'notice';
+}
+
+/**
+ * Check a status change before it is saved.
+ * errors  = the change would break the process, so it is not saved.
+ * warnings = allowed, but the person must confirm (shown in the confirmation).
+ * @param {object} c the saved case
+ * @param {object} v values read from the form (readProcess().values)
+ * @param {{status:string, hearingDate:string}} change
+ */
+export function checkMove(c, v, { status, hearingDate }, today = todayPH()) {
+  const errors = [],
+    warnings = [];
+  const declined = v.jurisdictionReview === 'declined';
+  const deg = v.assessedDegree || degreeOf(c);
+  const route = v.route || routeOf(c);
+  const late = status === 'hearing' || status === 'resolved';
+  const closing = status === 'resolved' && !declined;
+
+  if (late && !declined && deg === 'Unclassified')
+    errors.push('Assess the degree of the offense first (Case handling, Process step 1).');
+  if (late && !declined && venueOf(c) === 'offcampus' && !v.jurisdictionReview)
+    errors.push('Review the University’s jurisdiction first (Case handling). This offense happened off campus or online.');
+  if (status === 'hearing' && !v.noticeDate)
+    errors.push('Send the notice to the respondent before the conference (Process step 2). Set the notice date under Case handling.');
+  if (status === 'hearing' && !v.answer && v.answerDue && hearingDate && hearingDate < v.answerDue)
+    errors.push(
+      `The conference cannot be before the answer deadline (${fmt(v.answerDue)}) unless the respondent’s explanation has been received.`,
+    );
+  if (status === 'resolved' && v.decisionDate && hearingDate && v.decisionDate < hearingDate)
+    errors.push('The decision date cannot be before the conference date.');
+
+  if (closing && route === 'cdb' && !hearingDate && !v.conferencesHeld)
+    warnings.push('No disciplinary conference is recorded. The policy requires one before the decision (Process step 4).');
+  if (closing && route === 'cdb' && !v.noticeDate)
+    warnings.push('No notice to the respondent is recorded (Process step 2).');
+  if (closing && route === 'department' && !v.deptDecisionDate)
+    warnings.push('The department’s decision copy has not been recorded (First Degree Interventions).');
+  if (closing && v.decisionDate && hearingDate && v.decisionDate > addDays(hearingDate, DECISION_DAYS))
+    warnings.push(`The decision is more than ${DECISION_DAYS} days after the last conference (Process step 6).`);
+  if (closing && !(v.interventions || []).length)
+    warnings.push('No intervention is selected. That is fine only if the respondent was found not responsible, and the note should say so.');
+  if (v.answer === 'general-denial' && !c.answer && v.answerDue && today <= v.answerDue)
+    warnings.push(`The answer period has not ended yet (due ${fmt(v.answerDue)}). A general denial is entered only when the respondent does not answer in time.`);
+  const jump = STATUS_ORDER.indexOf(status) - STATUS_ORDER.indexOf(c.status);
+  if (jump > 1 && !declined) warnings.push('This skips a stage of the process.');
+  return { errors, warnings };
+}
+
+/**
+ * What sending an email changes in the case, so staff do not enter it twice.
+ * @returns {{status:string, process:object, notes:string[], label:string}|null}
+ */
+export function effectOfEmail(kind, c, today = todayPH()) {
+  const process = {},
+    notes = [],
+    bits = [];
+  let status = c.status;
+  if (kind === 'notice' && !c.noticeDate) {
+    process.noticeDate = today;
+    process.answerDue = addDays(today, ANSWER_DAYS);
+    notes.push(`Notice sent to the respondent ${today}, answer due ${process.answerDue}`);
+    bits.push(`set the notice date to ${fmt(today)} and the answer due date to ${fmt(process.answerDue)}`);
+  }
+  if (kind === 'parents' && !c.parentsNotified) {
+    process.parentsNotified = today;
+    notes.push('Parents / guardian notified');
+    bits.push(`record the parent or guardian as notified on ${fmt(today)}`);
+  }
+  if ((kind === 'notice' || kind === 'department') && c.status === 'submitted') {
+    status = 'review';
+    bits.push(`move the case to ${STATUS_LABEL.review}`);
+    if (kind === 'department') notes.push('Complaint forwarded to the respondent’s department');
+  }
+  if (!bits.length) return null;
+  return { status, process, notes, label: bits.join(', ').replace(/, ([^,]*)$/, ' and $1') };
+}
+const STATUS_LABEL = { review: 'In review' };
