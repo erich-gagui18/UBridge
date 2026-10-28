@@ -123,9 +123,11 @@ export function shell({ me, local, isStaff, logout, missing = [] }) {
     app = $('#app');
   const roleLbl = { student: 'Student', faculty: 'Faculty', staff: 'SAEP Staff' }[me.role];
   app.className = 'shell';
-  app.innerHTML = `<aside class="side" id="side" aria-label="Main navigation"><div class="brand"><span class="logo">UB</span><div>UBridge<small>SAEP Complaints</small></div></div>
-      <nav class="nav">${nav.map(([p, l, i]) => `<a href="${p}.html" ${p === page ? 'aria-current="page"' : ''}>${icon(i)}${l}</a>`).join('')}</nav>
-      <a class="me" href="profile.html" aria-label="Open my profile"><span class="avatar">${esc(me.name[0])}</span><div><b>${esc(me.name)}</b><small>${roleLbl}${missing.length ? ' · profile incomplete' : ''}</small></div></a>
+  app.innerHTML = `<aside class="side" id="side" aria-label="Main navigation"><div class="brand-row"><a class="brand" href="dashboard.html" aria-label="UBridge, go to the dashboard"><span class="logo">UB</span><div>UBridge<small>SAEP Complaints</small></div></a><button class="icon-btn side-x" id="sideX" type="button" aria-label="Close menu">${icon('x')}</button></div>
+      <p class="nav-label" id="navLbl">Menu</p>
+      <nav class="nav" aria-labelledby="navLbl">${nav.map(([p, l, i]) => `<a href="${p}.html" ${p === page ? 'aria-current="page"' : ''}>${icon(i)}${l}${p === 'profile' && missing.length ? '<span class="warn-dot" role="img" aria-label="profile incomplete" title="Profile incomplete"></span>' : ''}</a>`).join('')}</nav>
+      <div class="me-wrap"><a class="me" href="profile.html" aria-label="Open my profile"><span class="avatar">${esc(me.name[0])}</span><div><b>${esc(me.name)}</b><small>${roleLbl}</small>${missing.length ? '<small class="warn">Profile incomplete</small>' : ''}</div></a>
+      <button class="side-out" id="sideOut" type="button">${icon('out')}Sign out</button></div>
       <div class="side-legal"><a href="privacy.html" target="_blank" rel="noopener">Privacy Notice</a><a href="terms.html" target="_blank" rel="noopener">Terms of Use</a></div></aside>
       <div class="content"><header class="top"><div class="grow"><button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu" aria-controls="side">${icon('menu')}</button><span>University of Batangas – Lipa</span></div>
       <div style="display:flex;gap:8px"><button class="icon-btn bell" id="bellBtn" aria-label="Notifications">${icon('bell')}<span class="badge" id="bellBadge" hidden>0</span></button><button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode"></button><button class="icon-btn" id="outBtn" aria-label="Sign out">${icon('out')}</button></div></header><div class="scrim" id="scrim"></div></div>`;
@@ -138,20 +140,38 @@ export function shell({ me, local, isStaff, logout, missing = [] }) {
     );
   }
   bindTheme($('#themeBtn'), local);
-  $('#outBtn').onclick = async () => {
+  const signOut = async () => {
     if (await confirmDlg('Sign out?', 'You will need to sign in again to see your cases.', 'Sign out')) logout();
   };
+  $('#outBtn').onclick = signOut;
+  $('#sideOut').onclick = signOut;
   extras();
   bell(me);
-  const side = $('#side');
+  // On a phone the sidebar is a drawer: it moves focus in, keeps Tab inside it, and gives focus back when it closes.
+  const side = $('#side'),
+    drawer = () => matchMedia('(max-width: 860px)').matches;
+  $('#menuBtn').setAttribute('aria-expanded', 'false');
   const tog = (o) => {
+    if (o === side.classList.contains('open')) return;
     side.classList.toggle('open', o);
+    document.body.classList.toggle('nav-open', o);
     $('#menuBtn').setAttribute('aria-expanded', o);
+    if (o) $('.nav a[aria-current="page"], .nav a', side)?.focus();
+    else if (drawer()) $('#menuBtn').focus();
   };
   $('#menuBtn').onclick = () => tog(!side.classList.contains('open'));
   $('#scrim').onclick = () => tog(false);
+  $('#sideX').onclick = () => tog(false);
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') tog(false);
+    if (e.key === 'Escape' && side.classList.contains('open') && !document.querySelector('.overlay')) tog(false);
+    if (e.key !== 'Tab' || !side.classList.contains('open') || !drawer()) return;
+    const f = [...side.querySelectorAll('a[href],button')].filter((x) => x.offsetParent);
+    if (!f.length) return;
+    if (e.shiftKey && document.activeElement === f[0]) (e.preventDefault(), f[f.length - 1].focus());
+    else if (!e.shiftKey && document.activeElement === f[f.length - 1]) (e.preventDefault(), f[0].focus());
   });
-  $$('.nav a').forEach((a) => a.addEventListener('click', () => tog(false)));
+  addEventListener('resize', () => {
+    if (!drawer()) tog(false);
+  });
+  $$('.nav a, .me').forEach((a) => a.addEventListener('click', () => tog(false)));
 }

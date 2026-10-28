@@ -1,5 +1,27 @@
 # Changelog
 
+## v14 (28 October 2026)
+
+The sidebar menu and the My profile page are tidied. No change to the rules, the data or what a saved profile contains.
+
+### Changed: sidebar
+- **The profile reminder is visible.** A gold dot on "My profile" and "Profile incomplete" under your name, instead of small text that wrapped. Both clear as soon as the profile is saved.
+- **Sign out is in the menu** as well as the top bar (it asks first, as before). The brand links to the dashboard. A "Menu" label names the navigation for screen readers.
+- **Phone drawer:** a close (X) button, focus moves into the menu when it opens and back to the menu button when it closes, Tab stays inside it, Escape or tapping outside closes it, the page behind does not scroll, and the help button no longer sits on top of it.
+- Tidier spacing, visible keyboard focus, long names are cut off with an ellipsis, and the menu scrolls on short screens so the footer is never clipped. The duplicate `.brand` rules in `styles.css` are merged.
+
+### Changed: My profile
+- **A real identity card:** large avatar, name, role and status pills, email, and a completion meter ("3 of 5 required details", what is still needed) that fills as you type.
+- **Grouped sections** (Personal, School or Office, Contact) instead of two cards numbered 1 and 2 with the identity block squeezed into the first.
+- **Mistakes show next to the field** when you leave it, using the same rules as Save, so they cannot disagree. Save still stops at the first problem and focuses it.
+- **A save bar** with "Unsaved changes" and a "Saved" confirmation, and the browser asks before you close the page with unsaved edits. The "Complete your profile" notice now has space under it.
+
+### Tests
+- `tests/shell-ui.test.mjs` (5 tests; `npm test` runs 111): sidebar markup and drawer behaviour, one definition per sidebar rule, the profile page ids, and that blur and Save share one set of rules.
+
+### Notes
+- Hosting only (push to `main`). Checked in a browser with Firebase stubbed: 26 checks (desktop, staff, phone drawer, keyboard, validation, meter, save). Not run: saving to real Firestore.
+
 ## v13 (28 October 2026)
 
 The case view (My complaints / All cases) is reorganised so a case can be read, updated and followed up without hunting. No change to the rules, the data or what Save does.

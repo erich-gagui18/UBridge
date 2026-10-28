@@ -17,6 +17,7 @@ const PATHS = {
   out: 'M9 21H5V3h4M16 17l5-5-5-5M21 12H9',
   moon: 'M21 13A9 9 0 1111 3a7 7 0 0010 10z',
   menu: 'M3 6h18M3 12h18M3 18h18',
+  x: 'M6 6l12 12M18 6L6 18',
   check: 'M5 13l4 4L19 7',
   mail: 'M3 5h18v14H3zM3 5l9 8 9-8',
   up: 'M12 19V5M5 12l7-7 7 7',

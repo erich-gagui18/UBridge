@@ -13,10 +13,9 @@ import { UB } from '../app.js';
   const input = (id, label, { req = true, ph = '', max = 120, mode = '', type = 'text', hint = '' } = {}) =>
     `<div class="field"><label${req ? ' class="req"' : ''} for="${id}">${esc(label)}</label><input id="${id}" type="${type}" maxlength="${max}"${mode ? ` inputmode="${mode}"` : ''} placeholder="${esc(ph)}" autocomplete="off">${hint ? `<p class="hint">${esc(hint)}</p>` : ''}<p class="err"></p></div>`;
 
-  $('#email').value = me.email;
-  $('#role').value = roleLbl;
-  $('#av').textContent = me.name[0];
+  $('#pEmail').textContent = me.email;
   $('#pRole').textContent = roleLbl;
+  $('#av').textContent = me.name[0];
   $('#sub').textContent =
     role === 'staff'
       ? 'Keep your office details current. They appear with the updates you make on cases.'
@@ -27,16 +26,16 @@ import { UB } from '../app.js';
       : 'Fields marked * are required before you can file a complaint. SAEP sees these details on the complaints you file.';
 
   const departments = role === 'staff' ? [] : await UB.loadAcademics();
-  const parts = [
-    input('name', 'Full name', {
-      ph: 'Dela Cruz, Juan M.',
-      hint: 'Shown on your complaints and used as your printed name.',
-    }),
+  const section = (title, sub, fields) =>
+    `<section class="card sec"><h2>${title}</h2><p class="sec-sub">${sub}</p><div class="cols">${fields.join('')}</div></section>`;
+  const personal = [
+    input('name', 'Full name', { ph: 'Dela Cruz, Juan M.', hint: 'Shown on your complaints and used as your printed name.' }),
   ];
-  if (role === 'student') parts.push(input('sid', 'Student no.', { max: 7, mode: 'numeric', ph: '2407880' }));
-  if (role === 'faculty') parts.push(input('sid', 'Employee no.', { req: false, max: 20, ph: 'Optional' }));
+  if (role === 'student') personal.push(input('sid', 'Student no.', { max: 7, mode: 'numeric', ph: '2407880', hint: '7 digits.' }));
+  if (role === 'faculty') personal.push(input('sid', 'Employee no.', { req: false, max: 20, ph: 'Optional' }));
+  const work = [];
   if (role !== 'staff')
-    parts.push(
+    work.push(
       UB.pickerHtml({
         id: 'pDept',
         label: 'Department',
@@ -45,7 +44,7 @@ import { UB } from '../app.js';
       }),
     );
   if (role === 'student')
-    parts.push(
+    work.push(
       UB.pickerHtml({
         id: 'pCourse',
         label: 'Course',
@@ -54,12 +53,14 @@ import { UB } from '../app.js';
       }),
       input('section', 'Year & section', { req: false, max: 20, ph: 'e.g. 4B (optional)' }),
     );
-  if (role === 'faculty')
-    parts.push(input('position', 'Position', { req: false, max: 80, ph: 'e.g. Instructor (optional)' }));
-  if (role === 'staff')
-    parts.push(input('position', 'Position / designation', { max: 80, ph: 'e.g. SAEP Coordinator' }));
-  parts.push(input('contact', 'Contact no.', { max: 20, type: 'tel', ph: '09XX XXX XXXX' }));
-  $('#cols').innerHTML = parts.join('');
+  if (role === 'faculty') work.push(input('position', 'Position', { req: false, max: 80, ph: 'e.g. Instructor (optional)' }));
+  if (role === 'staff') work.push(input('position', 'Position / designation', { max: 80, ph: 'e.g. SAEP Coordinator' }));
+  $('#groups').innerHTML =
+    section('Personal', 'Who you are on the complaints you file.', personal) +
+    section(role === 'staff' ? 'Office' : 'School', role === 'staff' ? 'Your role at the SAEP Office.' : 'Where you study or teach.', work) +
+    section('Contact', 'How the SAEP Office can reach you about a case.', [
+      input('contact', 'Contact no.', { max: 20, type: 'tel', ph: '09XX XXX XXXX', hint: 'A mobile number the office can call or text.' }),
+    ]);
 
   const pp =
     role === 'staff'
@@ -84,34 +85,90 @@ import { UB } from '../app.js';
     el.setAttribute('aria-invalid', !!m);
     return m;
   };
-  // Status pill + notice follow what is saved, not what is typed.
+  const NEED_TOTAL = UB.missingFields({ role, name: '', sid: '', dept: '', course: '', contact: '', position: '' }).length;
+  const val = (id) => ($('#' + id)?.value || '').trim();
+  const liveProfile = () => {
+    const ac = pp ? pp.value() : { dept: '', course: '' };
+    return { role, name: val('name'), sid: val('sid'), position: val('position'), contact: val('contact'), dept: ac.dept, course: ac.course };
+  };
+  // Completion meter: follows what is typed, so people see it fill as they go.
+  const meter = () => {
+    const miss = UB.missingFields(liveProfile());
+    const done = NEED_TOTAL - miss.length;
+    $('#progTxt').textContent = miss.length ? `${done} of ${NEED_TOTAL} required details` : 'All required details filled';
+    $('#progSub').textContent = miss.length ? `Still needed: ${miss.join(', ')}` : 'You are ready to file complaints.';
+    $('#meterFill').style.width = (NEED_TOTAL ? (done / NEED_TOTAL) * 100 : 100) + '%';
+    $('.prof-hero').classList.toggle('complete', !miss.length);
+  };
+  // Pill + notice follow what is saved, not what is typed.
   const paint = () => {
     const miss = UB.missingFields(UB.me);
     $('#pName').textContent = UB.me.name;
     $('#av').textContent = UB.me.name[0];
-    $('#state').textContent = miss.length ? 'Incomplete' : 'Complete';
+    $('#state').textContent = miss.length ? 'Profile incomplete' : 'Profile complete';
     $('#state').className = 'pill' + (miss.length ? '' : ' ok');
     const n = $('#need');
     n.hidden = !miss.length;
     n.innerHTML = miss.length
       ? `<b>${q.get('need') ? 'Welcome to UBridge. ' : ''}Complete your profile to continue.</b> Still needed: ${esc(miss.join(', '))}.${next === 'file-complaint' ? ' You’ll go straight back to the complaint form after saving.' : ''}`
       : '';
+    meter();
+    // The sidebar reminder follows the saved profile too, without waiting for the next page.
+    if (!miss.length) document.querySelectorAll('.nav .warn-dot, .me .warn').forEach((x) => x.remove());
   };
   paint();
 
+  // Unsaved changes: shown next to Save, and the browser asks before the page is closed.
+  const snap = () => JSON.stringify([...['name', 'sid', 'section', 'position', 'contact'].map(val), liveProfile().dept, liveProfile().course]);
+  let saved = snap(),
+    msgTimer = 0;
+  const note = (t, cls = '') => {
+    const m = $('#saveMsg');
+    clearTimeout(msgTimer);
+    m.textContent = t;
+    m.className = 'dirty ' + cls;
+    m.hidden = !t;
+  };
+  const touch = () => {
+    meter();
+    if (snap() !== saved) note('Unsaved changes');
+    else note('');
+  };
+  $('#f').addEventListener('input', touch);
+  $('#f').addEventListener('change', touch);
+  addEventListener('beforeunload', (e) => {
+    if (snap() !== saved) e.preventDefault();
+  });
+
+  // Check each plain field when the person leaves it, so a mistake is shown next to it, not only after Save.
+  const rules = {
+    name: () => (val('name').length < 2 ? 'Enter your full name' : ''),
+    sid: () =>
+      role === 'student'
+        ? !/^\d{7}$/.test(val('sid'))
+          ? 'Student no. is 7 digits, e.g. 2407880'
+          : ''
+        : role === 'faculty' && val('sid') && !/^[\w-]{3,20}$/.test(val('sid'))
+          ? 'Use letters, numbers or hyphens only'
+          : '',
+    position: () => (role === 'staff' && !val('position') ? 'Enter your position at the SAEP Office' : ''),
+    contact: () => (!UB.PHONE.test(val('contact')) ? 'Enter a contact number SAEP can reach, e.g. 0917 123 4567' : ''),
+  };
+  $('#f').addEventListener('focusout', (e) => {
+    const id = e.target.id;
+    if (rules[id] && e.target.matches('input')) flag(e.target, rules[id]());
+  });
+
   $('#f').onsubmit = async (e) => {
     e.preventDefault();
-    const v = (id) => ($('#' + id)?.value || '').trim();
+    const v = val;
     let first = null;
     const bad = (id, m) => {
       if (flag($('#' + id), m) && !first) first = $('#' + id);
     };
-    bad('name', v('name').length < 2 ? 'Enter your full name' : '');
-    if (role === 'student') bad('sid', !/^\d{7}$/.test(v('sid')) ? 'Student no. is 7 digits, e.g. 2407880' : '');
-    if (role === 'faculty')
-      bad('sid', v('sid') && !/^[\w-]{3,20}$/.test(v('sid')) ? 'Use letters, numbers or hyphens only' : '');
-    if (role === 'staff') bad('position', !v('position') ? 'Enter your position at the SAEP Office' : '');
-    bad('contact', !UB.PHONE.test(v('contact')) ? 'Enter a contact number SAEP can reach, e.g. 0917 123 4567' : '');
+    Object.keys(rules).forEach((id) => {
+      if ($('#' + id)) bad(id, rules[id]());
+    });
     let academic = { dept: '', course: '' };
     if (pp) {
       academic = pp.value();
@@ -139,6 +196,7 @@ import { UB } from '../app.js';
     const btn = $('#save');
     btn.disabled = true;
     btn.textContent = 'Saving…';
+    note('');
     try {
       await UB.saveProfile(values);
     } catch (x) {
@@ -153,12 +211,16 @@ import { UB } from '../app.js';
     }
     btn.disabled = false;
     btn.textContent = 'Save profile';
+    saved = snap();
     paint();
     if (next && UB.isComplete(UB.me)) {
       UB.toast('Profile saved');
+      note('Saved. Taking you back…', 'ok');
       return setTimeout(() => location.replace(next + '.html'), 600);
     }
     UB.toast('Profile saved');
+    note('Saved', 'ok');
+    msgTimer = setTimeout(() => note(''), 4000);
     // The reminder banner only exists on other pages, so there is nothing to clear here.
   };
 })();

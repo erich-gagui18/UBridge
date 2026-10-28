@@ -1,13 +1,14 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My profile · UBridge</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%236b1a1c'/%3E%3Ctext x='16' y='22' font-size='15' font-weight='800' text-anchor='middle' fill='%23d9bd45' font-family='Arial'%3EUB%3C/text%3E%3C/svg%3E"><link rel="stylesheet" href="../assets/css/styles.css"></head>
 <body data-page="profile"><div id="app"><main id="main">
-<div class="head"><div><h1>My profile</h1><p class="sub" id="sub"></p></div><div><span class="pill" id="state"></span></div></div>
+<div class="head"><div><h1>My profile</h1><p class="sub" id="sub"></p></div></div>
 <div class="notice" id="need" hidden role="status"></div>
 <form id="f" novalidate>
-<section class="card sec"><div class="prof-top"><span class="avatar" id="av" aria-hidden="true"></span><div><b id="pName"></b><br><small class="muted" id="pRole"></small></div></div>
-<h2><span class="step">1</span>Account</h2><p class="hint formnote">Your email and role come from your UBridge account and can’t be changed here.</p>
-<div class="cols"><div class="field"><label for="email">Email address</label><input id="email" readonly><p class="err"></p></div>
-<div class="field"><label for="role">Role</label><input id="role" readonly><p class="err"></p></div></div></section>
-<section class="card sec"><h2><span class="step">2</span>Your details</h2><p class="hint formnote" id="detNote"></p><div class="cols" id="cols"></div></section>
-<div class="actions"><button class="btn primary" id="save">Save profile</button></div>
+<section class="card prof-hero" aria-label="Your account">
+<span class="avatar xl" id="av" aria-hidden="true"></span>
+<div class="ph-id"><b id="pName"></b><div class="ph-meta"><span class="pill role" id="pRole"></span><span class="pill" id="state"></span></div><small class="muted" id="pEmail"></small><small class="muted">Your email and role come from your UBridge account and can’t be changed here.</small></div>
+<div class="ph-prog" role="group" aria-label="Profile completion"><div class="prog-line"><b id="progTxt"></b><small class="muted" id="progSub"></small></div><div class="meter" aria-hidden="true"><i id="meterFill"></i></div></div>
+</section>
+<div id="groups"></div>
+<div class="savebar"><button class="btn primary" id="save" type="submit">Save profile</button><span class="dirty" id="saveMsg" role="status" hidden></span><span class="muted savehint" id="detNote"></span></div>
 </form>
 </main></div><script type="module" src="../assets/js/pages/profile.js"></script></body></html>
