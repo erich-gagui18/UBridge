@@ -180,7 +180,7 @@ export function processForm(c, { commission = 0 } = {}) {
   const r = routeOf(c),
     iv = c.interventions || [];
   const filed = c.offense === 'Unclassified' ? 'Others (unclassified)' : c.offense;
-  return `<details class="proc" open><summary>Case handling (College Student Discipline Policy)</summary>
+  return `<section class="card cc fsec"><h3>Assessment and routing</h3><p class="fsec-sub">College Student Discipline Policy, Process step 1</p>
     <div class="field"><label for="pAssess">SAEP assessment: degree of the offense</label><select id="pAssess"><option value="" ${c.assessedDegree ? '' : 'selected'}>Not assessed yet (filed as ${esc(filed)})</option>${DEGREES.map((d) => `<option value="${esc(d)}" ${d === c.assessedDegree ? 'selected' : ''}>${esc(d)}</option>`).join('')}</select><small class="muted">SAEP initially assesses the degree of every complaint (Process step 1). First Degree goes to the respondent’s department; Second and Third Degree go to the College Discipline Board, so choosing either moves the case to the CDB.</small></div>
     ${
       venueOf(c) === 'offcampus'
@@ -197,22 +197,24 @@ export function processForm(c, { commission = 0 } = {}) {
         : ''
     }
     <div class="field"><label for="pRoute">Handled by</label><select id="pRoute" ${r === 'cdb' ? 'disabled' : ''}>${opts(ROUTES, r)}</select><small class="muted">${r === 'cdb' ? 'Already with SAEP / the College Discipline Board.' : commission >= 3 ? 'This is the respondent’s third First Degree commission, so it should go to the CDB.' : 'First Degree offenses are handled by the respondent’s department. Escalate for a repeat or a serious case.'}</small></div>
+    </section><section class="card cc fsec"><h3>Notice and answer</h3><p class="fsec-sub">Process steps 2 and 3</p>
     <div class="cols tight"><div class="field"><label for="pNotice">Notice sent</label><input id="pNotice" type="date" value="${esc(c.noticeDate || '')}"></div>
     <div class="field"><label for="pDue">Answer due</label><input id="pDue" type="date" value="${esc(c.answerDue || '')}" ${c.noticeDate ? `min="${esc(addDays(c.noticeDate, ANSWER_DAYS))}"` : ''}></div></div>
     <small class="muted">The respondent gets at least ${ANSWER_DAYS} days to answer. The due date fills in by itself when you set the notice date.</small>
     <div class="field"><label for="pAnswer">Respondent’s explanation</label><select id="pAnswer">${opts(ANSWERS, c.answer || '')}</select></div>
     <div class="field"><label for="pParents">Parents / guardian notified</label><input id="pParents" type="date" value="${esc(c.parentsNotified || '')}"><small class="muted">Required when the respondent is under 18 (Process step 3). Older students only with their consent.</small></div>
     ${r === 'department' ? `<div class="field"><label for="pDept">Department’s decision received by the CDB</label><input id="pDept" type="date" value="${esc(c.deptDecisionDate || '')}"><small class="muted">The department documents its conference and forwards a copy of its decision to the College Discipline Board (First Degree Interventions).</small></div>` : ''}
+    </section><section class="card cc fsec"><h3>Conference</h3><p class="fsec-sub">Process step 4</p>
     <div class="cols tight"><div class="field"><label for="pMode">Conference</label><select id="pMode">${opts(MODES, c.conferenceMode || '')}</select></div>
     <div class="field"><label for="pHeld">Conferences held</label><input id="pHeld" type="number" min="0" max="20" value="${Number(c.conferencesHeld) || 0}"></div></div>
     <small class="muted">The conference date is the hearing date above. Missing two consecutive conferences waives the respondent’s rights, and the Board then decides (Process step 4).</small>
-    <div id="pDec" ${c.status === 'resolved' ? '' : 'hidden'}>
+    </section><section class="card cc fsec" id="pDec" ${c.status === 'resolved' ? '' : 'hidden'}><h3>Decision and appeal</h3><p class="fsec-sub">Process steps 5 and 6</p>
       <div class="field"><label for="pDecDate" class="req">Decision date</label><input id="pDecDate" type="date" value="${esc(c.decisionDate || todayPH())}"><small class="muted">Decide within ${DECISION_DAYS} days of the last conference. The written decision is furnished to the respondent, the parent or guardian, the Registrar’s Office, the VPSAS and the Office of the President (Process step 6).</small></div>
       <fieldset class="ivs"><legend>Interventions imposed (Process step 5)</legend>${INTERVENTIONS.map(([k, l]) => `<label><input type="checkbox" name="pIv" value="${k}" ${iv.includes(k) ? 'checked' : ''}> ${esc(l)}</label>`).join('')}</fieldset>
       <div class="cols tight"><div class="field"><label for="pAppeal">Appeal</label><select id="pAppeal">${opts({ '': 'None', ...APPEALS }, c.appeal || '')}</select></div>
       <div class="field"><label for="pAppealDate">Appeal date</label><input id="pAppealDate" type="date" value="${esc(c.appealDate || '')}"></div></div>
       <small class="muted">An appeal goes to the University President, in writing, within ${EFFECT_DAYS} days of receiving the decision (Process step 6). Expulsion also needs the approval of the Commission on Higher Education.</small>
-    </div></details>`;
+    </section>`;
 }
 
 /** Read the form back. Returns {values} or {error}. */

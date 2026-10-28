@@ -1,5 +1,25 @@
 # Changelog
 
+## v13 (28 October 2026)
+
+The case view (My complaints / All cases) is reorganised so a case can be read, updated and followed up without hunting. No change to the rules, the data or what Save does.
+
+### Changed
+- **One clear header.** "← All cases" at the top (it used to be a Close button at the bottom), the case number with Copy, the offense, Filed / Incident / Updated dates, and the status and degree chips.
+- **"Next step" is a real banner above the tabs** (it was unstyled text inside two tabs). Coloured by what it needs (next step, waiting, needs attention, done), with the email button for the step and "Open Update Case".
+- **Case Details & History** is four cards (Complaint, Case handling, Respondent, Complainant) beside a sticky History card, instead of one 18-row list. On a phone the cards stack. A history entry that did not change the status now reads "Update · In review" instead of "In review → In review".
+- **Update Case** is grouped into Status and note, Assessment and routing, Notice and answer, Conference, and Decision and appeal. **Save changes** sits in a bar at the bottom of this tab only (it used to float over every tab and hide the Respondent's explanation row), with an "Unsaved changes" note. Going back with unsaved edits asks first.
+- **Email Drafts** shows the message picker (suggested one marked) next to the list of recorded emails, newest first, with a count on the tab. The compose dialog puts To and Cc side by side.
+- Tabs are proper tabs (arrow keys, Home and End, screen-reader roles). The page no longer widens on a phone.
+- `styles.css`: three layered override blocks for the case page replaced by one block ("Case page") at the end of the file.
+
+### Tests
+- `tests/case-ui.test.mjs` (3 tests; `npm test` runs 106): one definition per case-page rule, every update-form field id kept, Save only on the Update tab, next step above the tabs, discard confirmation.
+
+### Notes
+- Nothing to deploy except Hosting (push to `main`).
+- Checked in a browser with Firebase stubbed: 23 checks (tabs, keyboard, unsaved note, all form ids, discard prompt, compose layout, filer view, no sideways scroll on a phone). Not run: saving to real Firestore.
+
 ## v12 (28 October 2026)
 
 Brings the public pages in line with Google's home page requirements for the OAuth branding check ([help page](https://support.google.com/cloud/answer/13807376)).

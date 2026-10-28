@@ -5,7 +5,7 @@
   "description": "UBridge, SAEP online complaint management system for UB-Lipa (Firebase Hosting + Auth + Firestore)",
   "type": "module",
   "scripts": {
-    "test": "node --test tests/retrieval.test.mjs tests/academics.test.mjs tests/mail.test.mjs tests/process.test.mjs tests/offenses.test.mjs tests/fusion.test.mjs tests/dense.test.mjs tests/gmail.test.mjs tests/legal.test.mjs",
+    "test": "node --test tests/retrieval.test.mjs tests/academics.test.mjs tests/mail.test.mjs tests/process.test.mjs tests/offenses.test.mjs tests/fusion.test.mjs tests/dense.test.mjs tests/gmail.test.mjs tests/legal.test.mjs tests/case-ui.test.mjs",
     "ml:baseline": "node scripts/bm25-baseline.mjs",
     "ml:test": "python -m pytest ml/tests",
     "test:rules": "firebase emulators:exec --only firestore --project ubridge-rules-test \"node --test tests/rules.test.mjs\"",

@@ -76,7 +76,7 @@ import { UB } from '../app.js';
       `<li><b>Filed</b><small>${esc(c.filedByName)} · ${UB.fmtTs(c.createdAt)}</small></li>`,
       ...hist.map(
         (h, k) =>
-          `<li class="${k === hist.length - 1 && !lag ? 'latest' : ''}"><b>${UB.STATUS[h.from]} → ${UB.STATUS[h.to]}</b><small>${who(h)} · ${UB.fmtTs(h.at)}</small>${h.remark ? `<p>${esc(h.remark)}</p>` : ''}</li>`,
+          `<li class="${k === hist.length - 1 && !lag ? 'latest' : ''}"><b>${h.from === h.to ? `Update <span class="muted">· ${UB.STATUS[h.to]}</span>` : `${UB.STATUS[h.from]} → ${UB.STATUS[h.to]}`}</b><small>${who(h)} · ${UB.fmtTs(h.at)}</small>${h.remark ? `<p>${esc(h.remark)}</p>` : ''}</li>`,
       ),
       ...(lag ? ['<li class="sync"><b>Updating…</b><small>Fetching the latest history</small></li>'] : []),
     ];
@@ -85,17 +85,22 @@ import { UB } from '../app.js';
   // Email drafts (staff only). UBridge does not send mail: staff edit the draft, save it to their own Gmail (or open it in their
   // email app), send it themselves and confirm they sent it.
   const emailLogHtml = () => {
-    const l = cur?.emails || [];
+    const l = [...(cur?.emails || [])].reverse(); // newest first
     return l.length
-      ? `<ul class="mails">${l.map((m) => `<li><details><summary><b>${esc(UB.mail.KINDS[m.kind] || m.kind)}</b><small class="muted"> · To ${esc(m.to)} · ${esc(m.byName || '')} · ${UB.fmtTs(m.at)}</small></summary><p><b>Subject:</b> ${esc(m.subject)}</p><pre class="mailbody">${esc(m.body)}</pre></details></li>`).join('')}</ul>`
-      : '<p class="muted">No email recorded for this case yet.</p>';
+      ? `<ul class="mails">${l.map((m) => `<li><details><summary><span class="mk">${esc(UB.mail.KINDS[m.kind] || m.kind)}</span><small class="muted">To ${esc(m.to)}<br>${esc(m.byName || 'SAEP Staff')} · ${UB.fmtTs(m.at)}</small></summary><p><b>Subject:</b> ${esc(m.subject)}</p><pre class="mailbody">${esc(m.body)}</pre></details></li>`).join('')}</ul>`
+      : '<p class="muted">No email recorded for this case yet. Once you send one and confirm it here, it is listed with its text.</p>';
   };
-  // "What now?" box (staff). Built from the case and the emails already recorded, following the policy's PROCESS section.
+  // "What now?" banner (staff), shown above the tabs so it is visible everywhere. Built from the case and the emails
+  // already recorded, following the policy's PROCESS section.
   const nextHtml = (c) => {
     const n = UB.proc.nextStep(c, { commission: UB.proc.commissionOf(c, data), emails: cur?.emails || [] });
     const tag = { todo: 'Next step', wait: 'Waiting', warn: 'Needs attention', done: 'Done' }[n.level];
-    return `<div class="nextstep ${n.level}" role="status"><small class="ns-tag">${tag}</small><b>${esc(n.title)}</b><p>${esc(n.detail)}</p>${
-      n.kind ? `<button type="button" class="btn ns-mail" data-kind="${esc(n.kind)}">Write: ${esc(UB.mail.KINDS[n.kind])}</button>` : ''
+    const act = [
+      n.kind ? `<button type="button" class="btn primary ns-mail" data-kind="${esc(n.kind)}">Write: ${esc(UB.mail.KINDS[n.kind])}</button>` : '',
+      n.level !== 'done' ? '<button type="button" class="btn" data-goto="update">Open Update Case</button>' : '',
+    ].join('');
+    return `<div class="nextstep ${n.level}" role="status"><span class="ns-tag">${tag}</span><b>${esc(n.title)}</b><p>${esc(n.detail)}</p>${
+      act ? `<div class="ns-actions">${act}</div>` : ''
     }${n.reminders.length ? `<ul class="ns-rem">${n.reminders.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}</div>`;
   };
   const paintNext = () => {
@@ -105,20 +110,25 @@ import { UB } from '../app.js';
   const paintEmails = () => {
     const box = cur?.m.el.querySelector('#emailLog');
     if (box) box.innerHTML = emailLogHtml();
+    const n = cur?.m.el.querySelector('#emailCount');
+    if (n) n.textContent = (cur.emails || []).length ? `(${cur.emails.length})` : '';
+    const tabN = cur?.m.el.querySelector('[data-tab="email"] .n');
+    if (tabN) tabN.textContent = (cur.emails || []).length || '';
     paintNext();
   };
-  const mailboxHtml = (c) => `<div class="staffbox mailbox"><h3>Email</h3><div class="nextbox">${nextHtml(c)}</div>
-      <p class="muted">${UB.gmail.enabled ? 'Pick a message, edit it, then save it as a draft in your Gmail (or open it in your email app) and send it yourself.' : 'Pick a message, edit it, then open it in your email app and send it yourself.'} UBridge keeps a record once you confirm.</p>
-      <div class="field"><label for="mk">Message</label><select id="mk" data-nodirty>${Object.entries(UB.mail.KINDS)
-        .map(
-          ([k, l]) =>
-            `<option value="${k}" ${k === UB.proc.suggestedKind(c, { commission: UB.proc.commissionOf(c, data), emails: cur?.emails || [] }) ? 'selected' : ''}>${esc(l)}</option>`,
-        )
-        .join(
-          '',
-        )}</select>${c.rEmail ? '' : '<small class="muted">No respondent email is on file. You can type one in the next step.</small>'}</div>
-      <button type="button" class="btn" id="mkBtn">Write email</button>
-      <h4 class="mailh">Emails recorded</h4><div id="emailLog">${emailLogHtml()}</div></div>`;
+  const mailboxHtml = (c) => {
+    const sug = UB.proc.suggestedKind(c, { commission: UB.proc.commissionOf(c, data), emails: cur?.emails || [] });
+    return `<div class="mail-grid">
+      <section class="card cc"><h3>Write an email</h3>
+        <p class="muted">${UB.gmail.enabled ? 'Pick a message and edit it. Then save it as a draft in your Gmail, or open it in your email app, and send it yourself.' : 'Pick a message and edit it. Then open it in your email app and send it yourself.'} UBridge never sends mail. It keeps a record once you confirm that you sent it.</p>
+        <div class="field"><label for="mk">Message</label><select id="mk" data-nodirty>${Object.entries(UB.mail.KINDS)
+          .map(([k, l]) => `<option value="${k}" ${k === sug ? 'selected' : ''}>${esc(l)}${k === sug ? ' (suggested)' : ''}</option>`)
+          .join('')}</select>${c.rEmail ? `<small class="muted">Respondent: ${esc(c.rEmail)}</small>` : '<small class="muted">No respondent email is on file. You can type one in the next step.</small>'}</div>
+        <button type="button" class="btn primary" id="mkBtn">Write email</button>
+      </section>
+      <section class="card cc"><h3>Emails recorded <span class="muted" id="emailCount">${(cur?.emails || []).length ? `(${cur.emails.length})` : ''}</span></h3><div id="emailLog">${emailLogHtml()}</div></section>
+    </div>`;
+  };
 
   // The compose dialog: edit, then open in the email app, then confirm it was sent.
   const compose = (c, kind) => {
@@ -138,7 +148,7 @@ import { UB } from '../app.js';
       `<div class="field"><label for="${id}">${label}</label>${tag === 'textarea' ? `<textarea id="${id}" rows="14" maxlength="${UB.mail.LIMITS.body}">${esc(v)}</textarea>` : `<input id="${id}" value="${esc(v)}" autocomplete="off">`}</div>`;
     const editHtml =
       () => `<h2>${esc(UB.mail.KINDS[kind])}</h2><p class="muted">${esc(c.id)}. Check the text, change anything you need and replace the [bracketed] parts. Nothing is sent from here.</p>
-      ${field('mTo', 'To', d.to)}${field('mCc', 'Cc', d.cc)}${field('mSubj', 'Subject', d.subject)}${
+      <div class="cols">${field('mTo', 'To', d.to)}${field('mCc', 'Cc', d.cc)}</div>${field('mSubj', 'Subject', d.subject)}${
         kind === 'notice'
           ? `<label class="chk"><input type="checkbox" id="mInc" ${include ? 'checked' : ''}> Put the complaint statement in the message (Process step 2). The complainant’s name is never added. Keep the message under ${UB.mail.LIMITS.body} characters.</label>`
           : ''
@@ -147,7 +157,7 @@ import { UB } from '../app.js';
       <p class="err" id="mErr" role="alert"></p>
       <div class="actions"><button class="btn" data-close>Cancel</button><button class="btn" id="mCopy" type="button">Copy text</button><button class="btn${gm ? '' : ' primary'}" id="mOpen" type="button">Open in my email app</button>${gm ? '<button class="btn primary" id="mGmail" type="button">Create Gmail draft</button>' : ''}</div>`;
     const m = UB.modal(editHtml(), UB.mail.KINDS[kind]);
-    m.el.querySelector('.modal').classList.add('wide');
+    m.el.querySelector('.modal').classList.add('wide', 'compose');
     let sent = null;
     const read = () => ({
       kind,
@@ -283,202 +293,125 @@ import { UB } from '../app.js';
     });
   };
 
-  /* this part start i change Jm */
+  /* Case page: header, next step, tabs (details and history, update, email). Field ids are read by save() and lib/process.js. */
+  const TABS = [
+    ['details', 'Case Details & History'],
+    ['update', 'Update Case'],
+    ['email', 'Email Drafts'],
+  ];
+  const kv = (k, v) => (v ? `<dt>${k}</dt><dd>${v}</dd>` : '');
+  const ccard = (title, body, cls = '') => (body ? `<section class="card cc ${cls}"><h3>${title}</h3><dl class="kv">${body}</dl></section>` : '');
 
-  const modalHtml = (c) => {
-    const o = offenses[c.offenseId],
-      hist = cur?.history || [];
+  const updateHtml = (c) => `<div class="uform">
+    <section class="card cc fsec"><h3>Status and note</h3>
+      <div class="field"><label for="ns">Status</label>
+        <select id="ns">${UB.ORDER.map((s) => `<option value="${s}" ${s === c.status ? 'selected' : ''}>${UB.STATUS[s]}</option>`).join('')}</select></div>
+      <div class="field" id="hdF" ${c.status === 'hearing' ? '' : 'hidden'}><label for="hd" class="req">Hearing date</label><input id="hd" type="date" value="${esc(c.hearingDate || '')}"></div>
+      <div class="field" id="rsF" ${c.status === 'resolved' ? '' : 'hidden'}><label for="rs" class="req">Resolution note</label><textarea id="rs" maxlength="2000">${esc(c.resolution || '')}</textarea></div>
+      <div class="field"><label for="rm">Remark for the history</label><input id="rm" maxlength="500" placeholder="e.g. Both parties notified" aria-describedby="rmHint">
+        <small class="muted" id="rmHint">Optional. Required (5+ characters) when moving a case back to an earlier status.</small></div>
+    </section>
+    ${UB.proc.processForm(c, { commission: UB.proc.commissionOf(c, data) })}
+    <div class="savebar"><button class="btn primary" id="sv" type="button">Save changes</button><span class="dirty" id="dirtyMsg" ${cur?.dirty ? '' : 'hidden'}>Unsaved changes</span><span class="muted savehint">The filer is notified in the app when you save.</span></div>
+  </div>`;
 
-    const formContent = staff
-      ? `<div class="staff-tab-container">
-    <h3>Update this case</h3>
-    <div class="nextbox">${nextHtml(c)}</div>
-
-    <div class="field">
-      <label for="ns">Status</label>
-      <select id="ns">
-        ${UB.ORDER.map((s) => `<option value="${s}" ${s === c.status ? 'selected' : ''}>${UB.STATUS[s]}</option>`).join('')}
-      </select>
-    </div>
-
-    <div class="field" id="hdF" ${c.status === 'hearing' ? '' : 'hidden'}>
-      <label for="hd" class="req">Hearing date</label>
-      <input id="hd" type="date" value="${esc(c.hearingDate || '')}">
-    </div>
-
-    <div class="field" id="rsF" ${c.status === 'resolved' ? '' : 'hidden'}>
-      <label for="rs" class="req">Resolution note</label>
-      <textarea id="rs" maxlength="2000" style="min-height:90px">${esc(c.resolution || '')}</textarea>
-    </div>
-
-    ${UB.proc.processForm(c, {
-      commission: UB.proc.commissionOf(c, data),
-    })}
-
-    <div class="field">
-      <label for="rm">Remark for the history</label>
-      <input id="rm" maxlength="500"
-        placeholder="e.g. Both parties notified"
-        aria-describedby="rmHint">
-      <small class="muted" id="rmHint">
-        Optional, but required (5+ characters) when moving a case back to an earlier status.
-      </small>
-    </div>
-  </div>`
+  const detailsHtml = (c, hist) => {
+    const o = offenses[c.offenseId];
+    const deg = UB.proc.degreeOf(c);
+    const complaint =
+      kv('Offense', esc(UB.offenseLabel(c))) +
+      kv('Category', `${esc(deg === 'Unclassified' ? 'Unclassified (SAEP to assess)' : deg)}${c.assessedDegree && c.assessedDegree !== c.offense ? ` <small class="muted">· filed as ${esc(c.offense === 'Unclassified' ? 'Others' : c.offense)}</small>` : ''}${o?.section ? ` <small class="muted">${esc(o.section)}</small>` : ''}`) +
+      kv('Handbook sanction', o?.sanction ? esc(o.sanction) : '') +
+      kv('Incident', `${UB.fmt(c.date)}${c.location ? ` · ${esc(c.location)}` : ''}`) +
+      kv('Description', `<span class="desc">${esc(c.desc)}</span>`) +
+      kv('Evidence', evidence(c)) +
+      (c.signatureImg
+        ? kv('Signature', `<img class="sigimg" alt="Complainant signature" src="${esc(c.signatureImg)}">${c.signature ? `<small class="muted" style="display:block">${esc(c.signature)}</small>` : ''}`)
+        : c.signature && staff
+          ? kv('E-signature', esc(c.signature))
+          : '');
+    const handling =
+      UB.proc.processRows(c, { staff, commission: UB.proc.commissionOf(c, data) }) + kv('Decision', c.resolution ? esc(c.resolution) : '');
+    const respondent =
+      kv('Student', `${esc(c.student)} <small class="muted">${esc(c.sid)}</small>`) +
+      kv('Course', esc([c.program, c.section].filter(Boolean).join(' '))) +
+      kv('Department', c.rDept ? esc(c.rDept) : '') +
+      kv('Contact', [c.rEmail, c.rContact].filter(Boolean).map(esc).join(' · '));
+    const complainant = staff
+      ? kv('Filed by', `${esc(c.filedByName)} · ${esc(c.filedByRole || '')}${c.filedByEmail ? ` · ${esc(c.filedByEmail)}` : ''}`) +
+        kv('Details', [c.cSid, c.cCourse, c.cDept, c.cContact].filter(Boolean).map(esc).join(' · '))
       : '';
-
-    return `<div class="case-head">
-      <div>
-        <h2>${esc(c.id)}
-          <button class="link" type="button" data-copy="${esc(c.id)}">Copy</button>
-        </h2>
-        <p class="muted">${esc(UB.offenseLabel(c))}</p>
+    return `<div class="case-grid">
+      <div class="case-main">
+        ${ccard('Complaint', complaint)}
+        ${ccard('Case handling', handling, 'handling')}
+        ${ccard('Respondent', respondent)}
+        ${ccard('Complainant', complainant)}
       </div>
-      <span class="live"><i></i>Live</span>
-    </div>
-
-    ${UB.progress(c.status, reached(c, hist))}
-
-    <div class="modal-tabs">
-      <button type="button" class="tab-btn active" data-tab="details">
-         Case Details &amp; History
-      </button>
-      ${staff ? '<button type="button" class="tab-btn" data-tab="update"> Update Case</button>' : ''}
-      ${staff ? '<button type="button" class="tab-btn" data-tab="email"> Email Drafts</button>' : ''}
-    </div>
-
-    <div class="tab-content active" id="tab-details">
-      <div class="case-grid">
-        <div class="case-main">
-          <dl>
-            <dt>Respondent</dt>
-            <dd>${esc(c.student)} (${esc(c.sid)})</dd>
-
-            <dt>Course</dt>
-            <dd>${esc([c.program, c.section].filter(Boolean).join(' '))}</dd>
-
-            ${c.rDept ? `<dt>Department</dt><dd>${esc(c.rDept)}</dd>` : ''}
-
-            ${
-              c.rEmail || c.rContact
-                ? `<dt>Respondent contact</dt>
-                 <dd>${[c.rEmail, c.rContact].filter(Boolean).map(esc).join(' · ')}</dd>`
-                : ''
-            }
-
-            ${
-              staff
-                ? `
-              <dt>Complainant</dt>
-              <dd>${esc(c.filedByName)} · ${esc(c.filedByRole || '')}${c.filedByEmail ? ` · ${esc(c.filedByEmail)}` : ''}</dd>
-
-              ${
-                c.cDept || c.cContact
-                  ? `<dt>Complainant details</dt>
-                   <dd>${[c.cSid, c.cCourse, c.cDept, c.cContact].filter(Boolean).map(esc).join(' · ')}</dd>`
-                  : ''
-              }
-            `
-                : ''
-            }
-
-            ${
-              c.signatureImg
-                ? `<dt>Signature</dt>
-                 <dd>
-                   <img class="sigimg" alt="Complainant signature" src="${esc(c.signatureImg)}">
-                   ${c.signature ? `<small class="muted" style="display:block">${esc(c.signature)}</small>` : ''}
-                 </dd>`
-                : c.signature && staff
-                  ? `<dt>E-signature</dt><dd>${esc(c.signature)}</dd>`
-                  : ''
-            }
-
-            <dt>Received</dt>
-            <dd>${UB.fmtTs(c.createdAt)}</dd>
-
-            ${UB.proc.processRows(c, {
-              staff,
-              commission: UB.proc.commissionOf(c, data),
-            })}
-
-            <dt>Category</dt>
-            <dd>
-              ${esc(UB.proc.degreeOf(c) === 'Unclassified' ? 'Unclassified (SAEP to assess)' : UB.proc.degreeOf(c))}${c.assessedDegree && c.assessedDegree !== c.offense ? ` <small class="muted">· filed as ${esc(c.offense === 'Unclassified' ? 'Others' : c.offense)}</small>` : ''}
-              ${o?.section ? ` <small class="muted">${esc(o.section)}</small>` : ''}
-            </dd>
-
-            ${o?.sanction ? `<dt>Handbook sanction</dt><dd>${esc(o.sanction)}</dd>` : ''}
-
-            <dt>Incident</dt>
-            <dd>${UB.fmt(c.date)}</dd>
-
-            <dt>Filed</dt>
-            <dd>${UB.fmt(c.filed)}</dd>
-
-            <dt>Updated</dt>
-            <dd>${UB.fmtTs(c.updatedAt || c.createdAt)}</dd>
-
-            ${c.resolution ? `<dt>Decision</dt><dd>${esc(c.resolution)}</dd>` : ''}
-
-            <dt>Location</dt>
-            <dd>${esc(c.location)}</dd>
-
-            <dt>Description</dt>
-            <dd>${esc(c.desc)}</dd>
-
-            <dt>Evidence</dt>
-            <dd>${evidence(c)}</dd>
-          </dl>
-        </div>
-
-        <aside class="case-side">
-          <h3>History</h3>
-          ${timeline(c, hist)}
-        </aside>
-      </div>
-    </div>
-
-    ${staff ? `<div class="tab-content" id="tab-update">${formContent}</div>` : ''}
-    ${staff ? `<div class="tab-content" id="tab-email">${mailboxHtml(c)}</div>` : ''}
-
-    <div class="actions">
-      <button class="btn" data-close>Close</button>
-      ${staff ? '<button class="btn primary" id="sv">Save changes</button>' : ''}
+      <aside class="case-side"><section class="card cc"><h3>History</h3>${timeline(c, hist)}</section></aside>
     </div>`;
   };
-  /* Case modal tab switching */
-  document.addEventListener('click', function (event) {
-    const button = event.target.closest('.tab-btn[data-tab]');
 
-    if (!button) return;
+  const modalHtml = (c) => {
+    const hist = cur?.history || [],
+      tab = staff ? cur?.tab || 'details' : 'details';
+    const tabs = staff
+      ? `<div class="tabs-bar" role="tablist" aria-label="Case sections">${TABS.map(
+          ([k, l]) =>
+            `<button type="button" class="tab-btn ${k === tab ? 'active' : ''}" role="tab" id="tb-${k}" aria-controls="tab-${k}" aria-selected="${k === tab}" tabindex="${k === tab ? 0 : -1}" data-tab="${k}">${l}${k === 'email' ? `<span class="n">${(cur?.emails || []).length || ''}</span>` : ''}</button>`,
+        ).join('')}</div>`
+      : '';
+    const panel = (k, html) => `<div class="tab-content ${k === tab ? 'active' : ''}" role="tabpanel" id="tab-${k}" aria-labelledby="tb-${k}" ${k === tab ? '' : 'hidden'}>${html}</div>`;
+    return `<div class="case-top"><button class="back" type="button" data-close>&larr; ${staff ? 'All cases' : 'My complaints'}</button><span class="live"><i></i>Live</span></div>
+    <header class="case-head">
+      <div>
+        <h2>${esc(c.id)} <button class="link" type="button" data-copy="${esc(c.id)}">Copy</button></h2>
+        <p class="muted">${esc(UB.offenseLabel(c))}</p>
+        <p class="facts"><span>Filed <b>${UB.fmt(c.filed)}</b></span><span>Incident <b>${UB.fmt(c.date)}</b></span><span>Updated <b>${UB.fmtTs(c.updatedAt || c.createdAt)}</b></span></p>
+      </div>
+      <div class="case-chips">${UB.chip(c.status)}<span class="chip ${UB.degClass(UB.proc.degreeOf(c))}">${esc(UB.proc.degreeOf(c) === 'Unclassified' ? 'To be assessed' : UB.proc.degreeOf(c))}</span></div>
+    </header>
+    <div class="card case-progress">${UB.progress(c.status, reached(c, hist))}</div>
+    ${staff ? `<div class="nextbox">${nextHtml(c)}</div>` : ''}
+    ${tabs}
+    ${panel('details', detailsHtml(c, hist))}
+    ${staff ? panel('update', updateHtml(c)) + panel('email', mailboxHtml(c)) : ''}`;
+  };
 
-    const modal = button.closest('.modal, .case-page');
-    if (!modal) return;
-
-    const tabName = button.dataset.tab;
-    const targetPanel = modal.querySelector('#tab-' + tabName);
-
-    // Ignore tabs that don't have a matching panel
-    if (!targetPanel) {
-      console.warn('Tab panel not found:', 'tab-' + tabName);
-      return;
-    }
-
-    // Update selected tab styling
-    modal.querySelectorAll('.tab-btn').forEach(function (tab) {
-      const isActive = tab === button;
-      tab.classList.toggle('active', isActive);
-      tab.setAttribute('aria-selected', String(isActive));
+  const showTab = (name) => {
+    const el = cur?.m.el;
+    if (!el || !el.querySelector(`#tab-${name}`)) return;
+    cur.tab = name;
+    el.querySelectorAll('.tab-btn').forEach((t) => {
+      const on = t.dataset.tab === name;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
     });
-
-    // Show the selected panel and hide the others
-    modal.querySelectorAll('.tab-content').forEach(function (panel) {
-      panel.classList.toggle('active', panel === targetPanel);
+    el.querySelectorAll('.tab-content').forEach((p) => {
+      const on = p.id === `tab-${name}`;
+      p.classList.toggle('active', on);
+      p.hidden = !on;
     });
+  };
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('.tab-btn[data-tab]') || e.target.closest('[data-goto]');
+    if (!t || !cur) return;
+    showTab(t.dataset.tab || t.dataset.goto);
+    if (t.dataset.goto) $('#caseView .tabs-bar')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  });
+  document.addEventListener('keydown', (e) => {
+    const t = e.target.closest?.('.tab-btn');
+    if (!t || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+    const all = [...t.parentElement.children],
+      i = all.indexOf(t);
+    const next = all[e.key === 'Home' ? 0 : e.key === 'End' ? all.length - 1 : (i + (e.key === 'ArrowRight' ? 1 : -1) + all.length) % all.length];
+    e.preventDefault();
+    next.focus();
+    showTab(next.dataset.tab);
   });
 
-  /* until here*/
+
 
   const listView = $('#listView');
   const caseView = $('#caseView');
@@ -516,21 +449,9 @@ import { UB } from '../app.js';
     if (!cur?.m || cur.dirty) return;
     const c = data.find((x) => x.id === cur.id);
     if (!c) return cur.m.close();
-    const modalEl = cur.m.el.querySelector('.modal');
-    const activeTab = modalEl?.querySelector('.tab-btn.active')?.dataset.tab;
+    const y = scrollY;
     cur.m.set(modalHtml(c));
-    if (activeTab) {
-      const btn = modalEl.querySelector(`.tab-btn[data-tab="${activeTab}"]`);
-      const panel = modalEl.querySelector(`#tab-${activeTab}`);
-      if (btn && panel) {
-        modalEl.querySelectorAll('.tab-btn').forEach((tab) => {
-          const on = tab === btn;
-          tab.classList.toggle('active', on);
-          tab.setAttribute('aria-selected', String(on));
-        });
-        modalEl.querySelectorAll('.tab-content').forEach((p) => p.classList.toggle('active', p === panel));
-      }
-    }
+    scrollTo(0, y);
   };
 
   const save = async () => {
@@ -573,6 +494,8 @@ import { UB } from '../app.js';
     try {
       await UB.updateCase(c, { status, hearingDate, resolution, remark, process: pr.values, notes });
       cur.dirty = false; // the dialog stays open and refreshes, so the next step and the Email tab use the saved case
+      const d = caseView.querySelector('#dirtyMsg');
+      if (d) d.hidden = true;
       UB.toast('Case updated');
     } catch (e) {
       UB.toast(
@@ -594,7 +517,7 @@ import { UB } from '../app.js';
       cur.stopEmails?.();
       cur = null;
     }
-    cur = { id, dirty: false, history: [], audit: {}, emails: [], seen: c.hCount || 0, status: c.status };
+    cur = { id, dirty: false, tab: 'details', history: [], audit: {}, emails: [], seen: c.hCount || 0, status: c.status };
     cur.m = showCase(modalHtml(c), 'Complaint ' + id, () => {
       cur.stopHistory?.();
       cur.stopAudit?.();
@@ -634,8 +557,17 @@ import { UB } from '../app.js';
       );
   };
 
+  // Back to the list. Unsaved edits are not thrown away silently.
+  const leave = async () => {
+    if (!cur) return;
+    if (cur.dirty && !(await UB.confirm('Discard your changes?', 'You have edits in Update Case that are not saved.', 'Discard'))) return;
+    cur?.m.close();
+  };
   caseView.addEventListener('input', (e) => {
-    if (cur && !e.target.closest('[data-nodirty]')) cur.dirty = true;
+    if (!cur || e.target.closest('[data-nodirty]')) return;
+    cur.dirty = true;
+    const d = caseView.querySelector('#dirtyMsg');
+    if (d) d.hidden = false;
   });
   caseView.addEventListener('change', (e) => {
     if (e.target.id === 'pNotice' && e.target.value) {
@@ -655,7 +587,7 @@ import { UB } from '../app.js';
     if (pDec) pDec.hidden = e.target.value !== 'resolved';
   });
   caseView.addEventListener('click', async (e) => {
-    if (e.target.closest('[data-close]')) return cur?.m.close();
+    if (e.target.closest('[data-close]')) return leave();
     if (e.target.closest('#sv')) return save();
     const start = (kind) => {
       const c = data.find((x) => x.id === cur?.id);
@@ -678,7 +610,7 @@ import { UB } from '../app.js';
   });
   addEventListener('keydown', (e) => {
     if (e.key !== 'Escape' || !cur || document.querySelector('.overlay')) return;
-    cur.m.close();
+    leave();
   });
 
   $('#q').oninput = render;
