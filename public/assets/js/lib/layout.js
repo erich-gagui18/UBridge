@@ -28,7 +28,7 @@ function extras() {
   );
   b.insertAdjacentHTML(
     'beforeend',
-    `<button class="totop" id="totop" aria-label="Back to top" hidden>${icon('up')}</button><a class="fab" href="${mail ? 'mailto:' + esc(mail) + '?subject=UBridge%20inquiry' : 'ai-guide.html#faq'}" aria-label="${mail ? 'Email the SAEP Office' : 'Help and FAQ'}">${icon(mail ? 'mail' : 'help')}<span>${mail ? 'Contact SAEP' : 'Help'}</span></a>`,
+    `<button class="totop" id="totop" aria-label="Back to top" hidden>${icon('up')}</button><a class="fab" href="${mail ? 'mailto:' + esc(mail) + '?subject=UBridge%20inquiry' : 'ai-guide.html#faq'}" aria-label="${mail ? 'Email the SAEP Office' : 'Help and FAQ'}">${icon(mail ? 'mail' : 'help')}<span>${mail ? 'Email the SAEP Office' : 'Help and FAQ'}</span></a>`,
   );
   if (!localStorage.getItem('ub.privacy')) {
     b.insertAdjacentHTML(

@@ -453,8 +453,7 @@ import { UB } from '../app.js';
 
     if (!button) return;
 
-    // Find the modal containing the clicked tab
-    const modal = button.closest('.modal');
+    const modal = button.closest('.modal, .case-page');
     if (!modal) return;
 
     const tabName = button.dataset.tab;
@@ -481,14 +480,45 @@ import { UB } from '../app.js';
 
   /* until here*/
 
+  const listView = $('#listView');
+  const caseView = $('#caseView');
+  const setCaseQuery = (id) => {
+    const u = new URL(location.href);
+    if (id) u.searchParams.set('case', id);
+    else u.searchParams.delete('case');
+    history.replaceState(null, '', u);
+  };
+  const showCase = (html, label, onClose) => {
+    listView.hidden = true;
+    caseView.hidden = false;
+    caseView.innerHTML = `<div class="modal wide case-inline" role="region" aria-label="${esc(label)}" tabindex="-1">${html}</div>`;
+    caseView.querySelector('.case-inline').focus({ preventScroll: true });
+    $('#main').scrollIntoView({ block: 'start' });
+    return {
+      el: caseView,
+      close() {
+        const id = cur?.id;
+        caseView.innerHTML = '';
+        caseView.hidden = true;
+        listView.hidden = false;
+        setCaseQuery('');
+        onClose?.();
+        $(`#rows [data-id="${CSS.escape(id || '')}"]`)?.focus();
+      },
+      set(html2) {
+        const box = caseView.querySelector('.case-inline');
+        if (box) box.innerHTML = html2;
+      },
+    };
+  };
+
   const paintModal = () => {
     if (!cur?.m || cur.dirty) return;
     const c = data.find((x) => x.id === cur.id);
-    if (!c) return;
+    if (!c) return cur.m.close();
     const modalEl = cur.m.el.querySelector('.modal');
     const activeTab = modalEl?.querySelector('.tab-btn.active')?.dataset.tab;
     cur.m.set(modalHtml(c));
-    modalEl.classList.add('wide');
     if (activeTab) {
       const btn = modalEl.querySelector(`.tab-btn[data-tab="${activeTab}"]`);
       const panel = modalEl.querySelector(`#tab-${activeTab}`);
@@ -557,13 +587,21 @@ import { UB } from '../app.js';
   const open = (id) => {
     const c = data.find((x) => x.id === id);
     if (!c) return;
+    if (cur?.id === id) return;
+    if (cur) {
+      cur.stopHistory?.();
+      cur.stopAudit?.();
+      cur.stopEmails?.();
+      cur = null;
+    }
     cur = { id, dirty: false, history: [], audit: {}, emails: [], seen: c.hCount || 0, status: c.status };
-    cur.m = UB.modal(modalHtml(c), 'Complaint ' + id, () => {
+    cur.m = showCase(modalHtml(c), 'Complaint ' + id, () => {
       cur.stopHistory?.();
       cur.stopAudit?.();
       cur.stopEmails?.();
       cur = null;
     });
+    setCaseQuery(id);
     cur.stopHistory = UB.watchHistory(
       id,
       (h) => {
@@ -594,45 +632,54 @@ import { UB } from '../app.js';
         },
         () => {},
       );
-    const el = cur.m.el;
-    el.querySelector('.modal').classList.add('wide');
-    el.addEventListener('input', (e) => {
-      if (cur && !e.target.closest('[data-nodirty]')) cur.dirty = true;
-    });
-    el.addEventListener('change', (e) => {
-      if (e.target.id === 'pNotice' && e.target.value) {
-        const due = el.querySelector('#pDue'),
-          min = UB.proc.addDays(e.target.value, UB.proc.ANSWER_DAYS);
+  };
+
+  caseView.addEventListener('input', (e) => {
+    if (cur && !e.target.closest('[data-nodirty]')) cur.dirty = true;
+  });
+  caseView.addEventListener('change', (e) => {
+    if (e.target.id === 'pNotice' && e.target.value) {
+      const due = caseView.querySelector('#pDue'),
+        min = UB.proc.addDays(e.target.value, UB.proc.ANSWER_DAYS);
+      if (due) {
         due.min = min;
         if (!due.value || due.value < min) due.value = min;
       }
-      if (e.target.id !== 'ns') return;
-      el.querySelector('#hdF').hidden = e.target.value !== 'hearing';
-      el.querySelector('#rsF').hidden = e.target.value !== 'resolved';
-      el.querySelector('#pDec').hidden = e.target.value !== 'resolved';
-    });
-    el.addEventListener('click', async (e) => {
-      if (e.target.closest('#sv')) return save();
-      const start = (kind) => {
-        const c = data.find((x) => x.id === cur?.id);
-        if (!c) return;
-        if (cur.dirty) return UB.toast('Save your changes under Update Case first, so the email uses them.', 'bad');
-        compose(c, kind);
-      };
-      if (e.target.closest('#mkBtn')) return start(el.querySelector('#mk').value);
-      const nb = e.target.closest('.ns-mail');
-      if (nb) return start(nb.dataset.kind);
-      const b = e.target.closest('[data-ev]');
-      if (!b) return;
+    }
+    if (e.target.id !== 'ns') return;
+    const hdF = caseView.querySelector('#hdF'),
+      rsF = caseView.querySelector('#rsF'),
+      pDec = caseView.querySelector('#pDec');
+    if (hdF) hdF.hidden = e.target.value !== 'hearing';
+    if (rsF) rsF.hidden = e.target.value !== 'resolved';
+    if (pDec) pDec.hidden = e.target.value !== 'resolved';
+  });
+  caseView.addEventListener('click', async (e) => {
+    if (e.target.closest('[data-close]')) return cur?.m.close();
+    if (e.target.closest('#sv')) return save();
+    const start = (kind) => {
       const c = data.find((x) => x.id === cur?.id);
       if (!c) return;
-      UB.openViewer(
-        c.files.filter((x) => x.path),
-        Number(b.dataset.ev),
-        (f) => UB.loadEvidence(c, f),
-      );
-    });
-  };
+      if (cur.dirty) return UB.toast('Save your changes under Update Case first, so the email uses them.', 'bad');
+      compose(c, kind);
+    };
+    if (e.target.closest('#mkBtn')) return start(caseView.querySelector('#mk').value);
+    const nb = e.target.closest('.ns-mail');
+    if (nb) return start(nb.dataset.kind);
+    const b = e.target.closest('[data-ev]');
+    if (!b) return;
+    const c = data.find((x) => x.id === cur?.id);
+    if (!c) return;
+    UB.openViewer(
+      c.files.filter((x) => x.path),
+      Number(b.dataset.ev),
+      (f) => UB.loadEvidence(c, f),
+    );
+  });
+  addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !cur || document.querySelector('.overlay')) return;
+    cur.m.close();
+  });
 
   $('#q').oninput = render;
   $('#st').onchange = render;
