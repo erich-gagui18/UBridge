@@ -1092,3 +1092,250 @@ body[data-page="my-complaints"] main,#caseView,#caseView .case-inline{min-width:
 .dirty.ok{color:var(--resolved)}
 @media(max-width:860px){.prof-hero{grid-template-columns:auto minmax(0,1fr)}.ph-prog{grid-column:1/-1}}
 @media(max-width:520px){.prof-hero{padding:16px 14px;gap:14px}.avatar.xl{width:52px;height:52px;font-size:22px}.sec{padding:16px 14px}}
+
+
+/* =========================================
+COLLAPSIBLE SIDEBAR - DESKTOP
+========================================= */
+
+.shell {
+transition: grid-template-columns 0.25s ease;
+}
+
+.menu-btn {
+display: inline-grid;
+}
+
+/* Keep the existing sidebar width when expanded */
+.shell .side {
+transition: padding 0.25s ease;
+}
+
+/* Collapsed sidebar */
+@media (min-width: 861px) {
+.shell.sidebar-collapsed {
+grid-template-columns: 76px minmax(0, 1fr);
+}
+
+.sidebar-collapsed .side {
+padding: 16px 8px 12px;
+}
+
+/* Hide text while keeping the navigation icons */
+.sidebar-collapsed .brand > div,
+.sidebar-collapsed .nav-label,
+.sidebar-collapsed .nav-text,
+.sidebar-collapsed .me > div,
+.sidebar-collapsed .side-legal {
+display: none;
+}
+
+/* Center the logo and navigation icons */
+.sidebar-collapsed .brand-row {
+justify-content: center;
+}
+
+.sidebar-collapsed .brand {
+flex: 0 0 auto;
+justify-content: center;
+padding: 2px 0 18px;
+}
+
+.sidebar-collapsed .nav a {
+justify-content: center;
+padding: 12px 8px;
+}
+
+.sidebar-collapsed .nav a .warn-dot {
+position: absolute;
+top: 7px;
+right: 7px;
+margin: 0;
+}
+
+.sidebar-collapsed .me-wrap {
+justify-items: center;
+}
+
+.sidebar-collapsed .me {
+justify-content: center;
+padding: 8px 0;
+}
+
+.sidebar-collapsed .side-out {
+justify-content: center;
+padding: 10px 8px;
+}
+
+.sidebar-collapsed .side-x {
+display: none;
+}
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+.shell,
+.shell .side {
+transition: none;
+}
+}
+
+
+/* ==========================================
+COLLAPSIBLE SIDEBAR - DESKTOP
+========================================== */
+
+.shell {
+transition: grid-template-columns 0.25s ease;
+}
+
+/* Keep the menu button visible on desktop and mobile. */
+.menu-btn {
+display: inline-grid;
+}
+
+/* Smooth sidebar changes. */
+.shell .side {
+transition: padding 0.25s ease;
+}
+
+@media (min-width: 861px) {
+/* Reduce the sidebar width and give the content more space. */
+.shell.sidebar-collapsed {
+grid-template-columns: 76px minmax(0, 1fr);
+}
+
+/* Make the collapsed sidebar compact. */
+.shell.sidebar-collapsed .side {
+padding: 16px 8px 12px;
+overflow-x: hidden;
+}
+
+/* Hide the brand name, navigation heading, profile details, and legal links. */
+.shell.sidebar-collapsed .brand > div,
+.shell.sidebar-collapsed .nav-label,
+.shell.sidebar-collapsed .me > div,
+.shell.sidebar-collapsed .side-legal {
+display: none;
+}
+
+/* Center the logo and sidebar controls. */
+.shell.sidebar-collapsed .brand-row {
+justify-content: center;
+}
+
+.shell.sidebar-collapsed .brand {
+flex: 0 0 auto;
+justify-content: center;
+padding: 2px 0 18px;
+}
+
+/* Hide link text while keeping icons visible. */
+.shell.sidebar-collapsed .nav a {
+position: relative;
+justify-content: center;
+gap: 0;
+padding: 12px 8px;
+font-size: 0;
+}
+
+.shell.sidebar-collapsed .nav a svg {
+flex: 0 0 20px;
+width: 20px;
+height: 20px;
+}
+
+/* Keep the profile-incomplete indicator visible. */
+.shell.sidebar-collapsed .nav a .warn-dot {
+position: absolute;
+top: 7px;
+right: 7px;
+margin: 0;
+}
+
+.shell.sidebar-collapsed .me-wrap {
+justify-items: center;
+}
+
+.shell.sidebar-collapsed .me {
+justify-content: center;
+padding: 8px 0;
+}
+
+/* Keep the sign-out icon visible and hide its text. */
+.shell.sidebar-collapsed .side-out {
+justify-content: center;
+gap: 0;
+padding: 10px 8px;
+font-size: 0;
+}
+
+.shell.sidebar-collapsed .side-out svg {
+flex: 0 0 20px;
+width: 20px;
+height: 20px;
+}
+
+.shell.sidebar-collapsed .side-x {
+display: none;
+}
+}
+
+/* Respect reduced-motion preferences. */
+@media (prefers-reduced-motion: reduce) {
+.shell,
+.shell .side {
+transition: none;
+}
+}
+
+/* ==========================================
+RESPONSIVE WIDTH - USE AVAILABLE SCREEN
+========================================== */
+
+/* Allow the main column to shrink and expand properly. */
+.shell {
+grid-template-columns: 240px minmax(0, 1fr);
+width: 100%;
+max-width: 100%;
+}
+
+.shell.sidebar-collapsed {
+grid-template-columns: 76px minmax(0, 1fr);
+}
+
+.content {
+min-width: 0;
+width: 100%;
+max-width: 100%;
+}
+
+/* Let page content use the full available width. */
+main {
+width: 100%;
+max-width: none;
+min-width: 0;
+}
+
+/* Keep dashboard grids inside the available width. */
+.stats,
+.grid2,
+.panel,
+.card {
+min-width: 0;
+max-width: 100%;
+}
+
+/* Preserve mobile layout and drawer behavior. */
+@media (max-width: 860px) {
+.shell,
+.shell.sidebar-collapsed {
+grid-template-columns: minmax(0, 1fr);
+}
+
+main {
+width: 100%;
+padding: 18px;
+}
+}
+

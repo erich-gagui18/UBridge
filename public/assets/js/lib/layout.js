@@ -147,31 +147,106 @@ export function shell({ me, local, isStaff, logout, missing = [] }) {
   $('#sideOut').onclick = signOut;
   extras();
   bell(me);
+ 
+ 
   // On a phone the sidebar is a drawer: it moves focus in, keeps Tab inside it, and gives focus back when it closes.
-  const side = $('#side'),
-    drawer = () => matchMedia('(max-width: 860px)').matches;
-  $('#menuBtn').setAttribute('aria-expanded', 'false');
-  const tog = (o) => {
-    if (o === side.classList.contains('open')) return;
-    side.classList.toggle('open', o);
-    document.body.classList.toggle('nav-open', o);
-    $('#menuBtn').setAttribute('aria-expanded', o);
-    if (o) $('.nav a[aria-current="page"], .nav a', side)?.focus();
-    else if (drawer()) $('#menuBtn').focus();
-  };
-  $('#menuBtn').onclick = () => tog(!side.classList.contains('open'));
-  $('#scrim').onclick = () => tog(false);
-  $('#sideX').onclick = () => tog(false);
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && side.classList.contains('open') && !document.querySelector('.overlay')) tog(false);
-    if (e.key !== 'Tab' || !side.classList.contains('open') || !drawer()) return;
-    const f = [...side.querySelectorAll('a[href],button')].filter((x) => x.offsetParent);
-    if (!f.length) return;
-    if (e.shiftKey && document.activeElement === f[0]) (e.preventDefault(), f[f.length - 1].focus());
-    else if (!e.shiftKey && document.activeElement === f[f.length - 1]) (e.preventDefault(), f[0].focus());
-  });
-  addEventListener('resize', () => {
-    if (!drawer()) tog(false);
-  });
-  $$('.nav a, .me').forEach((a) => a.addEventListener('click', () => tog(false)));
+ // Sidebar behavior: collapsible on desktop, sliding drawer on mobile.
+const side = $('#side');
+const menuBtn = $('#menuBtn');
+const drawer = () => matchMedia('(max-width: 860px)').matches;
+
+menuBtn.setAttribute('aria-expanded', 'false');
+menuBtn.setAttribute('aria-label', 'Open menu');
+
+// Give each navigation link a tooltip when the sidebar is collapsed.
+$$('.nav a', side).forEach((link) => {
+link.setAttribute('title', link.textContent.trim());
+});
+
+const tog = (open) => {
+if (open === side.classList.contains('open')) return;
+
+side.classList.toggle('open', open);
+document.body.classList.toggle('nav-open', open);
+menuBtn.setAttribute('aria-expanded', String(open));
+
+if (open) {
+  $('.nav a[aria-current="page"], .nav a', side)?.focus();
+} else if (drawer()) {
+  menuBtn.focus();
+}
+
+};
+
+menuBtn.onclick = () => {
+if (drawer()) {
+// Keep the original mobile drawer behavior.
+tog(!side.classList.contains('open'));
+menuBtn.setAttribute(
+'aria-label',
+side.classList.contains('open') ? 'Close menu' : 'Open menu'
+);
+return;
+}
+
+// Desktop: collapse or expand the sidebar.
+const collapsed = app.classList.toggle('sidebar-collapsed');
+
+menuBtn.setAttribute('aria-expanded', String(!collapsed));
+menuBtn.setAttribute(
+  'aria-label',
+  collapsed ? 'Expand sidebar' : 'Collapse sidebar'
+);
+
+};
+
+// Existing mobile drawer controls.
+$('#scrim').onclick = () => tog(false);
+$('#sideX').onclick = () => tog(false);
+
+document.addEventListener('keydown', (e) => {
+if (
+e.key === 'Escape' &&
+side.classList.contains('open') &&
+!document.querySelector('.overlay')
+) {
+tog(false);
+}
+
+if (e.key !== 'Tab' || !side.classList.contains('open') || !drawer()) {
+  return;
+}
+
+const focusable = [...side.querySelectorAll('a[href], button')]
+  .filter((element) => element.offsetParent);
+
+if (!focusable.length) return;
+
+if (e.shiftKey && document.activeElement === focusable[0]) {
+  e.preventDefault();
+  focusable[focusable.length - 1].focus();
+} else if (
+  !e.shiftKey &&
+  document.activeElement === focusable[focusable.length - 1]
+) {
+  e.preventDefault();
+  focusable[0].focus();
+}
+
+});
+
+addEventListener('resize', () => {
+if (drawer()) {
+// Don't leave the desktop collapsed state controlling the mobile layout.
+app.classList.remove('sidebar-collapsed');
+} else {
+tog(false);
+}
+});
+
+$$('.nav a, .me').forEach((link) => {
+link.addEventListener('click', () => {
+if (drawer()) tog(false);
+});
+});
 }
