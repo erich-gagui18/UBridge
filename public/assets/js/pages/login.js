@@ -65,8 +65,7 @@ const updatePasswordStrength = () => {
 
   label.textContent = levels[Math.max(0, passed - 1)].text;
   fill.style.width = `${passed * 20}%`;
-  fill.style.backgroundColor =
-    levels[Math.max(0, passed - 1)].color;
+  fill.style.backgroundColor = levels[Math.max(0, passed - 1)].color;
 };
 
 $('#pw').addEventListener('input', updatePasswordStrength);
@@ -171,7 +170,13 @@ $('#f').onsubmit = (e) => {
       : '',
     pw,
   );
-  const g = !up || flag('eAgree', $('#agree').checked ? '' : 'Agree to the Terms of Use and Privacy Notice to create an account', $('#agree'));
+  const g =
+    !up ||
+    flag(
+      'eAgree',
+      $('#agree').checked ? '' : 'Agree to the Terms of Use and Privacy Notice to create an account',
+      $('#agree'),
+    );
   if (!n || !a || !b || !g) return (!n ? nm : !a ? em : !b ? pw : $('#agree')).focus();
   run(() => (up ? UB.signUp(nm.value.trim(), v, pw.value, role) : UB.signIn(v, pw.value, role)));
 };

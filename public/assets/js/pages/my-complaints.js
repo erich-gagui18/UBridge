@@ -14,7 +14,9 @@ import { UB } from '../app.js';
     `<tr><th>Case no.</th><th>Student</th>${staff ? '<th>Filed by</th>' : ''}<th>Offense</th><th>Filed</th><th>Status</th><th></th></tr>`;
   $('#stats').innerHTML = UB.skel(4);
   $('#rows').innerHTML = `<tr><td colspan="${staff ? 7 : 6}">${UB.skel(3)}</td></tr>`;
-  Object.keys(UB.STATUS).forEach((s) => $('#st').insertAdjacentHTML('beforeend', `<option value="${s}">${UB.STATUS[s]}</option>`));
+  Object.keys(UB.STATUS).forEach((s) =>
+    $('#st').insertAdjacentHTML('beforeend', `<option value="${s}">${UB.STATUS[s]}</option>`),
+  );
 
   let data = [],
     offenses = {},
@@ -104,7 +106,9 @@ import { UB } from '../app.js';
     const n = UB.proc.nextStep(c, nextOpts(c));
     const tag = { todo: 'Next step', wait: 'Waiting', warn: 'Needs attention', done: 'Done' }[n.level];
     const act = [
-      n.kind ? `<button type="button" class="btn primary ns-mail" data-kind="${esc(n.kind)}">Write: ${esc(UB.mail.KINDS[n.kind])}</button>` : '',
+      n.kind
+        ? `<button type="button" class="btn primary ns-mail" data-kind="${esc(n.kind)}">Write: ${esc(UB.mail.KINDS[n.kind])}</button>`
+        : '',
       n.level !== 'done' ? '<button type="button" class="btn" data-goto="update">Open Update Case</button>' : '',
     ].join('');
     return `<div class="nextstep ${n.level}" role="status"><span class="ns-tag">${tag}</span><b>${esc(n.title)}</b><p>${esc(n.detail)}</p>${
@@ -130,8 +134,13 @@ import { UB } from '../app.js';
       <section class="card cc"><h3>Write an email</h3>
         <p class="muted">${UB.gmail.enabled ? 'Pick a message and edit it. Then save it as a draft in your Gmail, or open it in your email app, and send it yourself.' : 'Pick a message and edit it. Then open it in your email app and send it yourself.'} UBridge never sends mail. It keeps a record once you confirm that you sent it.</p>
         <div class="field"><label for="mk">Message</label><select id="mk" data-nodirty>${Object.entries(UB.mail.KINDS)
-          .map(([k, l]) => `<option value="${k}" ${k === sug ? 'selected' : ''}>${esc(l)}${k === sug ? ' (suggested)' : ''}</option>`)
-          .join('')}</select>${c.rEmail ? `<small class="muted">Respondent: ${esc(c.rEmail)}</small>` : '<small class="muted">No respondent email is on file. You can type one in the next step.</small>'}</div>
+          .map(
+            ([k, l]) =>
+              `<option value="${k}" ${k === sug ? 'selected' : ''}>${esc(l)}${k === sug ? ' (suggested)' : ''}</option>`,
+          )
+          .join(
+            '',
+          )}</select>${c.rEmail ? `<small class="muted">Respondent: ${esc(c.rEmail)}</small>` : '<small class="muted">No respondent email is on file. You can type one in the next step.</small>'}</div>
         <button type="button" class="btn primary" id="mkBtn">Write email</button>
       </section>
       <section class="card cc"><h3>Emails recorded <span class="muted" id="emailCount">${(cur?.emails || []).length ? `(${cur.emails.length})` : ''}</span></h3><div id="emailLog">${emailLogHtml()}</div></section>
@@ -263,22 +272,19 @@ import { UB } from '../app.js';
         const fx = UB.proc.effectOfEmail(kind, fresh);
         try {
           if (fx)
-            await UB.recordEmailAndUpdate(
-              fresh,
-              sent,
-              {
-                status: fx.status,
-                hearingDate: fresh.hearingDate || '',
-                resolution: fresh.resolution || '',
-                remark: '',
-                process: fx.process,
-                notes: fx.notes,
-              },
-            );
+            await UB.recordEmailAndUpdate(fresh, sent, {
+              status: fx.status,
+              hearingDate: fresh.hearingDate || '',
+              resolution: fresh.resolution || '',
+              remark: '',
+              process: fx.process,
+              notes: fx.notes,
+            });
           else await UB.logEmail(c.id, sent);
         } catch {
           b.disabled = false;
-          m.el.querySelector('#mErr').textContent = 'Couldn’t record the email. Nothing was saved. Check your connection and try again.';
+          m.el.querySelector('#mErr').textContent =
+            'Couldn’t record the email. Nothing was saved. Check your connection and try again.';
           return;
         }
         UB.toast(fx ? 'Email recorded and the case updated' : 'Email recorded');
@@ -290,7 +296,14 @@ import { UB } from '../app.js';
       if (e.target.id !== 'mInc') return;
       const box = m.el.querySelector('#mBody');
       const turnOn = e.target.checked;
-      if (box.value.trim() !== made.trim() && !(await UB.confirm('Replace your changes?', 'The message text will be rebuilt and your edits to it will be lost.', 'Replace'))) {
+      if (
+        box.value.trim() !== made.trim() &&
+        !(await UB.confirm(
+          'Replace your changes?',
+          'The message text will be rebuilt and your edits to it will be lost.',
+          'Replace',
+        ))
+      ) {
         e.target.checked = !turnOn;
         return;
       }
@@ -308,19 +321,26 @@ import { UB } from '../app.js';
     ['email', 'Email Drafts'],
   ];
   const kv = (k, v) => (v ? `<dt>${k}</dt><dd>${v}</dd>` : '');
-  const ccard = (title, body, cls = '') => (body ? `<section class="card cc ${cls}"><h3>${title}</h3><dl class="kv">${body}</dl></section>` : '');
+  const ccard = (title, body, cls = '') =>
+    body ? `<section class="card cc ${cls}"><h3>${title}</h3><dl class="kv">${body}</dl></section>` : '';
 
   // Not approved only exists at intake (Submitted or In review); a not-approved case can only be reopened to those two.
   const statusChoices = (c) =>
     Object.keys(UB.STATUS).filter((s) =>
-      s === 'rejected' ? ['submitted', 'review', 'rejected'].includes(c.status) : c.status === 'rejected' ? ['submitted', 'review'].includes(s) : true,
+      s === 'rejected'
+        ? ['submitted', 'review', 'rejected'].includes(c.status)
+        : c.status === 'rejected'
+          ? ['submitted', 'review'].includes(s)
+          : true,
     );
   const updateHtml = (c) => `<div class="uform${c.status === 'rejected' ? ' is-rejecting' : ''}">
     <section class="card cc fsec"><h3>Status and note</h3>
       <div class="field"><label for="ns">Status</label>
         <select id="ns">${statusChoices(c)
           .map((s) => `<option value="${s}" ${s === c.status ? 'selected' : ''}>${UB.STATUS[s]}</option>`)
-          .join('')}</select>${c.status === 'submitted' || c.status === 'review' ? '<small class="muted">Choose Not approved if SAEP will not take this complaint forward.</small>' : ''}</div>
+          .join(
+            '',
+          )}</select>${c.status === 'submitted' || c.status === 'review' ? '<small class="muted">Choose Not approved if SAEP will not take this complaint forward.</small>' : ''}</div>
       ${UB.proc.rejectFields(c)}
       <div class="field" id="hdF" ${c.status === 'hearing' ? '' : 'hidden'}><label for="hd" class="req">Hearing date</label><input id="hd" type="date" value="${esc(c.hearingDate || '')}"></div>
       <div class="field" id="rsF" ${c.status === 'resolved' ? '' : 'hidden'}><label for="rs" class="req">Resolution note</label><textarea id="rs" maxlength="2000">${esc(c.resolution || '')}</textarea></div>
@@ -336,26 +356,35 @@ import { UB } from '../app.js';
     const deg = UB.proc.degreeOf(c);
     const complaint =
       kv('Offense', esc(UB.offenseLabel(c))) +
-      kv('Category', `${esc(deg === 'Unclassified' ? 'Unclassified (SAEP to assess)' : deg)}${c.assessedDegree && c.assessedDegree !== c.offense ? ` <small class="muted">· filed as ${esc(c.offense === 'Unclassified' ? 'Others' : c.offense)}</small>` : ''}${o?.section ? ` <small class="muted">${esc(o.section)}</small>` : ''}`) +
+      kv(
+        'Category',
+        `${esc(deg === 'Unclassified' ? 'Unclassified (SAEP to assess)' : deg)}${c.assessedDegree && c.assessedDegree !== c.offense ? ` <small class="muted">· filed as ${esc(c.offense === 'Unclassified' ? 'Others' : c.offense)}</small>` : ''}${o?.section ? ` <small class="muted">${esc(o.section)}</small>` : ''}`,
+      ) +
       kv('Handbook sanction', o?.sanction ? esc(o.sanction) : '') +
       kv('Incident', `${UB.fmt(c.date)}${c.location ? ` · ${esc(c.location)}` : ''}`) +
       kv('Description', `<span class="desc">${esc(c.desc)}</span>`) +
       kv('Evidence', evidence(c)) +
       (c.signatureImg
-        ? kv('Signature', `<img class="sigimg" alt="Complainant signature" src="${esc(c.signatureImg)}">${c.signature ? `<small class="muted" style="display:block">${esc(c.signature)}</small>` : ''}`)
+        ? kv(
+            'Signature',
+            `<img class="sigimg" alt="Complainant signature" src="${esc(c.signatureImg)}">${c.signature ? `<small class="muted" style="display:block">${esc(c.signature)}</small>` : ''}`,
+          )
         : c.signature && staff
           ? kv('E-signature', esc(c.signature))
           : '');
     const handling =
-      UB.proc.processRows(c, { staff, commission: UB.proc.commissionOf(c, data) }) + kv(c.status === 'rejected' ? 'Why it was not approved' : 'Decision', c.resolution ? esc(c.resolution) : '');
+      UB.proc.processRows(c, { staff, commission: UB.proc.commissionOf(c, data) }) +
+      kv(c.status === 'rejected' ? 'Why it was not approved' : 'Decision', c.resolution ? esc(c.resolution) : '');
     const respondent =
       kv('Student', `${esc(c.student)} <small class="muted">${esc(c.sid)}</small>`) +
       kv('Course', esc([c.program, c.section].filter(Boolean).join(' '))) +
       kv('Department', c.rDept ? esc(c.rDept) : '') +
       kv('Contact', [c.rEmail, c.rContact].filter(Boolean).map(esc).join(' · '));
     const complainant = staff
-      ? kv('Filed by', `${esc(c.filedByName)} · ${esc(c.filedByRole || '')}${c.filedByEmail ? ` · ${esc(c.filedByEmail)}` : ''}`) +
-        kv('Details', [c.cSid, c.cCourse, c.cDept, c.cContact].filter(Boolean).map(esc).join(' · '))
+      ? kv(
+          'Filed by',
+          `${esc(c.filedByName)} · ${esc(c.filedByRole || '')}${c.filedByEmail ? ` · ${esc(c.filedByEmail)}` : ''}`,
+        ) + kv('Details', [c.cSid, c.cCourse, c.cDept, c.cContact].filter(Boolean).map(esc).join(' · '))
       : '';
     return `<div class="case-grid">
       <div class="case-main">
@@ -377,7 +406,8 @@ import { UB } from '../app.js';
             `<button type="button" class="tab-btn ${k === tab ? 'active' : ''}" role="tab" id="tb-${k}" aria-controls="tab-${k}" aria-selected="${k === tab}" tabindex="${k === tab ? 0 : -1}" data-tab="${k}">${l}${k === 'email' ? `<span class="n">${(cur?.emails || []).length || ''}</span>` : ''}</button>`,
         ).join('')}</div>`
       : '';
-    const panel = (k, html) => `<div class="tab-content ${k === tab ? 'active' : ''}" role="tabpanel" id="tab-${k}" aria-labelledby="tb-${k}" ${k === tab ? '' : 'hidden'}>${html}</div>`;
+    const panel = (k, html) =>
+      `<div class="tab-content ${k === tab ? 'active' : ''}" role="tabpanel" id="tab-${k}" aria-labelledby="tb-${k}" ${k === tab ? '' : 'hidden'}>${html}</div>`;
     return `<div class="case-top"><button class="back" type="button" data-close>&larr; ${staff ? 'All cases' : 'My complaints'}</button><span class="live"><i></i>Live</span></div>
     <header class="case-head">
       <div>
@@ -421,13 +451,18 @@ import { UB } from '../app.js';
     if (!t || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
     const all = [...t.parentElement.children],
       i = all.indexOf(t);
-    const next = all[e.key === 'Home' ? 0 : e.key === 'End' ? all.length - 1 : (i + (e.key === 'ArrowRight' ? 1 : -1) + all.length) % all.length];
+    const next =
+      all[
+        e.key === 'Home'
+          ? 0
+          : e.key === 'End'
+            ? all.length - 1
+            : (i + (e.key === 'ArrowRight' ? 1 : -1) + all.length) % all.length
+      ];
     e.preventDefault();
     next.focus();
     showTab(next.dataset.tab);
   });
-
-
 
   const listView = $('#listView');
   const caseView = $('#caseView');
@@ -542,7 +577,16 @@ import { UB } from '../app.js';
       cur.stopEmails?.();
       cur = null;
     }
-    cur = { id, dirty: false, tab: 'details', history: [], audit: {}, emails: [], seen: c.hCount || 0, status: c.status };
+    cur = {
+      id,
+      dirty: false,
+      tab: 'details',
+      history: [],
+      audit: {},
+      emails: [],
+      seen: c.hCount || 0,
+      status: c.status,
+    };
     cur.m = showCase(modalHtml(c), 'Complaint ' + id, () => {
       cur.stopHistory?.();
       cur.stopAudit?.();
@@ -585,7 +629,11 @@ import { UB } from '../app.js';
   // Back to the list. Unsaved edits are not thrown away silently.
   const leave = async () => {
     if (!cur) return;
-    if (cur.dirty && !(await UB.confirm('Discard your changes?', 'You have edits in Update Case that are not saved.', 'Discard'))) return;
+    if (
+      cur.dirty &&
+      !(await UB.confirm('Discard your changes?', 'You have edits in Update Case that are not saved.', 'Discard'))
+    )
+      return;
     cur?.m.close();
   };
   caseView.addEventListener('input', (e) => {

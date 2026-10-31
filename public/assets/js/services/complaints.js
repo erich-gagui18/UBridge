@@ -121,11 +121,7 @@ export async function updateCase(me, c, change) {
 }
 
 /** The batch behind updateCase, returned uncommitted so a sent email can be recorded in the same commit. */
-function caseBatch(
-  me,
-  c,
-  { status, remark = '', hearingDate = '', resolution = '', process = {}, notes = [] },
-) {
+function caseBatch(me, c, { status, remark = '', hearingDate = '', resolution = '', process = {}, notes = [] }) {
   const n = (c.hCount || 0) + 1;
   const summary = notes.join('; ');
   remark = (remark && summary ? `${remark} (${summary})` : remark || summary).slice(0, 500);
@@ -154,10 +150,10 @@ function caseBatch(
     status === 'rejected' && c.status !== 'rejected'
       ? `${c.id} was not approved. Open the case to see why.`
       : status === c.status && notes.length
-      ? `${c.id}: ${notes.join('. ')}.`.slice(0, 200)
-      : status === 'hearing' && hearingDate
-        ? `${c.id} is now ${STATUS[status]}. Hearing date: ${hearingDate}.`
-        : `${c.id} is now ${STATUS[status]}.`;
+        ? `${c.id}: ${notes.join('. ')}.`.slice(0, 200)
+        : status === 'hearing' && hearingDate
+          ? `${c.id} is now ${STATUS[status]}. Hearing date: ${hearingDate}.`
+          : `${c.id} is now ${STATUS[status]}.`;
   b.set(doc(collection(db, 'notifications')), {
     uid: c.filedBy,
     caseId: c.id,
@@ -212,4 +208,5 @@ const emailDoc = (me, { kind, to, cc, subject, body }) => ({
   byName: me.name,
   at: serverTimestamp(),
 });
-export const logEmail = (me, caseId, mail) => addDoc(collection(db, 'complaints', caseId, 'emails'), emailDoc(me, mail));
+export const logEmail = (me, caseId, mail) =>
+  addDoc(collection(db, 'complaints', caseId, 'emails'), emailDoc(me, mail));

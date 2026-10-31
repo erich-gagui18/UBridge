@@ -365,7 +365,9 @@ import { UB } from '../app.js';
       : '';
     if (needGround && !first) first = document.querySelector('[name=ground]');
     const consent = $('#consent');
-    $('#eConsent').textContent = consent.checked ? '' : 'You must agree to the privacy notice and terms of use to submit';
+    $('#eConsent').textContent = consent.checked
+      ? ''
+      : 'You must agree to the privacy notice and terms of use to submit';
     if (!consent.checked && !first) first = consent;
     if (!UB.isComplete(me)) return location.replace('profile.html?need=1&next=file-complaint');
     if (first) {

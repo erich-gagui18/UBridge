@@ -49,7 +49,8 @@ function requestToken() {
       callback: (r) => {
         if (r.error) return reject(gmailError(r.error === 'access_denied' ? 'gmail/denied' : `gmail/${r.error}`));
         // Google lets people untick individual permissions on the consent screen.
-        if (!window.google.accounts.oauth2.hasGrantedAllScopes(r, GMAIL_SCOPE)) return reject(gmailError('gmail/scope'));
+        if (!window.google.accounts.oauth2.hasGrantedAllScopes(r, GMAIL_SCOPE))
+          return reject(gmailError('gmail/scope'));
         resolve(r);
       },
       error_callback: (e) => reject(gmailError(closed[e?.type] || `gmail/${e?.type || 'unknown'}`)),

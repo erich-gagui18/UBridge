@@ -33,7 +33,19 @@ test('sidebar css: one definition per rule, the close button is hidden above the
 });
 
 test('profile page: ids the script needs, grouped sections, completion meter, save bar', () => {
-  for (const id of ['pName', 'pRole', 'pEmail', 'av', 'state', 'need', 'groups', 'save', 'saveMsg', 'meterFill', 'progTxt'])
+  for (const id of [
+    'pName',
+    'pRole',
+    'pEmail',
+    'av',
+    'state',
+    'need',
+    'groups',
+    'save',
+    'saveMsg',
+    'meterFill',
+    'progTxt',
+  ])
     assert.ok(html.includes(`id="${id}"`), id);
   assert.doesNotMatch(html, /class="step"/);
   assert.match(profile, /section\('Personal'/);

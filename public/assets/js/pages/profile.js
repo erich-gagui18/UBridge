@@ -29,9 +29,13 @@ import { UB } from '../app.js';
   const section = (title, sub, fields) =>
     `<section class="card sec"><h2>${title}</h2><p class="sec-sub">${sub}</p><div class="cols">${fields.join('')}</div></section>`;
   const personal = [
-    input('name', 'Full name', { ph: 'Dela Cruz, Juan M.', hint: 'Shown on your complaints and used as your printed name.' }),
+    input('name', 'Full name', {
+      ph: 'Dela Cruz, Juan M.',
+      hint: 'Shown on your complaints and used as your printed name.',
+    }),
   ];
-  if (role === 'student') personal.push(input('sid', 'Student no.', { max: 7, mode: 'numeric', ph: '2407880', hint: '7 digits.' }));
+  if (role === 'student')
+    personal.push(input('sid', 'Student no.', { max: 7, mode: 'numeric', ph: '2407880', hint: '7 digits.' }));
   if (role === 'faculty') personal.push(input('sid', 'Employee no.', { req: false, max: 20, ph: 'Optional' }));
   const work = [];
   if (role !== 'staff')
@@ -53,13 +57,24 @@ import { UB } from '../app.js';
       }),
       input('section', 'Year & section', { req: false, max: 20, ph: 'e.g. 4B (optional)' }),
     );
-  if (role === 'faculty') work.push(input('position', 'Position', { req: false, max: 80, ph: 'e.g. Instructor (optional)' }));
-  if (role === 'staff') work.push(input('position', 'Position / designation', { max: 80, ph: 'e.g. SAEP Coordinator' }));
+  if (role === 'faculty')
+    work.push(input('position', 'Position', { req: false, max: 80, ph: 'e.g. Instructor (optional)' }));
+  if (role === 'staff')
+    work.push(input('position', 'Position / designation', { max: 80, ph: 'e.g. SAEP Coordinator' }));
   $('#groups').innerHTML =
     section('Personal', 'Who you are on the complaints you file.', personal) +
-    section(role === 'staff' ? 'Office' : 'School', role === 'staff' ? 'Your role at the SAEP Office.' : 'Where you study or teach.', work) +
+    section(
+      role === 'staff' ? 'Office' : 'School',
+      role === 'staff' ? 'Your role at the SAEP Office.' : 'Where you study or teach.',
+      work,
+    ) +
     section('Contact', 'How the SAEP Office can reach you about a case.', [
-      input('contact', 'Contact no.', { max: 20, type: 'tel', ph: '09XX XXX XXXX', hint: 'A mobile number the office can call or text.' }),
+      input('contact', 'Contact no.', {
+        max: 20,
+        type: 'tel',
+        ph: '09XX XXX XXXX',
+        hint: 'A mobile number the office can call or text.',
+      }),
     ]);
 
   const pp =
@@ -85,17 +100,35 @@ import { UB } from '../app.js';
     el.setAttribute('aria-invalid', !!m);
     return m;
   };
-  const NEED_TOTAL = UB.missingFields({ role, name: '', sid: '', dept: '', course: '', contact: '', position: '' }).length;
+  const NEED_TOTAL = UB.missingFields({
+    role,
+    name: '',
+    sid: '',
+    dept: '',
+    course: '',
+    contact: '',
+    position: '',
+  }).length;
   const val = (id) => ($('#' + id)?.value || '').trim();
   const liveProfile = () => {
     const ac = pp ? pp.value() : { dept: '', course: '' };
-    return { role, name: val('name'), sid: val('sid'), position: val('position'), contact: val('contact'), dept: ac.dept, course: ac.course };
+    return {
+      role,
+      name: val('name'),
+      sid: val('sid'),
+      position: val('position'),
+      contact: val('contact'),
+      dept: ac.dept,
+      course: ac.course,
+    };
   };
   // Completion meter: follows what is typed, so people see it fill as they go.
   const meter = () => {
     const miss = UB.missingFields(liveProfile());
     const done = NEED_TOTAL - miss.length;
-    $('#progTxt').textContent = miss.length ? `${done} of ${NEED_TOTAL} required details` : 'All required details filled';
+    $('#progTxt').textContent = miss.length
+      ? `${done} of ${NEED_TOTAL} required details`
+      : 'All required details filled';
     $('#progSub').textContent = miss.length ? `Still needed: ${miss.join(', ')}` : 'You are ready to file complaints.';
     $('#meterFill').style.width = (NEED_TOTAL ? (done / NEED_TOTAL) * 100 : 100) + '%';
     $('.prof-hero').classList.toggle('complete', !miss.length);
@@ -119,7 +152,12 @@ import { UB } from '../app.js';
   paint();
 
   // Unsaved changes: shown next to Save, and the browser asks before the page is closed.
-  const snap = () => JSON.stringify([...['name', 'sid', 'section', 'position', 'contact'].map(val), liveProfile().dept, liveProfile().course]);
+  const snap = () =>
+    JSON.stringify([
+      ...['name', 'sid', 'section', 'position', 'contact'].map(val),
+      liveProfile().dept,
+      liveProfile().course,
+    ]);
   let saved = snap(),
     msgTimer = 0;
   const note = (t, cls = '') => {

@@ -117,7 +117,7 @@ Open a case as SAEP staff and use the **Email** box: pick a message (notice, fol
 
 With a Google OAuth client ID set, the compose dialog gets a **Create Gmail draft** button. It saves the edited message as a draft in the staff member's own `@ub.edu.ph` Gmail (Gmail API `users.drafts.create`). The staff member opens it from the dialog's **Open draft in Gmail** link, checks it, sends it from Gmail and then presses **Yes, I sent it**, so the case record works exactly as before. If the text is changed and saved again, the same draft is replaced, not duplicated. When you press **Yes, I sent it**, UBridge asks Gmail whether the draft is still in Drafts (a sent draft disappears) and warns if it is. Without a client ID the button is hidden and **Open in my email app** is used.
 
-- **Permission asked:** `gmail.compose` only (create and replace drafts, send drafts). Google lists it as a *restricted* scope. UBridge never searches or lists the mailbox, never reads a message, never sends or deletes by itself (the only read is whether its own draft is still in Drafts, to warn about an unsent email), and keeps the access token only in page memory (about an hour).
+- **Permission asked:** `gmail.compose` only (create and replace drafts, send drafts). Google lists it as a _restricted_ scope. UBridge never searches or lists the mailbox, never reads a message, never sends or deletes by itself (the only read is whether its own draft is still in Drafts, to warn about an unsent email), and keeps the access token only in page memory (about an hour).
 - **Why not the lighter `gmail.send`:** it can only send, not save a draft for the staff member to review first.
 - **Account check:** the draft is only created if the Google account that signed in ends in `@ub.edu.ph`.
 
@@ -126,19 +126,19 @@ With a Google OAuth client ID set, the compose dialog gets a **Create Gmail draf
 1. Google Cloud Console, project `ubridge-76eee` (the Firebase project): APIs & Services > Library > enable **Gmail API**.
 2. Google Auth Platform > Audience. Pick **Internal** if the project belongs to the University's Google Workspace organization (no verification, only people in that organization can sign in). Otherwise pick **External** and keep the publishing status on **Testing**, then add every SAEP staff `@ub.edu.ph` address under **Test users** (up to 100; Google shows an "unverified app" screen, press Advanced > Continue, and asks again about every 7 days). Do not press Publish: a restricted scope in production needs Google's security review.
 3. Google Auth Platform > Branding > App domain (add the authorized domain first): home page `https://ubridge-76eee.web.app/` (the public page in `public/index.html`; Google needs a home page that describes the app, is visible without signing in and does not redirect, so do not point it at the login page), privacy policy `https://ubridge-76eee.web.app/pages/privacy.html`, terms of service `https://ubridge-76eee.web.app/pages/terms.html`. Use your own address if the site has a custom domain. The pages must be deployed first. Both pages are public (no sign-in) and are also linked from the sign-up form, the sidebar and the complaint form. If you change the text of either, update its version line and `PRIVACY_VERSION` / `TERMS_VERSION` in `data.js` (`npm test` checks they match).
-3b. Google Auth Platform > Data access > add the scope `https://www.googleapis.com/auth/gmail.compose`.
+   3b. Google Auth Platform > Data access > add the scope `https://www.googleapis.com/auth/gmail.compose`.
 4. Google Auth Platform > Clients > Create client > **Web application**. Authorized JavaScript origins: `https://ubridge-76eee.web.app`, `https://ubridge-76eee.firebaseapp.com` and, for local tests, `http://localhost:5005`. No redirect URI and no client secret are needed.
 5. Paste the client ID into `GMAIL_CLIENT_ID` in `public/assets/js/firebase-config.js` (a client ID is public; never commit a client secret), commit and push to `main`.
 6. Test as a staff member: open a case > Email > Write email > **Create Gmail draft** > Allow > open the draft.
 
-| Problem | Likely cause |
-|---|---|
-| `Error 400: origin_mismatch` | The site address is missing from Authorized JavaScript origins (step 4) |
-| `access_denied` or "has not completed the verification process" | The account is not a Test user (step 2), or press Advanced > Continue |
-| `org_internal` | The account is outside the Workspace organization that owns the project |
-| "Access blocked" by an administrator | The Workspace admin has to allow the app (Admin console > Security > API controls) |
-| Message says the Gmail API is not turned on | Step 1 |
-| Nothing opens | The browser blocked the Google pop-up; allow pop-ups for the site |
+| Problem                                                         | Likely cause                                                                       |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `Error 400: origin_mismatch`                                    | The site address is missing from Authorized JavaScript origins (step 4)            |
+| `access_denied` or "has not completed the verification process" | The account is not a Test user (step 2), or press Advanced > Continue              |
+| `org_internal`                                                  | The account is outside the Workspace organization that owns the project            |
+| "Access blocked" by an administrator                            | The Workspace admin has to allow the app (Admin console > Security > API controls) |
+| Message says the Gmail API is not turned on                     | Step 1                                                                             |
+| Nothing opens                                                   | The browser blocked the Google pop-up; allow pop-ups for the site                  |
 
 ## Notifications
 

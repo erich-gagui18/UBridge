@@ -158,10 +158,16 @@ test('saveDraft with an earlier draft id replaces it (PUT) so no duplicate is le
 });
 
 test('if the earlier draft was deleted or sent, a new one is created', async () => {
-  const { api, calls } = fake([reply(404, { error: { status: 'NOT_FOUND' } }), reply(200, { id: 'r9', message: { id: 'm9' } })]);
+  const { api, calls } = fake([
+    reply(404, { error: { status: 'NOT_FOUND' } }),
+    reply(200, { id: 'r9', message: { id: 'm9' } }),
+  ]);
   const out = await api.saveDraft(d, 'r1');
   assert.equal(out.draftId, 'r9');
-  assert.deepEqual(calls.map((c) => c.method), ['PUT', 'POST']);
+  assert.deepEqual(
+    calls.map((c) => c.method),
+    ['PUT', 'POST'],
+  );
 });
 
 test('an expired token (401) is replaced once and the call is retried', async () => {
@@ -173,23 +179,55 @@ test('an expired token (401) is replaced once and the call is retried', async ()
 
 test('a second 401 gives up instead of looping', async () => {
   const { api, calls } = fake([reply(401, {}), reply(401, {})]);
-  await assert.rejects(() => api.saveDraft(d), (e) => e.code === 'gmail/http-401');
+  await assert.rejects(
+    () => api.saveDraft(d),
+    (e) => e.code === 'gmail/http-401',
+  );
   assert.equal(calls.length, 2);
 });
 
 test('errors map to stable codes with plain messages', async () => {
   const cases = [
-    [reply(403, { error: { status: 'PERMISSION_DENIED', message: 'Gmail API has not been used in project 1 (SERVICE_DISABLED)', errors: [{ reason: 'accessNotConfigured' }] } }), 'gmail/api'],
-    [reply(403, { error: { status: 'PERMISSION_DENIED', message: 'Request had insufficient authentication scopes.' } }), 'gmail/scope'],
+    [
+      reply(403, {
+        error: {
+          status: 'PERMISSION_DENIED',
+          message: 'Gmail API has not been used in project 1 (SERVICE_DISABLED)',
+          errors: [{ reason: 'accessNotConfigured' }],
+        },
+      }),
+      'gmail/api',
+    ],
+    [
+      reply(403, {
+        error: { status: 'PERMISSION_DENIED', message: 'Request had insufficient authentication scopes.' },
+      }),
+      'gmail/scope',
+    ],
     [reply(429, { error: { status: 'RESOURCE_EXHAUSTED' } }), 'gmail/quota'],
     [reply(500, {}), 'gmail/http-500'],
     [new TypeError('Failed to fetch'), 'gmail/network'],
   ];
   for (const [r, code] of cases) {
     const { api } = fake([r]);
-    await assert.rejects(() => api.saveDraft(d), (e) => e.code === code, code);
+    await assert.rejects(
+      () => api.saveDraft(d),
+      (e) => e.code === code,
+      code,
+    );
   }
-  for (const code of ['gmail/api', 'gmail/scope', 'gmail/quota', 'gmail/network', 'gmail/blocked', 'gmail/closed', 'gmail/load', 'gmail/denied', 'gmail/account', 'gmail/off']) {
+  for (const code of [
+    'gmail/api',
+    'gmail/scope',
+    'gmail/quota',
+    'gmail/network',
+    'gmail/blocked',
+    'gmail/closed',
+    'gmail/load',
+    'gmail/denied',
+    'gmail/account',
+    'gmail/off',
+  ]) {
     assert.ok(gmailMsg({ code }).length > 20, code);
   }
   assert.ok(gmailMsg({ code: 'gmail/http-500' }).includes('gmail/http-500'));
@@ -202,7 +240,10 @@ test('an error from the sign-in step (for example a blocked pop-up) passes throu
       throw Object.assign(new Error('x'), { code: 'gmail/blocked' });
     },
   });
-  await assert.rejects(() => api.saveDraft(d), (e) => e.code === 'gmail/blocked');
+  await assert.rejects(
+    () => api.saveDraft(d),
+    (e) => e.code === 'gmail/blocked',
+  );
 });
 
 test('profile reads the signed-in address', async () => {
@@ -217,12 +258,13 @@ test('mime ends the body with CRLF and never contains a bare LF', () => {
   assert.ok(!/[^\r]\n/.test(mime(d)));
 });
 
-
 test('draftExists: true while the draft is in Drafts, false once Gmail no longer has it, and it throws on other errors', async () => {
   const a = fake([reply(200, { id: 'r1' })]);
   assert.equal(await a.api.draftExists('r1'), true);
   assert.match(a.calls[0].url, /\/drafts\/r1\?format=minimal$/);
   assert.equal(a.calls[0].method, 'GET');
   assert.equal(await fake([reply(404, { error: { status: 'NOT_FOUND' } })]).api.draftExists('r1'), false);
-  await assert.rejects(fake([reply(429, { error: { status: 'RESOURCE_EXHAUSTED' } })]).api.draftExists('r1'), { code: 'gmail/quota' });
+  await assert.rejects(fake([reply(429, { error: { status: 'RESOURCE_EXHAUSTED' } })]).api.draftExists('r1'), {
+    code: 'gmail/quota',
+  });
 });

@@ -20,7 +20,13 @@ export const KINDS = {
 };
 /** Suggested draft for each case status. */
 // Used only when nothing better is known; lib/process.js suggestedKind() looks at the whole case.
-export const KIND_FOR_STATUS = { submitted: 'notice', review: 'notice', hearing: 'schedule', resolved: 'decision', rejected: 'rejection' };
+export const KIND_FOR_STATUS = {
+  submitted: 'notice',
+  review: 'notice',
+  hearing: 'schedule',
+  resolved: 'decision',
+  rejected: 'rejection',
+};
 
 // Link length that email apps handle reliably. Longer drafts open without the body and the body is copied instead.
 export const MAILTO_LIMIT = 1900;
@@ -74,10 +80,10 @@ export function draft(kind, c, me, { cc = '', include = false, today = todayPH()
       : kind === 'department' || kind === 'closure-dept'
         ? `Dear Dean and Program Head, ${c.rDept || ''}`.trim() + ','
         : kind === 'parents'
-        ? 'Dear Parent or Guardian,'
-        : kind === 'copy'
-          ? 'Dear Registrar’s Office, Vice President for Student Affairs and Services (VPSAS) and Office of the President,'
-          : `Dear ${c.student},`;
+          ? 'Dear Parent or Guardian,'
+          : kind === 'copy'
+            ? 'Dear Registrar’s Office, Vice President for Student Affairs and Services (VPSAS) and Office of the President,'
+            : `Dear ${c.student},`;
   // The notice proposes the three-day answer deadline when none is saved yet; sending the email records it (lib/process.js effectOfEmail).
   const due = c.answerDue || (kind === 'notice' && !c.noticeDate ? addDays(today, ANSWER_DAYS) : '');
   let subject, body;

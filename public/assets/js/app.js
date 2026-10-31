@@ -164,6 +164,12 @@ export const UB = (() => {
     pairPicker,
     proc,
     mail,
-    gmail: { enabled: gmailSvc.enabled, preload: gmailSvc.preload, saveDraft: gmailSvc.saveDraft, draftExists: gmailSvc.draftExists, msg: gmailMsg },
+    gmail: {
+      enabled: gmailSvc.enabled,
+      preload: gmailSvc.preload,
+      saveDraft: gmailSvc.saveDraft,
+      draftExists: gmailSvc.draftExists,
+      msg: gmailMsg,
+    },
   };
 })();

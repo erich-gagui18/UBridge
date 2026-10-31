@@ -135,7 +135,6 @@ test('a normal draft fits in a link, a very long one does not', () => {
   assert.ok(mailto({ ...d, body: 'x'.repeat(3000) }).length > MAILTO_LIMIT);
 });
 
-
 test('the notice proposes the three-day deadline when none is saved, and names it', () => {
   const nd = { ...c, answerDue: '', noticeDate: '' };
   assert.match(draft('notice', nd, me, { today: '2026-10-10' }).body, /on or before 13 Oct|on or before .*2026/);
@@ -168,7 +167,13 @@ test('parent or guardian notice and decision copy: policy wording, no address on
   assert.ok(KINDS.parents && KINDS.copy);
 });
 
-const rejCase = { ...c, filedByEmail: 'complainant@ub.edu.ph', status: 'rejected', rejectReason: 'insufficient', resolution: 'The description does not say who did what.' };
+const rejCase = {
+  ...c,
+  filedByEmail: 'complainant@ub.edu.ph',
+  status: 'rejected',
+  rejectReason: 'insufficient',
+  resolution: 'The description does not say who did what.',
+};
 
 test('the not-approved notice goes to the complainant with the reason and the explanation, and never the respondent', () => {
   const d = draft('rejection', rejCase, me);
@@ -201,7 +206,10 @@ test('each party gets its own closing notice: the respondent and the department 
   assert.equal(draft('closure-dept', { ...rejCase, noticeDate: '' }, me).to, '');
   assert.equal(draft('closure', { ...rejCase, noticeDate: '' }, me).to, c.rEmail);
   assert.equal(check({ ...toRespondent }), '');
-  assert.ok(!toRespondent.body.includes(c.filedByName) && !toDept.body.includes(c.filedByName), 'the complainant is never named');
+  assert.ok(
+    !toRespondent.body.includes(c.filedByName) && !toDept.body.includes(c.filedByName),
+    'the complainant is never named',
+  );
 });
 
 test('both new kinds are listed for the email picker and match the Firestore rules', () => {

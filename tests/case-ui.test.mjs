@@ -9,17 +9,46 @@ const page = read('assets/js/pages/my-complaints.js');
 
 test('the case page styles live in one block: each tab and layout rule is defined once', () => {
   for (const sel of ['.tab-btn{', '.tabs-bar{', '.case-grid{', '.nextstep{', '.savebar{']) {
-    assert.equal(css.split('\n').filter((l) => l.startsWith(sel)).length, 1, `${sel} is defined once at the top level (phone tweaks inside @media are separate)`);
+    assert.equal(
+      css.split('\n').filter((l) => l.startsWith(sel)).length,
+      1,
+      `${sel} is defined once at the top level (phone tweaks inside @media are separate)`,
+    );
   }
   assert.doesNotMatch(css, /\.staff-tab-container|\.modal-tabs|\.case-main dl/);
 });
 
 test('the update form keeps every field id that save() and readProcess() read', () => {
-  const c = { status: 'resolved', offense: 'Second Degree', venue: 'offcampus', route: 'department', interventions: [] };
+  const c = {
+    status: 'resolved',
+    offense: 'Second Degree',
+    venue: 'offcampus',
+    route: 'department',
+    interventions: [],
+  };
   const html = processForm(c);
-  for (const id of ['pAssess', 'pJur', 'pRoute', 'pNotice', 'pDue', 'pAnswer', 'pParents', 'pDept', 'pMode', 'pHeld', 'pDec', 'pDecDate', 'pAppeal', 'pAppealDate'])
+  for (const id of [
+    'pAssess',
+    'pJur',
+    'pRoute',
+    'pNotice',
+    'pDue',
+    'pAnswer',
+    'pParents',
+    'pDept',
+    'pMode',
+    'pHeld',
+    'pDec',
+    'pDecDate',
+    'pAppeal',
+    'pAppealDate',
+  ])
     assert.ok(html.includes(`id="${id}"`), id);
-  assert.equal((html.match(/<section/g) || []).length, (html.match(/<\/section>/g) || []).length, 'sections are balanced');
+  assert.equal(
+    (html.match(/<section/g) || []).length,
+    (html.match(/<\/section>/g) || []).length,
+    'sections are balanced',
+  );
   assert.doesNotMatch(html, /<details/);
 });
 

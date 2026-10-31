@@ -19,7 +19,10 @@ export const b64url = (bytes) => b64(bytes).replace(/\+/g, '-').replace(/\//g, '
 
 const crlf = (s) => String(s).replace(/\r?\n/g, '\r\n');
 // Header values must not contain line breaks (header injection), whatever the staff member typed.
-const oneLine = (s) => String(s).replace(/[\r\n]+/g, ' ').trim();
+const oneLine = (s) =>
+  String(s)
+    .replace(/[\r\n]+/g, ' ')
+    .trim();
 
 /**
  * RFC 2047 encoding for a header that has non-ASCII text (the policy text uses “ ” ’ and – a lot).
@@ -50,9 +53,10 @@ export function encodeHeader(value) {
 export function mime(d) {
   const to = addresses(d.to).join(', ');
   const cc = addresses(d.cc).join(', ');
-  const body = b64(enc.encode(crlf(d.body)))
-    .match(/.{1,76}/g)
-    ?.join('\r\n') ?? '';
+  const body =
+    b64(enc.encode(crlf(d.body)))
+      .match(/.{1,76}/g)
+      ?.join('\r\n') ?? '';
   return [
     `To: ${to}`,
     ...(cc ? [`Cc: ${cc}`] : []),
@@ -83,14 +87,16 @@ const MESSAGES = {
   'gmail/blocked': 'The Google sign-in window was blocked. Allow pop-ups for this site and try again.',
   'gmail/closed': 'The Google sign-in window was closed before it finished. Click Create Gmail draft to try again.',
   'gmail/denied': 'Gmail access was not allowed. Choose Allow when Google asks, then try again.',
-  'gmail/scope': 'Google did not give permission to create drafts. Try again and keep the box for managing drafts ticked.',
+  'gmail/scope':
+    'Google did not give permission to create drafts. Try again and keep the box for managing drafts ticked.',
   'gmail/account': 'Use your @ub.edu.ph Google account for Gmail drafts.',
   'gmail/api': 'The Gmail API is not turned on for this project. Ask the system owner to enable it in Google Cloud.',
   'gmail/quota': 'Gmail is busy. Wait a minute and try again.',
   'gmail/network': 'No connection. Check your internet and try again.',
   'gmail/load': 'Google sign-in could not load. Check your internet or ad blocker and try again.',
 };
-export const gmailMsg = (e) => MESSAGES[e?.code] || `Gmail couldn’t save the draft. Use “Open in my email app” instead. (${e?.code || 'unknown'})`;
+export const gmailMsg = (e) =>
+  MESSAGES[e?.code] || `Gmail couldn’t save the draft. Use “Open in my email app” instead. (${e?.code || 'unknown'})`;
 
 /**
  * Gmail API client. `getToken(force)` returns an access token (force = ignore any cached one).
@@ -120,7 +126,8 @@ export function createGmailApi({ fetch, getToken }) {
     const reason = info.errors?.[0]?.reason || info.status || '';
     if (res.status === 404) throw gmailError('gmail/gone', { status: 404 });
     if (res.status === 429 || /rateLimit|quota/i.test(reason)) throw gmailError('gmail/quota', { status: res.status });
-    if (res.status === 403 && /accessNotConfigured|SERVICE_DISABLED/i.test(reason + (info.message || ''))) throw gmailError('gmail/api', { status: 403 });
+    if (res.status === 403 && /accessNotConfigured|SERVICE_DISABLED/i.test(reason + (info.message || '')))
+      throw gmailError('gmail/api', { status: 403 });
     if (res.status === 403) throw gmailError('gmail/scope', { status: 403 });
     throw gmailError(`gmail/http-${res.status}`, { status: res.status, reason });
   }

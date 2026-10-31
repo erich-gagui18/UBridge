@@ -111,7 +111,12 @@ export function processRows(c, { staff = false, commission = 0 } = {}) {
     r = routeOf(c),
     out = [];
   if (c.status === 'rejected')
-    out.push(row('Outcome', `Not approved <small class="muted">· ${esc(REJECT_REASONS[c.rejectReason] || 'No reason recorded')}</small>`));
+    out.push(
+      row(
+        'Outcome',
+        `Not approved <small class="muted">· ${esc(REJECT_REASONS[c.rejectReason] || 'No reason recorded')}</small>`,
+      ),
+    );
   if (venueOf(c) === 'offcampus') {
     const g = (c.jurisdiction || []).map((id) => GROUNDS.find((x) => x.id === id)?.label).filter(Boolean);
     out.push(
@@ -201,7 +206,9 @@ export function rejectFields(c) {
   const on = c.status === 'rejected';
   return `<div class="rejbox" id="rjF" ${on ? '' : 'hidden'}>
     <p class="rej-note"><b>Not approved closes the case at intake.</b> No notice, conference or decision follows. The complainant is told why, in the app and in the email you send next. You can reopen the case later with a remark.</p>
-    <div class="field"><label for="pReject" class="req">Reason</label><select id="pReject"><option value="">Choose a reason…</option>${Object.entries(REJECT_REASONS)
+    <div class="field"><label for="pReject" class="req">Reason</label><select id="pReject"><option value="">Choose a reason…</option>${Object.entries(
+      REJECT_REASONS,
+    )
       .map(([k, t]) => `<option value="${k}" ${k === c.rejectReason ? 'selected' : ''}>${esc(t)}</option>`)
       .join('')}</select></div>
     <div class="field"><label for="rj" class="req">Explanation for the complainant</label><textarea id="rj" maxlength="2000" placeholder="Say in plain words what is missing or why it cannot be taken forward, and what the complainant can do next.">${on ? esc(c.resolution || '') : ''}</textarea>
@@ -373,8 +380,14 @@ export function nextStep(c, { today = todayPH(), commission = 0, emails = [], re
   const out = (level, title, detail, kind = '') => ({ level, title, detail, kind, reminders });
 
   // A case that was closed as not approved and is open again: the people who were told it was closed should hear it is open.
-  if (c.status !== 'rejected' && rejectedAt != null && ['rejection', 'closure', 'closure-dept'].some((k) => sent.has(k)))
-    reminders.push('This case was closed as not approved earlier, and people were told. Tell them it is open again (use the Email tab).');
+  if (
+    c.status !== 'rejected' &&
+    rejectedAt != null &&
+    ['rejection', 'closure', 'closure-dept'].some((k) => sent.has(k))
+  )
+    reminders.push(
+      'This case was closed as not approved earlier, and people were told. Tell them it is open again (use the Email tab).',
+    );
 
   // Not approved: tell the complainant, then each party on the respondent's side who was already told about the complaint
   // (the respondent and the department are told separately). Only emails sent since the latest rejection count.
@@ -390,7 +403,8 @@ export function nextStep(c, { today = todayPH(), commission = 0, emails = [], re
     const respondentTold = !!c.noticeDate || sent.has('notice');
     const deptTold = sent.has('department');
     if (respondentTold && !now.has('closure')) {
-      if (deptTold && !now.has('closure-dept')) reminders.push('The department was told about this complaint too. Send them the closing notice next.');
+      if (deptTold && !now.has('closure-dept'))
+        reminders.push('The department was told about this complaint too. Send them the closing notice next.');
       return out(
         'todo',
         'Tell the respondent the complaint is closed',
@@ -405,7 +419,11 @@ export function nextStep(c, { today = todayPH(), commission = 0, emails = [], re
         'The complaint was forwarded to the respondent’s department. Tell them it is closed so no conference is held.',
         'closure-dept',
       );
-    return out('done', 'Closed: not approved', 'The people who were told have been told. To reopen the case, use Update Case and explain why in the remark.');
+    return out(
+      'done',
+      'Closed: not approved',
+      'The people who were told have been told. To reopen the case, use Update Case and explain why in the remark.',
+    );
   }
 
   if (c.status === 'resolved') {
@@ -444,7 +462,8 @@ export function nextStep(c, { today = todayPH(), commission = 0, emails = [], re
     );
   }
 
-  if (!c.parentsNotified) reminders.push('If the respondent is under 18, notify the parent or guardian (Process step 3).');
+  if (!c.parentsNotified)
+    reminders.push('If the respondent is under 18, notify the parent or guardian (Process step 3).');
 
   // Process step 1: SAEP assessment and, for off-campus or online offenses, the jurisdiction review.
   if (deg === 'Unclassified' && !c.assessedDegree)
@@ -540,7 +559,15 @@ export function nextStep(c, { today = todayPH(), commission = 0, emails = [], re
 export function suggestedKind(c, o = {}) {
   const k = nextStep(c, o).kind;
   if (k) return k;
-  return c.status === 'rejected' ? 'rejection' : c.status === 'resolved' ? 'decision' : c.status === 'hearing' ? 'schedule' : routeOf(c) === 'department' ? 'department' : 'notice';
+  return c.status === 'rejected'
+    ? 'rejection'
+    : c.status === 'resolved'
+      ? 'decision'
+      : c.status === 'hearing'
+        ? 'schedule'
+        : routeOf(c) === 'department'
+          ? 'department'
+          : 'notice';
 }
 
 /**
@@ -563,9 +590,13 @@ export function checkMove(c, v, { status, hearingDate, resolution = '' }, today 
   if (late && !declined && deg === 'Unclassified')
     errors.push('Assess the degree of the offense first (Case handling, Process step 1).');
   if (late && !declined && venueOf(c) === 'offcampus' && !v.jurisdictionReview)
-    errors.push('Review the University’s jurisdiction first (Case handling). This offense happened off campus or online.');
+    errors.push(
+      'Review the University’s jurisdiction first (Case handling). This offense happened off campus or online.',
+    );
   if (status === 'hearing' && !v.noticeDate)
-    errors.push('Send the notice to the respondent before the conference (Process step 2). Set the notice date under Case handling.');
+    errors.push(
+      'Send the notice to the respondent before the conference (Process step 2). Set the notice date under Case handling.',
+    );
   if (status === 'hearing' && !v.answer && v.answerDue && hearingDate && hearingDate < v.answerDue)
     errors.push(
       `The conference cannot be before the answer deadline (${fmt(v.answerDue)}) unless the respondent’s explanation has been received.`,
@@ -574,7 +605,9 @@ export function checkMove(c, v, { status, hearingDate, resolution = '' }, today 
     errors.push('The decision date cannot be before the conference date.');
 
   if (closing && route === 'cdb' && !hearingDate && !v.conferencesHeld)
-    warnings.push('No disciplinary conference is recorded. The policy requires one before the decision (Process step 4).');
+    warnings.push(
+      'No disciplinary conference is recorded. The policy requires one before the decision (Process step 4).',
+    );
   if (closing && route === 'cdb' && !v.noticeDate)
     warnings.push('No notice to the respondent is recorded (Process step 2).');
   if (closing && route === 'department' && !v.deptDecisionDate)
@@ -582,9 +615,13 @@ export function checkMove(c, v, { status, hearingDate, resolution = '' }, today 
   if (closing && v.decisionDate && hearingDate && v.decisionDate > addDays(hearingDate, DECISION_DAYS))
     warnings.push(`The decision is more than ${DECISION_DAYS} days after the last conference (Process step 6).`);
   if (closing && !(v.interventions || []).length)
-    warnings.push('No intervention is selected. That is fine only if the respondent was found not responsible, and the note should say so.');
+    warnings.push(
+      'No intervention is selected. That is fine only if the respondent was found not responsible, and the note should say so.',
+    );
   if (v.answer === 'general-denial' && !c.answer && v.answerDue && today <= v.answerDue)
-    warnings.push(`The answer period has not ended yet (due ${fmt(v.answerDue)}). A general denial is entered only when the respondent does not answer in time.`);
+    warnings.push(
+      `The answer period has not ended yet (due ${fmt(v.answerDue)}). A general denial is entered only when the respondent does not answer in time.`,
+    );
   const jump = rankOf(status) - rankOf(c.status);
   if (jump > 1 && !declined && status !== 'rejected' && c.status !== 'rejected')
     warnings.push('This skips a stage of the process.');
@@ -592,19 +629,29 @@ export function checkMove(c, v, { status, hearingDate, resolution = '' }, today 
   // Not approved: only at intake, with a reason and an explanation for the complainant.
   if (status === 'rejected') {
     if (!REJECT_FROM.includes(c.status) && c.status !== 'rejected')
-      errors.push('A case that has reached a conference or a decision cannot be marked Not approved. Use Resolved and explain in the decision note.');
+      errors.push(
+        'A case that has reached a conference or a decision cannot be marked Not approved. Use Resolved and explain in the decision note.',
+      );
     else if (Number(v.conferencesHeld) > 0 || (v.decisionDate && c.status !== 'rejected'))
-      errors.push('A conference has already been held or a decision recorded, so the case cannot be marked Not approved. Use Resolved and explain in the decision note.');
+      errors.push(
+        'A conference has already been held or a decision recorded, so the case cannot be marked Not approved. Use Resolved and explain in the decision note.',
+      );
     if (!v.rejectReason) errors.push('Choose why the complaint is not approved.');
     if (String(resolution).trim().length < EXPLAIN_MIN)
       errors.push(`Explain to the complainant why it is not approved (at least ${EXPLAIN_MIN} characters).`);
     if (c.status !== 'rejected' && c.noticeDate)
-      warnings.push('The respondent was already sent a notice. After saving, send them the closing email so they know no action will be taken.');
+      warnings.push(
+        'The respondent was already sent a notice. After saving, send them the closing email so they know no action will be taken.',
+      );
   }
   if (c.status === 'rejected' && !['rejected', 'submitted', 'review'].includes(status))
-    errors.push('A case that was not approved has to be reopened to Submitted or In review first, with a remark that says why.');
+    errors.push(
+      'A case that was not approved has to be reopened to Submitted or In review first, with a remark that says why.',
+    );
   if (c.status === 'rejected' && ['submitted', 'review'].includes(status) && c.resolution)
-    warnings.push('Reopening clears the explanation the complainant can see. It stays in the email record only if you already sent it.');
+    warnings.push(
+      'Reopening clears the explanation the complainant can see. It stays in the email record only if you already sent it.',
+    );
   return { errors, warnings };
 }
 

@@ -97,8 +97,14 @@ test('the Gmail wording matches what the code does: it checks one draft, and nev
 test('a sent email and the case change it causes are written in one batch', () => {
   const svc = read('assets/js/services/complaints.js');
   assert.match(svc, /export async function recordEmailAndUpdate/);
-  assert.match(svc, /const b = caseBatch\(me, c, change\);\s*b\.set\(doc\(collection\(db, 'complaints', c\.id, 'emails'\)\)/);
+  assert.match(
+    svc,
+    /const b = caseBatch\(me, c, change\);\s*b\.set\(doc\(collection\(db, 'complaints', c\.id, 'emails'\)\)/,
+  );
   const page = read('assets/js/pages/my-complaints.js');
   assert.match(page, /UB\.recordEmailAndUpdate\(/);
-  assert.doesNotMatch(page, /await UB\.logEmail\(c\.id, sent\);\s*\} catch[\s\S]{0,200}\n\s*\/\/ Record what the email means/);
+  assert.doesNotMatch(
+    page,
+    /await UB\.logEmail\(c\.id, sent\);\s*\} catch[\s\S]{0,200}\n\s*\/\/ Record what the email means/,
+  );
 });

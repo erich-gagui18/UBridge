@@ -5,11 +5,13 @@
 Fixes to the Not approved flow and the case view. **Deploy the rules first** (`firebase deploy --only firestore:rules`), because the new email kind `closure-dept` is validated there.
 
 ### Fixed
-- **Each party is told the case is closed.** A not-approved case used to ask for one closing email and then show "Closed", even when the respondent and the department had both been told. The next-step box now asks for the respondent's notice first, then the Dean and Program Head's (new kind *Notice to the Dean and Program Head: complaint closed*, which never names the complainant). "Closed" appears only when everyone who was told has been told.
+
+- **Each party is told the case is closed.** A not-approved case used to ask for one closing email and then show "Closed", even when the respondent and the department had both been told. The next-step box now asks for the respondent's notice first, then the Dean and Program Head's (new kind _Notice to the Dean and Program Head: complaint closed_, which never names the complainant). "Closed" appears only when everyone who was told has been told.
 - **A second rejection is told again.** Reject, email, reopen, reject again with a new reason: the complainant now gets asked for a fresh rejection email. Emails are counted from the latest rejection in the history.
 - **Escape in the email editor** closed the whole case. It now closes only the dialog; a second Escape leaves the case.
 
 ### Added
+
 - A reminder on a reopened case that people were told it was closed, so staff tell them it is open again.
 - A warning in the reopen confirmation that the explanation shown to the complainant is cleared (it stays in the email record only if it was already sent).
 
@@ -18,16 +20,19 @@ Fixes to the Not approved flow and the case view. **Deploy the rules first** (`f
 Staff can now mark a complaint **Not approved**, and the pages work more smoothly on phones, tablets and different browsers. **Deploy the rules first** (`firebase deploy --only firestore:rules`), then push to `main` for Hosting.
 
 ### Added: Not approved
-- **A new outcome in Update Case.** Choose *Not approved* under Status (offered only for Submitted and In review cases). Staff pick a reason and write an explanation for the complainant (at least 10 characters). The notice, conference and decision sections are hidden while it is selected.
+
+- **A new outcome in Update Case.** Choose _Not approved_ under Status (offered only for Submitted and In review cases). Staff pick a reason and write an explanation for the complainant (at least 10 characters). The notice, conference and decision sections are hidden while it is selected.
 - **Rules of the outcome.** Only before a conference or a decision. A case with a held conference or a recorded decision is resolved instead. A not-approved case can only be reopened to Submitted or In review, with a remark, and the reason and explanation are cleared.
-- **The complainant is told.** In-app notification at once, then the *Notice to the complainant* email (reason, explanation, how to file again). If a notice had already gone to the respondent, or the case was forwarded to the department, the next-step box asks for the *Notice that the complaint is closed* email.
+- **The complainant is told.** In-app notification at once, then the _Notice to the complainant_ email (reason, explanation, how to file again). If a notice had already gone to the respondent, or the case was forwarded to the department, the next-step box asks for the _Notice that the complaint is closed_ email.
 - **Everywhere it shows.** A "Not approved" chip, a two-step progress bar that ends there, an Outcome row with the reason, a "Why it was not approved" row, the dashboard pipeline, and the status filter. Not-approved cases are left out of the resolution rate.
 - **Not in the policy.** The College Student Discipline Policy has no intake rejection step. This is a UBridge addition for the SAEP Office to confirm (see `docs/case-flow.md`).
 
 ### Fixed
+
 - After **Save changes** the case header and progress bar could keep showing the old status until another update arrived. The case now repaints as soon as the save succeeds.
 
 ### Changed: look and feel across devices
+
 - **iPhone and iPad (Safari):** the page no longer zooms in when a field is tapped (every field is 16px, including the AI Guide box); selects and date fields look the same as on other browsers; dates are no longer auto-linked as phone numbers.
 - **Android and phones in general:** the layout uses the visible screen height (the address bar no longer hides the bottom of the login page and menu), round buttons are 44px on touch screens, and the grey tap flash is gone.
 - **All browsers:** date pickers, scrollbars and menus follow dark mode; status chips keep a background on older browsers; the browser toolbar takes the maroon colour on phones.
@@ -37,6 +42,7 @@ Staff can now mark a complaint **Not approved**, and the pages work more smoothl
 - **Sign-in page:** the "Sign up" link matches the other links (it was default browser blue).
 
 ### Tests
+
 - 14 new unit tests (`npm test` now runs 125) and 14 new rules tests in `tests/rules.test.mjs` (run `npm run test:rules`, needs the emulator).
 
 ## v14 (28 October 2026)
@@ -44,21 +50,25 @@ Staff can now mark a complaint **Not approved**, and the pages work more smoothl
 The sidebar menu and the My profile page are tidied. No change to the rules, the data or what a saved profile contains.
 
 ### Changed: sidebar
+
 - **The profile reminder is visible.** A gold dot on "My profile" and "Profile incomplete" under your name, instead of small text that wrapped. Both clear as soon as the profile is saved.
 - **Sign out is in the menu** as well as the top bar (it asks first, as before). The brand links to the dashboard. A "Menu" label names the navigation for screen readers.
 - **Phone drawer:** a close (X) button, focus moves into the menu when it opens and back to the menu button when it closes, Tab stays inside it, Escape or tapping outside closes it, the page behind does not scroll, and the help button no longer sits on top of it.
 - Tidier spacing, visible keyboard focus, long names are cut off with an ellipsis, and the menu scrolls on short screens so the footer is never clipped. The duplicate `.brand` rules in `styles.css` are merged.
 
 ### Changed: My profile
+
 - **A real identity card:** large avatar, name, role and status pills, email, and a completion meter ("3 of 5 required details", what is still needed) that fills as you type.
 - **Grouped sections** (Personal, School or Office, Contact) instead of two cards numbered 1 and 2 with the identity block squeezed into the first.
 - **Mistakes show next to the field** when you leave it, using the same rules as Save, so they cannot disagree. Save still stops at the first problem and focuses it.
 - **A save bar** with "Unsaved changes" and a "Saved" confirmation, and the browser asks before you close the page with unsaved edits. The "Complete your profile" notice now has space under it.
 
 ### Tests
+
 - `tests/shell-ui.test.mjs` (5 tests; `npm test` runs 111): sidebar markup and drawer behaviour, one definition per sidebar rule, the profile page ids, and that blur and Save share one set of rules.
 
 ### Notes
+
 - Hosting only (push to `main`). Checked in a browser with Firebase stubbed: 26 checks (desktop, staff, phone drawer, keyboard, validation, meter, save). Not run: saving to real Firestore.
 
 ## v13 (28 October 2026)
@@ -66,6 +76,7 @@ The sidebar menu and the My profile page are tidied. No change to the rules, the
 The case view (My complaints / All cases) is reorganised so a case can be read, updated and followed up without hunting. No change to the rules, the data or what Save does.
 
 ### Changed
+
 - **One clear header.** "← All cases" at the top (it used to be a Close button at the bottom), the case number with Copy, the offense, Filed / Incident / Updated dates, and the status and degree chips.
 - **"Next step" is a real banner above the tabs** (it was unstyled text inside two tabs). Coloured by what it needs (next step, waiting, needs attention, done), with the email button for the step and "Open Update Case".
 - **Case Details & History** is four cards (Complaint, Case handling, Respondent, Complainant) beside a sticky History card, instead of one 18-row list. On a phone the cards stack. A history entry that did not change the status now reads "Update · In review" instead of "In review → In review".
@@ -75,9 +86,11 @@ The case view (My complaints / All cases) is reorganised so a case can be read, 
 - `styles.css`: three layered override blocks for the case page replaced by one block ("Case page") at the end of the file.
 
 ### Tests
+
 - `tests/case-ui.test.mjs` (3 tests; `npm test` runs 106): one definition per case-page rule, every update-form field id kept, Save only on the Update tab, next step above the tabs, discard confirmation.
 
 ### Notes
+
 - Nothing to deploy except Hosting (push to `main`).
 - Checked in a browser with Firebase stubbed: 23 checks (tabs, keyboard, unsaved note, all form ids, discard prompt, compose layout, filer view, no sideways scroll on a phone). Not run: saving to real Firestore.
 
@@ -86,20 +99,24 @@ The case view (My complaints / All cases) is reorganised so a case can be read, 
 Brings the public pages in line with Google's home page requirements for the OAuth branding check ([help page](https://support.google.com/cloud/answer/13807376)).
 
 ### Changed
+
 - **`public/index.html` is now a real home page** instead of a redirect to the login page. Google requires the home page to be a static URL that does not redirect, is visible without signing in, describes the app, explains why it asks for Google data, and links to the privacy policy. It covers what UBridge does, who can use it, how Google sign-in and the optional Gmail drafts use Google data, and links to the Privacy Notice, Terms of Use and sign-in. The Search Console verification tag stays on this page.
 - **Home page URL for the consent screen is now `https://ubridge-76eee.web.app/`** (README step updated). The sign-in page stays at `pages/login.html`.
 - **`pages/privacy.html` (version `2026-10g`, `PRIVACY_VERSION` bumped):** new "Google user data" section (what Google gives UBridge, exactly how the `gmail.compose` permission is used, what is kept, the Google API Services User Data Policy Limited Use statement, how to remove access). The "Case records" line now mentions the staff-only record of emails SAEP staff say they sent, which was stored but not disclosed.
 - `legal.js` also serves the home page (theme). Home page styles are in `styles.css`.
 
 ### Case flow follow-ups (v11)
+
 - **The sent email and the case update are one commit.** Confirming "Yes, I sent it" used to write the email record first and the case change second, so a dropped connection could leave an email on record with no notice date. `recordEmailAndUpdate` (in `services/complaints.js`) writes the email, the case change, its history and audit entries and the notification in one batch; if it fails nothing is saved and the person can try again.
 - **The Gmail check is now disclosed.** `draftExists` asks Gmail whether UBridge's own draft is still in Drafts (it never reads a message). The home page, Privacy Notice and README said the mailbox is never read, so they now say exactly this.
 - A draft that is no longer in Drafts is not proof of sending (it may have been deleted), so it is not treated as proof: only the person's own "Yes, I sent it" records the email.
 
 ### Tests
+
 - `tests/legal.test.mjs` (9 tests; `npm test` runs 103): the home page has no redirect, is not an app page, keeps the verification tag, links the policies and the Google data section, and the privacy notice carries the Google data disclosure.
 
 ### Notes
+
 - No change to `firestore.rules` since v11; deploy `firebase deploy --only hosting,firestore:rules` once for v11's `parents` and `copy` email kinds (push to `main` deploys Hosting only).
 - The privacy wording about Gmail is written from what the code does today (it reads the account's email address and creates or replaces drafts; nothing else). Have the DPO review it, and update it if the Gmail feature changes.
 - Google also requires the home page to be on a domain you own and have verified. That is a console step (Search Console) and, if Google will not accept `web.app`, a University-owned domain.
@@ -109,6 +126,7 @@ Brings the public pages in line with Google's home page requirements for the OAu
 Update Case and Email Drafts now work as one flow that follows the policy's PROCESS section, instead of two separate forms.
 
 ### Changed
+
 - **Update Case and the emails are connected.** Confirming "Yes, I sent it" now also updates the case: the notice records the notice date, a three-day answer deadline (the draft already names it) and moves a Submitted case to In review; the parent notice records the date; the department notice moves a Submitted case to In review. The confirmation screen says what will be recorded before you confirm. Before this, staff entered the same facts twice, and a notice written before the dates were saved went out without a deadline.
 - **Save keeps the dialog open.** It used to close, so staff had to reopen the case to write the email. The box and the Email tab now refresh with the saved case.
 - **Unsaved edits cannot go into an email.** Writing an email while Update Case has unsaved changes asks you to save first.
@@ -117,6 +135,7 @@ Update Case and Email Drafts now work as one flow that follows the policy's PROC
 - **Yes, I sent it checks Gmail.** If the draft is still in Drafts, the person is asked before it is recorded as sent (`draftExists`, works with the draft-only scope).
 
 ### Added
+
 - **Next step box** (`nextStep` in `lib/process.js`) at the top of Update Case and Email: what the policy needs now (assess, review jurisdiction, notice, wait for the answer or enter the general denial, schedule, conference, decision, copies, appeal), with a button for the matching email and a reminder about the parent or guardian (Process step 3).
 - **Two emails the policy requires:** notice to the parent or guardian (Process step 3) and the copy of the decision to the Registrar's Office, the VPSAS and the Office of the President (Process step 6). New `kind` values `parents` and `copy`.
 - **Optional complaint statement in the notice** (Process step 2 says the notice carries a copy of the complaint): a tick box in the compose dialog, off by default. The complainant's name is never added. The witnesses line stays a [bracket] until staff settle it.
@@ -124,6 +143,7 @@ Update Case and Email Drafts now work as one flow that follows the policy's PROC
 - Tests: 12 new (process flow, move checks, email effects, new email kinds, `draftExists`) in `npm test`, which now runs 99; one new rules test. A browser run with Firebase and Google stubbed checked 29 points of the flow end to end.
 
 ### Notes
+
 - **Deploy the rules too:** `firebase deploy --only hosting,firestore:rules`. The emails rule accepts the two new kinds.
 - Not run where this was prepared: the real Google sign-in and Gmail calls, `npm run test:rules` (needs the emulator), `npm run format`.
 - No new fields on the complaint, so older cases work unchanged.
@@ -133,11 +153,13 @@ Update Case and Email Drafts now work as one flow that follows the policy's PROC
 The Privacy Notice and Terms of Use links now work and are part of the app, not just pages that exist.
 
 ### Fixed
+
 - **The Privacy Notice and the Terms of Use opened as blank pages.** `styles.css` hid `<main>` on every page without `.ready`, and only app pages ever get that class, so both legal pages were invisible to everyone (including Google's branding check). The rule is now `body[data-page]:not(.ready):not(.auth) main`, so only signed-in app pages are gated.
 - `pages/privacy.html` said version `2026-10c` while `PRIVACY_VERSION` (saved on every complaint) was `2026-10e`; the page now says `2026-10e`.
 - Legal links were the browser's default blue (hard to read in dark mode); they now use the app's maroon, gold in dark mode.
 
 ### Added
+
 - **Sign-up asks for agreement.** An "I agree to the Terms of Use and have read the Privacy Notice" box on the sign-up form (not on sign-in); the account is not created until it is ticked. A new Google account gets the same notice in its confirmation dialog.
 - **Links inside the app:** Privacy Notice and Terms of Use at the bottom of the sidebar on every signed-in page, and the complaint consent now names both documents.
 - All of these open in a new tab, so a half-filled sign-up or complaint form is not lost.
@@ -145,6 +167,7 @@ The Privacy Notice and Terms of Use links now work and are part of the app, not 
 - `TERMS_VERSION` in `data.js`, and `tests/legal.test.mjs` (7 tests, in `npm test`, which now runs 87): the version on each page matches its constant, the legal pages are not hidden, the links exist and open in a new tab, and sign-up requires the box.
 
 ### Notes
+
 - No change to `firestore.rules`; redeploy Hosting only (push to `main`).
 - Agreement at sign-up is enforced in the browser and is not stored on the account (the `users` rules accept only `name`, `email`, `role`, `createdAt`). The accepted privacy version is still saved with each complaint. Storing it per account would need a rules change.
 - Checked in a real browser with the Firebase libraries stubbed (23 checks: sign-up blocked and allowed, sidebar links, dark theme, back link, mobile width). Real sign-in was not exercised.
@@ -154,6 +177,7 @@ The Privacy Notice and Terms of Use links now work and are part of the app, not 
 SAEP staff can save an email as a draft in their own Gmail from the **Email Drafts** box. Off until `GMAIL_CLIENT_ID` is set; the email-app link keeps working either way.
 
 ### Added
+
 - `lib/gmail.js` (pure): RFC 2822 message builder (UTF-8 body in base64, RFC 2047 subject, CRLF, header-injection safe) and a Gmail API client with injectable `fetch` and token: create draft, replace the earlier draft instead of duplicating, retry once on an expired token, plain error codes.
 - `services/gmail.js`: Google Identity Services token flow for the single scope `gmail.compose`, token kept in memory only, account must end in `@ub.edu.ph`.
 - `tests/gmail.test.mjs` (18 tests, in `npm test`, which now runs 80, all passing). Includes a round trip of all five real UBridge drafts.
@@ -161,12 +185,14 @@ SAEP staff can save an email as a draft in their own Gmail from the **Email Draf
 - README "Gmail drafts (optional)" with the Google Cloud setup and a troubleshooting table; `docs/decisions.md` section 6.
 
 ### Changed
+
 - `pages/my-complaints.js`: compose dialog has **Create Gmail draft** (primary when enabled) next to **Open in my email app** and **Copy text**; after saving it shows **Open draft in Gmail**, then the same "Did you send it?" confirmation and log as before.
 - `app.js`: `UB.gmail`. `firebase-config.js`: `GMAIL_CLIENT_ID` (empty).
 - `firebase.json` CSP: `script-src https://accounts.google.com/gsi/client`, `style-src https://accounts.google.com/gsi/style`, `connect-src https://accounts.google.com/gsi/` (the Gmail API itself is already covered by `https://*.googleapis.com`).
 - `pages/privacy.html`: lists Gmail as a recipient for staff who use the button. `lib/mail.js` header comment.
 
 ### Notes
+
 - No change to `firestore.rules`; redeploy Hosting only.
 - Needs Google Cloud setup first (README). `gmail.compose` is a restricted scope: use an Internal app, or External in Testing with named staff; do not publish.
 - Not run where this was prepared: the real Google sign-in and Gmail calls (they need your client ID), `npm run format`, `npm run test:rules`.

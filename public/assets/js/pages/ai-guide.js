@@ -1,4 +1,3 @@
-
 import { UB } from '../app.js';
 import { answer, SCOPE, warmUp } from '../services/guide.js';
 
@@ -61,7 +60,9 @@ import { answer, SCOPE, warmUp } from '../services/guide.js';
     const element = $('#' + panel);
 
     element.innerHTML = items.length
-      ? `<div class="card panel">${items.map((item, index) => `
+      ? `<div class="card panel">${items
+          .map(
+            (item, index) => `
           <div class="row">
             <div>
               <b>${esc(item.q || item)}</b>
@@ -70,12 +71,12 @@ import { answer, SCOPE, warmUp } from '../services/guide.js';
             <button class="link" type="button" data-i="${index}">
               ${panel === 'recent' ? 'Ask again' : 'Remove'}
             </button>
-          </div>`).join('')}</div>`
+          </div>`,
+          )
+          .join('')}</div>`
       : `<div class="card empty">
           <b>${panel === 'recent' ? 'No questions yet' : 'Nothing bookmarked'}</b>
-          ${panel === 'recent'
-            ? 'Your questions will show up here.'
-            : 'Use “Bookmark” on an answer to keep it.'}
+          ${panel === 'recent' ? 'Your questions will show up here.' : 'Use “Bookmark” on an answer to keep it.'}
         </div>`;
 
     element.onclick = (event) => {
@@ -99,19 +100,19 @@ import { answer, SCOPE, warmUp } from '../services/guide.js';
     if (!result.sources?.length) return '';
 
     const label = result.sources
-      .map((source) =>
-        `${esc(source.section)}${source.title ? ' · ' + esc(source.title) : ''}`
-      )
+      .map((source) => `${esc(source.section)}${source.title ? ' · ' + esc(source.title) : ''}`)
       .join('; ');
 
     const details = result.sources
-      .map((source) => `
+      .map(
+        (source) => `
         <details class="srctext">
           <summary>
             ${esc(source.section)}${source.title ? ' · ' + esc(source.title) : ''}: handbook text
           </summary>
           <p>${esc(source.text)}</p>
-        </details>`)
+        </details>`,
+      )
       .join('');
 
     return `<div class="src">
@@ -148,13 +149,10 @@ import { answer, SCOPE, warmUp } from '../services/guide.js';
       `<div class="msg me">${esc(q)}</div>
        <div class="msg typing" id="ty" aria-label="Looking up the policy">
          <i></i><i></i><i></i>
-       </div>`
+       </div>`,
     );
 
-    UB.save('recent', [
-      q,
-      ...UB.load('recent', []).filter((item) => (item.q || item) !== q)
-    ].slice(0, 20));
+    UB.save('recent', [q, ...UB.load('recent', []).filter((item) => (item.q || item) !== q)].slice(0, 20));
 
     let result;
 
@@ -164,7 +162,7 @@ import { answer, SCOPE, warmUp } from '../services/guide.js';
       result = {
         text: 'Something went wrong while looking that up. Please try again.',
         sources: [],
-        mode: 'none'
+        mode: 'none',
       };
     } finally {
       $('#ty')?.remove();
@@ -176,9 +174,7 @@ import { answer, SCOPE, warmUp } from '../services/guide.js';
     message.className = 'msg';
 
     message.innerHTML = `
-      <p class="ans">${esc(
-        result.text || 'No answer was returned. Please try again.'
-      ).replace(/\n/g, '<br>')}</p>
+      <p class="ans">${esc(result.text || 'No answer was returned. Please try again.').replace(/\n/g, '<br>')}</p>
       ${sourcesHtml(result)}
       <p class="hint">
         This is guidance, not an official ruling. The SAEP Office makes the final decision.${result.retrieval === 'hybrid' ? ' Matched by meaning and keywords.' : ''}
@@ -195,11 +191,9 @@ import { answer, SCOPE, warmUp } from '../services/guide.js';
           {
             q,
             text: result.text,
-            src: (result.sources || [])
-              .map((source) => source.section)
-              .join('; ')
+            src: (result.sources || []).map((source) => source.section).join('; '),
           },
-          ...existing.filter((item) => item.q !== q)
+          ...existing.filter((item) => item.q !== q),
         ]);
 
         bookmarkButton.textContent = 'Bookmarked';
@@ -211,7 +205,7 @@ import { answer, SCOPE, warmUp } from '../services/guide.js';
 
     message.scrollIntoView({
       behavior: 'smooth',
-      block: 'nearest'
+      block: 'nearest',
     });
 
     $('#q1').focus();
@@ -240,9 +234,7 @@ import { answer, SCOPE, warmUp } from '../services/guide.js';
     const query = event.target.value.trim().toLowerCase();
 
     $$('#faq details').forEach((detail) => {
-      detail.hidden =
-        Boolean(query) &&
-        !detail.textContent.toLowerCase().includes(query);
+      detail.hidden = Boolean(query) && !detail.textContent.toLowerCase().includes(query);
     });
   };
 
