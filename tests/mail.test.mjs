@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { draft, check, mailto, addresses, KINDS, MAILTO_LIMIT } from '../public/assets/js/lib/mail.js';
 
@@ -35,9 +36,10 @@ test('every kind builds a draft with the case number and a signature', () => {
 
 test('drafts never include the complainant name or the description', () => {
   for (const k of Object.keys(KINDS)) {
-    const d = draft(k, c, me);
+    const d = draft(k, { ...c, rejectReason: 'duplicate' }, me);
     assert.ok(!d.body.includes(c.desc), k);
-    assert.ok(!d.body.includes(c.filedByName), k);
+    // The not-approved notice is written TO the complainant, so it is the one message that addresses them by name.
+    if (k !== 'rejection') assert.ok(!d.body.includes(c.filedByName), k);
   }
 });
 
@@ -164,4 +166,46 @@ test('parent or guardian notice and decision copy: policy wording, no address on
   assert.match(check({ ...k, to: 'registrar@ub.edu.ph' }), /\[attach the signed decision\]/);
   assert.match(draft('copy', { ...c, interventions: ['expulsion'] }, me).body, /Commission on Higher Education/);
   assert.ok(KINDS.parents && KINDS.copy);
+});
+
+const rejCase = { ...c, filedByEmail: 'complainant@ub.edu.ph', status: 'rejected', rejectReason: 'insufficient', resolution: 'The description does not say who did what.' };
+
+test('the not-approved notice goes to the complainant with the reason and the explanation, and never the respondent', () => {
+  const d = draft('rejection', rejCase, me);
+  assert.equal(d.to, 'complainant@ub.edu.ph');
+  assert.match(d.subject, /not approved/);
+  assert.match(d.body, /Dear Complainant One|Dear /);
+  assert.match(d.body, /not enough information or evidence/);
+  assert.match(d.body, /does not say who did what/);
+  assert.match(d.body, /new complaint/);
+  assert.ok(!d.body.includes(c.rEmail));
+  assert.equal(check({ ...d, to: d.to }), ''); // nothing left in brackets once the reason and explanation are saved
+});
+
+test('without a saved reason or explanation the notice cannot be sent', () => {
+  const d = draft('rejection', { ...rejCase, rejectReason: '', resolution: '' }, me);
+  assert.match(check(d), /\[reason\]/);
+});
+
+test('each party gets its own closing notice: the respondent and the department are written separately, whatever the case holds', () => {
+  // A case that was both noticed and forwarded needs both. The notice date no longer decides which one can be written.
+  const both = { ...rejCase, noticeDate: '2026-10-02' };
+  const toRespondent = draft('closure', both, me);
+  assert.equal(toRespondent.to, c.rEmail);
+  assert.match(toRespondent.body, /no action will be taken against you/);
+  assert.match(toRespondent.body, /do not need to send an explanation/);
+  const toDept = draft('closure-dept', both, me);
+  assert.equal(toDept.to, '');
+  assert.match(toDept.body, /Dean and Program Head/);
+  assert.match(toDept.body, /do not hold a disciplinary conference/);
+  assert.equal(draft('closure-dept', { ...rejCase, noticeDate: '' }, me).to, '');
+  assert.equal(draft('closure', { ...rejCase, noticeDate: '' }, me).to, c.rEmail);
+  assert.equal(check({ ...toRespondent }), '');
+  assert.ok(!toRespondent.body.includes(c.filedByName) && !toDept.body.includes(c.filedByName), 'the complainant is never named');
+});
+
+test('both new kinds are listed for the email picker and match the Firestore rules', () => {
+  assert.ok(KINDS.rejection && KINDS.closure && KINDS['closure-dept']);
+  const rules = readFileSync('firestore.rules', 'utf8');
+  for (const k of Object.keys(KINDS)) assert.ok(rules.includes(`'${k}'`), `${k} missing from firestore.rules`);
 });

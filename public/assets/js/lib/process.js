@@ -57,6 +57,25 @@ export const VENUE_LABEL = {
   offcampus: 'Off campus or online, outside University activities',
 };
 export const venueOf = (c) => c.venue || 'campus';
+
+/**
+ * NOT APPROVED. The policy's PROCESS section has no intake step where SAEP can decline a complaint, so this is a UBridge
+ * outcome added for the SAEP Office to confirm. It only exists before a conference or a decision: SAEP records a reason and
+ * an explanation the complainant can read, and the case is closed. A case that has reached a conference is decided
+ * (Resolved), never rejected. The reasons below are the ones the office is expected to use.
+ */
+export const REJECT_REASONS = {
+  'not-covered': 'The conduct is not an offense under the College Student Discipline Policy',
+  insufficient: 'There is not enough information or evidence to act on',
+  'not-student': 'The respondent is not a student covered by the policy',
+  duplicate: 'It duplicates another complaint',
+  referred: 'It belongs with another office and was referred there',
+};
+/** Statuses a case can be marked Not approved from (before any conference or decision). */
+export const REJECT_FROM = ['submitted', 'review'];
+/** Position of a status in the process. Not approved counts as the end, like Resolved. */
+export const rankOf = (s) => ({ submitted: 0, review: 1, hearing: 2 })[s] ?? 3;
+export const EXPLAIN_MIN = 10; // characters of explanation the complainant must be given
 export const JUR_REVIEW = {
   '': 'Pending SAEP review',
   confirmed: 'Within jurisdiction (confirmed by SAEP)',
@@ -91,6 +110,8 @@ export function processRows(c, { staff = false, commission = 0 } = {}) {
   const today = todayPH(),
     r = routeOf(c),
     out = [];
+  if (c.status === 'rejected')
+    out.push(row('Outcome', `Not approved <small class="muted">· ${esc(REJECT_REASONS[c.rejectReason] || 'No reason recorded')}</small>`));
   if (venueOf(c) === 'offcampus') {
     const g = (c.jurisdiction || []).map((id) => GROUNDS.find((x) => x.id === id)?.label).filter(Boolean);
     out.push(
@@ -175,6 +196,18 @@ const opts = (o, sel) =>
     .map(([k, v]) => `<option value="${esc(k)}" ${k === sel ? 'selected' : ''}>${esc(v)}</option>`)
     .join('');
 
+/** The reason and explanation fields shown when the status is Not approved (inside the "Status and note" card). */
+export function rejectFields(c) {
+  const on = c.status === 'rejected';
+  return `<div class="rejbox" id="rjF" ${on ? '' : 'hidden'}>
+    <p class="rej-note"><b>Not approved closes the case at intake.</b> No notice, conference or decision follows. The complainant is told why, in the app and in the email you send next. You can reopen the case later with a remark.</p>
+    <div class="field"><label for="pReject" class="req">Reason</label><select id="pReject"><option value="">Choose a reason…</option>${Object.entries(REJECT_REASONS)
+      .map(([k, t]) => `<option value="${k}" ${k === c.rejectReason ? 'selected' : ''}>${esc(t)}</option>`)
+      .join('')}</select></div>
+    <div class="field"><label for="rj" class="req">Explanation for the complainant</label><textarea id="rj" maxlength="2000" placeholder="Say in plain words what is missing or why it cannot be taken forward, and what the complainant can do next.">${on ? esc(c.resolution || '') : ''}</textarea>
+      <small class="muted">At least ${EXPLAIN_MIN} characters. Do not include the respondent’s personal details.</small></div></div>`;
+}
+
 /** Staff form block (goes inside the "Update this case" box). */
 export function processForm(c, { commission = 0 } = {}) {
   const r = routeOf(c),
@@ -240,6 +273,7 @@ export function readProcess(el, c, status) {
       : c.interventions || [],
     appeal: resolved ? v('#pAppeal') : c.appeal || '',
     appealDate: resolved ? v('#pAppealDate') : c.appealDate || '',
+    rejectReason: status === 'rejected' ? v('#pReject') : '',
   };
   // Second and Third Degree offenses are handled by the College Discipline Board (Process step 1).
   if (values.assessedDegree && values.assessedDegree !== 'First Degree') values.route = 'cdb';
@@ -270,6 +304,8 @@ export function describeChanges(c, n) {
           ? 'SAEP confirmed the University’s jurisdiction'
           : 'Jurisdiction review reset',
     );
+  if ((n.rejectReason || '') !== (c.rejectReason || ''))
+    out.push(n.rejectReason ? `Not approved: ${REJECT_REASONS[n.rejectReason]}` : 'Reopened after it was not approved');
   if (n.assessedDegree && n.assessedDegree !== (c.assessedDegree || ''))
     out.push(`SAEP assessed the offense as ${n.assessedDegree}`);
   if (n.route !== routeOf(c)) out.push('Escalated to SAEP / the College Discipline Board');
@@ -289,6 +325,7 @@ export function describeChanges(c, n) {
 /** True when any handling field differs from what is saved. */
 export const processChanged = (c, n) =>
   (n.jurisdictionReview || '') !== (c.jurisdictionReview || '') ||
+  (n.rejectReason || '') !== (c.rejectReason || '') ||
   n.assessedDegree !== (c.assessedDegree || '') ||
   n.deptDecisionDate !== (c.deptDecisionDate || '') ||
   n.route !== routeOf(c) ||
@@ -308,8 +345,18 @@ export const processChanged = (c, n) =>
  * All pure (no DOM, no Firebase) so they are tested with plain Node. They only read the case; the Firestore rules
  * still decide what may be saved.
  * ------------------------------------------------------------------------------------------------------------- */
-const STATUS_ORDER = ['submitted', 'review', 'hearing', 'resolved'];
 const sentKinds = (emails) => new Set((emails || []).map((e) => e.kind));
+const ms = (t) => (typeof t === 'number' ? t : typeof t?.toMillis === 'function' ? t.toMillis() : Infinity); // a pending server time means "just now"
+/**
+ * When the case was last marked Not approved (milliseconds), from its history; undefined if it never was. A case can be
+ * rejected, reopened and rejected again, and each rejection has to be told to the people involved again.
+ */
+export function latestRejectionAt(history = []) {
+  const h = [...history].reverse().find((x) => x.to === 'rejected' && x.from !== 'rejected');
+  return h ? Math.min(ms(h.at), Date.now()) : undefined;
+}
+/** The emails sent since the case was last marked Not approved (all of them when that time is unknown). */
+const sinceRejection = (emails, at) => (at == null ? emails || [] : (emails || []).filter((e) => ms(e.at) >= at));
 
 /**
  * The next step for a case, following the policy's PROCESS section.
@@ -318,12 +365,48 @@ const sentKinds = (emails) => new Set((emails || []).map((e) => e.kind));
  * @returns {{level:'todo'|'wait'|'warn'|'done', title:string, detail:string, kind:string, reminders:string[]}}
  *   kind is the email worth writing now ('' when none).
  */
-export function nextStep(c, { today = todayPH(), commission = 0, emails = [] } = {}) {
+export function nextStep(c, { today = todayPH(), commission = 0, emails = [], rejectedAt } = {}) {
   const sent = sentKinds(emails),
     r = routeOf(c),
     deg = degreeOf(c),
     reminders = [];
   const out = (level, title, detail, kind = '') => ({ level, title, detail, kind, reminders });
+
+  // A case that was closed as not approved and is open again: the people who were told it was closed should hear it is open.
+  if (c.status !== 'rejected' && rejectedAt != null && ['rejection', 'closure', 'closure-dept'].some((k) => sent.has(k)))
+    reminders.push('This case was closed as not approved earlier, and people were told. Tell them it is open again (use the Email tab).');
+
+  // Not approved: tell the complainant, then each party on the respondent's side who was already told about the complaint
+  // (the respondent and the department are told separately). Only emails sent since the latest rejection count.
+  if (c.status === 'rejected') {
+    const now = sentKinds(sinceRejection(emails, rejectedAt));
+    if (!now.has('rejection'))
+      return out(
+        'todo',
+        'Tell the complainant the complaint was not approved',
+        'Send the reason and the explanation in writing. The complainant can file again with more information or visit the SAEP Office.',
+        'rejection',
+      );
+    const respondentTold = !!c.noticeDate || sent.has('notice');
+    const deptTold = sent.has('department');
+    if (respondentTold && !now.has('closure')) {
+      if (deptTold && !now.has('closure-dept')) reminders.push('The department was told about this complaint too. Send them the closing notice next.');
+      return out(
+        'todo',
+        'Tell the respondent the complaint is closed',
+        `The respondent already received a notice. Say that no further action will be taken and no explanation or conference is needed${c.parentsNotified ? '. The parent or guardian was notified too, so add them in Cc' : ''}.`,
+        'closure',
+      );
+    }
+    if (deptTold && !now.has('closure-dept'))
+      return out(
+        'todo',
+        'Tell the department the complaint is closed',
+        'The complaint was forwarded to the respondent’s department. Tell them it is closed so no conference is held.',
+        'closure-dept',
+      );
+    return out('done', 'Closed: not approved', 'The people who were told have been told. To reopen the case, use Update Case and explain why in the remark.');
+  }
 
   if (c.status === 'resolved') {
     if (c.jurisdictionReview === 'declined')
@@ -457,7 +540,7 @@ export function nextStep(c, { today = todayPH(), commission = 0, emails = [] } =
 export function suggestedKind(c, o = {}) {
   const k = nextStep(c, o).kind;
   if (k) return k;
-  return c.status === 'resolved' ? 'decision' : c.status === 'hearing' ? 'schedule' : routeOf(c) === 'department' ? 'department' : 'notice';
+  return c.status === 'rejected' ? 'rejection' : c.status === 'resolved' ? 'decision' : c.status === 'hearing' ? 'schedule' : routeOf(c) === 'department' ? 'department' : 'notice';
 }
 
 /**
@@ -468,7 +551,7 @@ export function suggestedKind(c, o = {}) {
  * @param {object} v values read from the form (readProcess().values)
  * @param {{status:string, hearingDate:string}} change
  */
-export function checkMove(c, v, { status, hearingDate }, today = todayPH()) {
+export function checkMove(c, v, { status, hearingDate, resolution = '' }, today = todayPH()) {
   const errors = [],
     warnings = [];
   const declined = v.jurisdictionReview === 'declined';
@@ -502,8 +585,26 @@ export function checkMove(c, v, { status, hearingDate }, today = todayPH()) {
     warnings.push('No intervention is selected. That is fine only if the respondent was found not responsible, and the note should say so.');
   if (v.answer === 'general-denial' && !c.answer && v.answerDue && today <= v.answerDue)
     warnings.push(`The answer period has not ended yet (due ${fmt(v.answerDue)}). A general denial is entered only when the respondent does not answer in time.`);
-  const jump = STATUS_ORDER.indexOf(status) - STATUS_ORDER.indexOf(c.status);
-  if (jump > 1 && !declined) warnings.push('This skips a stage of the process.');
+  const jump = rankOf(status) - rankOf(c.status);
+  if (jump > 1 && !declined && status !== 'rejected' && c.status !== 'rejected')
+    warnings.push('This skips a stage of the process.');
+
+  // Not approved: only at intake, with a reason and an explanation for the complainant.
+  if (status === 'rejected') {
+    if (!REJECT_FROM.includes(c.status) && c.status !== 'rejected')
+      errors.push('A case that has reached a conference or a decision cannot be marked Not approved. Use Resolved and explain in the decision note.');
+    else if (Number(v.conferencesHeld) > 0 || (v.decisionDate && c.status !== 'rejected'))
+      errors.push('A conference has already been held or a decision recorded, so the case cannot be marked Not approved. Use Resolved and explain in the decision note.');
+    if (!v.rejectReason) errors.push('Choose why the complaint is not approved.');
+    if (String(resolution).trim().length < EXPLAIN_MIN)
+      errors.push(`Explain to the complainant why it is not approved (at least ${EXPLAIN_MIN} characters).`);
+    if (c.status !== 'rejected' && c.noticeDate)
+      warnings.push('The respondent was already sent a notice. After saving, send them the closing email so they know no action will be taken.');
+  }
+  if (c.status === 'rejected' && !['rejected', 'submitted', 'review'].includes(status))
+    errors.push('A case that was not approved has to be reopened to Submitted or In review first, with a remark that says why.');
+  if (c.status === 'rejected' && ['submitted', 'review'].includes(status) && c.resolution)
+    warnings.push('Reopening clears the explanation the complainant can see. It stays in the email record only if you already sent it.');
   return { errors, warnings };
 }
 

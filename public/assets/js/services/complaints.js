@@ -151,7 +151,9 @@ function caseBatch(
     at: serverTimestamp(),
   });
   const note =
-    status === c.status && notes.length
+    status === 'rejected' && c.status !== 'rejected'
+      ? `${c.id} was not approved. Open the case to see why.`
+      : status === c.status && notes.length
       ? `${c.id}: ${notes.join('. ')}.`.slice(0, 200)
       : status === 'hearing' && hearingDate
         ? `${c.id} is now ${STATUS[status]}. Hearing date: ${hearingDate}.`

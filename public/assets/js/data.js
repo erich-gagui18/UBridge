@@ -8,5 +8,12 @@ export const PRIVACY_VERSION = '2026-10g';
 // Version printed on pages/terms.html. Keep the two in step (tests/legal.test.mjs checks it).
 export const TERMS_VERSION = '2026-10';
 
-export const STATUS = { submitted: 'Submitted', review: 'In review', hearing: 'For hearing', resolved: 'Resolved' };
-export const ORDER = Object.keys(STATUS);
+// 'rejected' (Not approved) is an intake outcome, not a stage of the process: it is never part of ORDER (the four-step progress bar).
+export const STATUS = {
+  submitted: 'Submitted',
+  review: 'In review',
+  hearing: 'For hearing',
+  resolved: 'Resolved',
+  rejected: 'Not approved',
+};
+export const ORDER = ['submitted', 'review', 'hearing', 'resolved'];

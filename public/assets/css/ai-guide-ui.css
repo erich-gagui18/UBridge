@@ -662,7 +662,7 @@ body[data-page="ai-guide"] .sr-only {
   }
 
   body[data-page="ai-guide"] .composer input {
-    font-size: 13px;
+    font-size: 16px; /* under 16px makes iOS Safari zoom the page when the box is tapped */
   }
 
   body[data-page="ai-guide"] .send-button {

@@ -734,6 +734,57 @@ describe('offense catalog', () => {
     assertFails(setDoc(doc(as('staff1'), 'offenses', 'vandalism'), { ...entry, category: 'Major' })));
 });
 
+describe('Not approved (intake outcome)', () => {
+  beforeEach(seedCase);
+  const REJ = { status: 'rejected', rejectReason: 'insufficient', resolution: 'The description does not say who did what.' };
+  const edit = (changes, opts = {}) => staffEdit(as('staff1'), 1, changes, opts);
+  const REOPEN = { status: 'review', rejectReason: '', resolution: '' };
+  it('staff can mark a submitted case Not approved with a reason and an explanation', async () => assertSucceeds(edit(REJ)));
+  it('staff can mark an In review case Not approved', async () => {
+    await edit({ status: 'review' });
+    await assertSucceeds(edit(REJ, { from: 'review', hCount: 2 }));
+  });
+  it('a reason is required', async () => assertFails(edit({ ...REJ, rejectReason: '' })));
+  it('an explanation of at least 10 characters is required', async () => assertFails(edit({ ...REJ, resolution: 'too short' })));
+  it('rejects a reason that is not on the list', async () => assertFails(edit({ ...REJ, rejectReason: 'because' })));
+  it('a reason cannot be set on a case that is not Not approved', async () =>
+    assertFails(edit({ status: 'review', rejectReason: 'duplicate' }, { from: 'submitted' })));
+  it('a case at hearing cannot be marked Not approved', async () => {
+    await edit({ status: 'hearing', hearingDate: '2026-11-20' });
+    await assertFails(edit(REJ, { from: 'hearing', hCount: 2 }));
+  });
+  it('a resolved case cannot be marked Not approved', async () => {
+    await edit({ status: 'resolved', resolution: 'Warning issued.', decisionDate: TODAY, interventions: ['reprimand'] });
+    await assertFails(edit(REJ, { from: 'resolved', hCount: 2 }));
+  });
+  it('a case with a conference already held cannot be marked Not approved', async () =>
+    assertFails(edit({ ...REJ, conferencesHeld: 1 })));
+  it('a not-approved case can be reopened to In review, with a remark', async () => {
+    await edit(REJ);
+    await assertFails(edit(REOPEN, { from: 'rejected', hCount: 2 })); // no remark
+    await assertSucceeds(edit(REOPEN, { from: 'rejected', hCount: 2, remark: 'New evidence received' }));
+  });
+  it('a not-approved case cannot jump to hearing or resolved', async () => {
+    await edit(REJ);
+    await assertFails(edit({ status: 'hearing', rejectReason: '', resolution: '', hearingDate: '2026-11-20' }, { from: 'rejected', hCount: 2, remark: 'Skipping ahead' }));
+    await assertFails(edit({ status: 'resolved', rejectReason: '', resolution: 'Warning issued.', decisionDate: TODAY }, { from: 'rejected', hCount: 2, remark: 'Skipping ahead' }));
+  });
+  it('the filer can read the outcome and the reason', async () => {
+    await edit(REJ);
+    const s = await assertSucceeds(getDoc(doc(as('stu1'), 'complaints', ID(1))));
+    if (s.data().status !== 'rejected' || s.data().rejectReason !== 'insufficient') throw new Error('outcome not readable');
+  });
+  it('the filer cannot mark their own case Not approved', async () =>
+    assertFails(updateDoc(doc(as('stu1'), 'complaints', ID(1)), { status: 'rejected', rejectReason: 'duplicate' })));
+  it('the complainant notice and the closing notice are accepted email records', async () => {
+    const mail = (over) => ({ kind: 'rejection', to: 'c@ub.edu.ph', cc: '', subject: 'Not approved', body: 'Dear complainant, your complaint was not approved.', by: 'staff1', byName: 'Staff One', at: serverTimestamp(), ...over });
+    await assertSucceeds(setDoc(doc(as('staff1'), 'complaints', ID(1), 'emails', 'r1'), mail()));
+    await assertSucceeds(setDoc(doc(as('staff1'), 'complaints', ID(1), 'emails', 'r2'), mail({ kind: 'closure' })));
+    await assertSucceeds(setDoc(doc(as('staff1'), 'complaints', ID(1), 'emails', 'r3'), mail({ kind: 'closure-dept' })));
+    await assertFails(setDoc(doc(as('staff1'), 'complaints', ID(1), 'emails', 'r4'), mail({ kind: 'closure-other' })));
+  });
+});
+
 describe('emails staff sent about a case (record keeping)', () => {
   beforeEach(seedCase);
   const mailDoc = (over = {}) => ({

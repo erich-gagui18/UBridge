@@ -13,6 +13,10 @@ import {
   suggestedKind,
   checkMove,
   effectOfEmail,
+  rankOf,
+  latestRejectionAt,
+  REJECT_REASONS,
+  REJECT_FROM,
 } from '../public/assets/js/lib/process.js';
 
 // Minimal stand-in for the staff form: querySelector('#id') returns {value}, querySelectorAll returns the checked boxes.
@@ -264,4 +268,141 @@ test('sending the notice records the notice date, a three-day answer deadline an
   assert.equal(effectOfEmail('parents', { ...cdb, parentsNotified: '2026-10-02' }, T), null);
   assert.equal(effectOfEmail('department', { ...base, status: 'submitted' }, T).status, 'review');
   assert.equal(effectOfEmail('copy', cdb, T), null);
+});
+
+/* ---- Not approved (UBridge intake outcome) ---------------------------------------------------------------------- */
+const rej = { ...base, status: 'rejected', rejectReason: 'insufficient', resolution: 'The description does not say who did what.' };
+
+test('Not approved counts as the end of the process, like Resolved', () => {
+  assert.deepEqual(['submitted', 'review', 'hearing', 'resolved', 'rejected'].map(rankOf), [0, 1, 2, 3, 3]);
+  assert.deepEqual(REJECT_FROM, ['submitted', 'review']);
+  assert.ok(Object.keys(REJECT_REASONS).length >= 4);
+});
+
+test('Not approved needs a reason and an explanation of at least 10 characters', () => {
+  const v = { jurisdictionReview: '', noticeDate: '', conferencesHeld: 0, decisionDate: '', rejectReason: '' };
+  const none = checkMove(base, v, { status: 'rejected', hearingDate: '', resolution: '' });
+  assert.equal(none.errors.length, 2);
+  assert.match(none.errors.join(' '), /Choose why/);
+  assert.match(none.errors.join(' '), /Explain to the complainant/);
+  assert.equal(checkMove(base, { ...v, rejectReason: 'duplicate' }, { status: 'rejected', hearingDate: '', resolution: 'too short' }).errors.length, 1);
+  const ok = checkMove(base, { ...v, rejectReason: 'duplicate' }, { status: 'rejected', hearingDate: '', resolution: 'Same as SAEP-2026-001.' });
+  assert.deepEqual(ok.errors, []);
+});
+
+test('a case that reached a conference or a decision cannot be marked Not approved', () => {
+  const v = { rejectReason: 'duplicate', conferencesHeld: 0, decisionDate: '' };
+  const change = { status: 'rejected', hearingDate: '', resolution: 'Same as SAEP-2026-001.' };
+  assert.match(checkMove({ ...base, status: 'hearing' }, v, change).errors[0], /conference or a decision/);
+  assert.match(checkMove({ ...base, status: 'resolved' }, v, change).errors[0], /conference or a decision/);
+  assert.match(checkMove(base, { ...v, conferencesHeld: 1 }, change).errors[0], /already been held/);
+  assert.match(checkMove(base, { ...v, decisionDate: '2026-10-20' }, change).errors[0], /already been held/);
+});
+
+test('rejecting a case whose respondent was already notified warns that they must be told', () => {
+  const v = { rejectReason: 'duplicate', conferencesHeld: 0, decisionDate: '' };
+  const r = checkMove({ ...base, noticeDate: '2026-10-05' }, v, { status: 'rejected', hearingDate: '', resolution: 'Same as SAEP-2026-001.' });
+  assert.deepEqual(r.errors, []);
+  assert.match(r.warnings.join(' '), /closing email/);
+});
+
+test('a not-approved case can only be reopened to Submitted or In review', () => {
+  const v = { rejectReason: '', conferencesHeld: 0, decisionDate: '' };
+  assert.deepEqual(checkMove(rej, v, { status: 'review', hearingDate: '', resolution: '' }).errors, []);
+  assert.deepEqual(checkMove(rej, v, { status: 'submitted', hearingDate: '', resolution: '' }).errors, []);
+  assert.match(checkMove(rej, v, { status: 'hearing', hearingDate: '2026-11-01', resolution: '' }).errors.join(' '), /reopened/);
+  assert.match(checkMove(rej, v, { status: 'resolved', hearingDate: '', resolution: '' }).errors.join(' '), /reopened/);
+});
+
+test('the form reads the reason only when the status is Not approved', () => {
+  const f = form({ '#pReject': 'duplicate', '#pNotice': '', '#pDue': '', '#pAnswer': '', '#pParents': '', '#pMode': '', '#pHeld': '0' });
+  assert.equal(readProcess(f, base, 'rejected').values.rejectReason, 'duplicate');
+  assert.equal(readProcess(f, base, 'review').values.rejectReason, '');
+});
+
+test('the reason is tracked as a change and named in plain language', () => {
+  const before = { ...base, status: 'review' };
+  const after = { ...readProcess(form({ '#pReject': 'duplicate', '#pHeld': '0' }), before, 'rejected').values };
+  assert.ok(processChanged(before, after));
+  assert.match(describeChanges(before, after).join(' '), /Not approved: It duplicates another complaint/);
+  const reopened = readProcess(form({ '#pHeld': '0' }), rej, 'review').values;
+  assert.match(describeChanges(rej, reopened).join(' '), /Reopened after it was not approved/);
+});
+
+test('the case rows show the outcome and the reason', () => {
+  const rows = processRows(rej, { staff: false });
+  assert.match(rows, /Outcome/);
+  assert.match(rows, /Not approved/);
+  assert.match(rows, /not enough information or evidence/);
+});
+
+test('next step for a not-approved case: complainant first, then whoever was already told, then done', () => {
+  let n = nextStep(rej);
+  assert.equal(n.kind, 'rejection');
+  n = nextStep(rej, { emails: [{ kind: 'rejection' }] });
+  assert.equal(n.level, 'done'); // nobody on the respondent's side was told, so nobody else needs to hear
+  n = nextStep({ ...rej, noticeDate: '2026-10-05' }, { emails: [{ kind: 'rejection' }] });
+  assert.equal(n.kind, 'closure');
+  assert.match(n.title, /respondent/);
+  n = nextStep(rej, { emails: [{ kind: 'rejection' }, { kind: 'department' }] });
+  assert.equal(n.kind, 'closure-dept');
+  assert.match(n.title, /department/);
+  n = nextStep({ ...rej, noticeDate: '2026-10-05' }, { emails: [{ kind: 'rejection' }, { kind: 'closure' }] });
+  assert.equal(n.level, 'done');
+  assert.equal(suggestedKind(rej, { emails: [{ kind: 'rejection' }] }), 'rejection');
+});
+
+test('a case that was both noticed and forwarded needs a closing notice for each party, respondent first', () => {
+  const both = { ...rej, noticeDate: '2026-10-05' };
+  let n = nextStep(both, { emails: [{ kind: 'notice' }, { kind: 'department' }, { kind: 'rejection' }] });
+  assert.equal(n.kind, 'closure');
+  assert.ok(n.reminders.some((x) => /department/.test(x)), 'the banner says the department is next');
+  n = nextStep(both, { emails: [{ kind: 'notice' }, { kind: 'department' }, { kind: 'rejection' }, { kind: 'closure' }] });
+  assert.equal(n.kind, 'closure-dept');
+  n = nextStep(both, { emails: ['notice', 'department', 'rejection', 'closure', 'closure-dept'].map((kind) => ({ kind })) });
+  assert.equal(n.level, 'done');
+});
+
+test('rejected, reopened and rejected again: the new rejection has to be told again', () => {
+  const at = (t) => ({ toMillis: () => t });
+  const hist = [
+    { from: 'submitted', to: 'review', at: at(1000) },
+    { from: 'review', to: 'rejected', at: at(2000) },
+    { from: 'rejected', to: 'review', at: at(3000) },
+    { from: 'review', to: 'rejected', at: at(4000) },
+    { from: 'rejected', to: 'rejected', at: at(4500) }, // editing the reason is not a new rejection
+  ];
+  assert.equal(latestRejectionAt(hist), 4000);
+  assert.equal(latestRejectionAt([{ from: 'submitted', to: 'review', at: at(1000) }]), undefined);
+  const emails = [
+    { kind: 'notice', at: at(1500) },
+    { kind: 'rejection', at: at(2500) },
+    { kind: 'closure', at: at(2600) },
+  ];
+  const again = { ...rej, noticeDate: '2026-10-05', rejectReason: 'duplicate' };
+  // before the fix, the first rejection's emails made this look finished
+  assert.equal(nextStep(again, { emails, rejectedAt: 4000 }).kind, 'rejection');
+  assert.equal(nextStep(again, { emails: [...emails, { kind: 'rejection', at: at(4100) }], rejectedAt: 4000 }).kind, 'closure');
+  assert.equal(nextStep(again, { emails: [...emails, { kind: 'rejection', at: at(4100) }, { kind: 'closure', at: at(4200) }], rejectedAt: 4000 }).level, 'done');
+  // a case rejected once, with the time unknown, behaves as before
+  assert.equal(nextStep(again, { emails: [{ kind: 'notice' }, { kind: 'rejection' }, { kind: 'closure' }] }).level, 'done');
+});
+
+test('a reopened case reminds staff to tell the people who were told it was closed', () => {
+  const reopened = { ...base, status: 'review', noticeDate: '2026-10-05', answerDue: '2026-10-08' };
+  const n = nextStep(reopened, { emails: [{ kind: 'notice' }, { kind: 'rejection' }, { kind: 'closure' }], rejectedAt: 4000 });
+  assert.ok(n.reminders.some((x) => /closed as not approved earlier/.test(x)));
+  assert.ok(!nextStep(reopened, { emails: [{ kind: 'notice' }], rejectedAt: 4000 }).reminders.some((x) => /closed as not approved/.test(x)));
+});
+
+test('reopening warns that the explanation is cleared', () => {
+  const v = { assessedDegree: '', route: 'cdb', noticeDate: '', answerDue: '', answer: '', interventions: [], conferencesHeld: 0 };
+  const w = checkMove(rej, v, { status: 'review', hearingDate: '', resolution: '' }).warnings;
+  assert.ok(w.some((x) => /clears the explanation/.test(x)));
+});
+
+test('sending the rejection or closure email changes nothing in the case', () => {
+  assert.equal(effectOfEmail('rejection', rej), null);
+  assert.equal(effectOfEmail('closure', { ...rej, noticeDate: '2026-10-05' }), null);
+  assert.equal(effectOfEmail('closure-dept', rej), null);
 });

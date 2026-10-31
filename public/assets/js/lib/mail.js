@@ -4,7 +4,7 @@
 // Pure functions (no Firebase imports) so they can be tested with plain Node.
 import { fmt, todayPH, addDays } from './dates.js';
 import { CONTACT } from '../data.js';
-import { ANSWER_DAYS } from './process.js';
+import { ANSWER_DAYS, REJECT_REASONS } from './process.js';
 
 export const KINDS = {
   notice: 'Notice to the respondent',
@@ -14,10 +14,13 @@ export const KINDS = {
   department: 'Notice to the Dean and Program Head',
   parents: 'Notice to the parent or guardian',
   copy: 'Copy of the decision (Registrar, VPSAS, President)',
+  rejection: 'Notice to the complainant: complaint not approved',
+  closure: 'Notice to the respondent: complaint closed',
+  'closure-dept': 'Notice to the Dean and Program Head: complaint closed',
 };
 /** Suggested draft for each case status. */
 // Used only when nothing better is known; lib/process.js suggestedKind() looks at the whole case.
-export const KIND_FOR_STATUS = { submitted: 'notice', review: 'notice', hearing: 'schedule', resolved: 'decision' };
+export const KIND_FOR_STATUS = { submitted: 'notice', review: 'notice', hearing: 'schedule', resolved: 'decision', rejected: 'rejection' };
 
 // Link length that email apps handle reliably. Longer drafts open without the body and the body is copied instead.
 export const MAILTO_LIMIT = 1900;
@@ -57,11 +60,20 @@ const CONFIDENTIAL = 'This matter is confidential. Please do not share this mess
  */
 export function draft(kind, c, me, { cc = '', include = false, today = todayPH() } = {}) {
   // No address is on file for the department, the parent or guardian, or the offices that get the decision copy: staff type them.
-  const to = ['department', 'parents', 'copy'].includes(kind) ? '' : c.rEmail || '';
+  // Not approved: the complainant is told at their UB account address. Each party that was told about the complaint gets its
+  // own closing notice: 'closure' for the respondent and 'closure-dept' for the department (a case can need both).
+  const to =
+    kind === 'rejection'
+      ? c.filedByEmail || ''
+      : ['department', 'closure-dept', 'parents', 'copy'].includes(kind)
+        ? ''
+        : c.rEmail || '';
   const hi =
-    kind === 'department'
-      ? `Dear Dean and Program Head, ${c.rDept || ''}`.trim() + ','
-      : kind === 'parents'
+    kind === 'rejection'
+      ? `Dear ${c.filedByName || 'Complainant'},`
+      : kind === 'department' || kind === 'closure-dept'
+        ? `Dear Dean and Program Head, ${c.rDept || ''}`.trim() + ','
+        : kind === 'parents'
         ? 'Dear Parent or Guardian,'
         : kind === 'copy'
           ? 'Dear Registrar’s Office, Vice President for Student Affairs and Services (VPSAS) and Office of the President,'
@@ -196,6 +208,49 @@ Interventions: ${ivs.length ? ivs.join('; ') : '[interventions]'}
 ${ivs.includes('Expulsion') ? 'Expulsion may not be imposed without the approval of the Commission on Higher Education.' : 'The decision is effective and executory five (5) days after the respondent receives it, unless an appeal is filed in writing with the University President.'}
 
 The signed written decision is attached: [attach the signed decision].
+
+${CONFIDENTIAL}
+
+${sign(me)}`;
+  } else if (kind === 'rejection') {
+    subject = `Your complaint was not approved, case ${c.id}`;
+    body = `${hi}
+
+The SAEP Office has reviewed your complaint and has decided not to take it forward. No action will be taken against the respondent on this complaint.
+
+${caseBlock(c)}
+
+Reason: ${REJECT_REASONS[c.rejectReason] || '[reason]'}
+${c.resolution || '[explanation for the complainant]'}
+
+If you have more information or evidence, you may file a new complaint in UBridge, or visit the SAEP Office and bring it with you. You may also write to ${CONTACT.email}.
+
+${CONFIDENTIAL}
+
+${sign(me)}`;
+  } else if (kind === 'closure') {
+    subject = `Complaint closed, case ${c.id}`;
+    body = `${hi}
+
+The SAEP Office has closed the complaint that named you as the respondent. It was not approved for further action, so no disciplinary conference will be held and no action will be taken against you on this complaint. You do not need to send an explanation.
+
+${caseBlock(c)}
+
+Please contact the SAEP Office if you have questions.
+
+${CONFIDENTIAL}
+
+${sign(me)}`;
+  } else if (kind === 'closure-dept') {
+    subject = `Complaint closed, case ${c.id}`;
+    body = `${hi}
+
+The SAEP Office has closed the complaint it forwarded to your department. It was not approved for further action, so please do not hold a disciplinary conference or take any action on it.
+
+Respondent: ${c.student} (${c.sid}), ${c.program}
+${caseBlock(c)}
+
+Please contact the SAEP Office if you have questions.
 
 ${CONFIDENTIAL}
 

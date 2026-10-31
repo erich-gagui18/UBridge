@@ -14,7 +14,7 @@ import { UB } from '../app.js';
     `<tr><th>Case no.</th><th>Student</th>${staff ? '<th>Filed by</th>' : ''}<th>Offense</th><th>Filed</th><th>Status</th><th></th></tr>`;
   $('#stats').innerHTML = UB.skel(4);
   $('#rows').innerHTML = `<tr><td colspan="${staff ? 7 : 6}">${UB.skel(3)}</td></tr>`;
-  UB.ORDER.forEach((s) => $('#st').insertAdjacentHTML('beforeend', `<option value="${s}">${UB.STATUS[s]}</option>`));
+  Object.keys(UB.STATUS).forEach((s) => $('#st').insertAdjacentHTML('beforeend', `<option value="${s}">${UB.STATUS[s]}</option>`));
 
   let data = [],
     offenses = {},
@@ -28,12 +28,14 @@ import { UB } from '../app.js';
 
   const stats = () => {
     const n = (s) => data.filter((c) => c.status === s).length;
-    const p = data.length ? Math.round((n('resolved') / data.length) * 100) : 0;
+    // Cases that were not approved never reach a decision, so they are left out of the resolution rate.
+    const open = data.length - n('rejected');
+    const p = open ? Math.round((n('resolved') / open) * 100) : 0;
     $('#stats').innerHTML = [
       [data.length, 'Total filed', ''],
       [n('submitted') + n('review'), 'Submitted / in review', 'Needs follow-up'],
       [n('hearing'), 'For hearing', 'Scheduled'],
-      [n('resolved'), 'Resolved', p + '% resolution'],
+      [n('resolved'), 'Resolved', `${p}% resolution${n('rejected') ? ` · ${n('rejected')} not approved` : ''}`],
     ]
       .map(([v, a, s]) => `<div class="card stat"><b>${v}</b><span>${a}</span>${s ? `<small>${s}</small>` : ''}</div>`)
       .join('');
@@ -90,10 +92,16 @@ import { UB } from '../app.js';
       ? `<ul class="mails">${l.map((m) => `<li><details><summary><span class="mk">${esc(UB.mail.KINDS[m.kind] || m.kind)}</span><small class="muted">To ${esc(m.to)}<br>${esc(m.byName || 'SAEP Staff')} · ${UB.fmtTs(m.at)}</small></summary><p><b>Subject:</b> ${esc(m.subject)}</p><pre class="mailbody">${esc(m.body)}</pre></details></li>`).join('')}</ul>`
       : '<p class="muted">No email recorded for this case yet. Once you send one and confirm it here, it is listed with its text.</p>';
   };
+  // What nextStep() and suggestedKind() need: the emails recorded, and when the case was last marked Not approved.
+  const nextOpts = (c) => ({
+    commission: UB.proc.commissionOf(c, data),
+    emails: cur?.emails || [],
+    rejectedAt: UB.proc.latestRejectionAt(cur?.history || []),
+  });
   // "What now?" banner (staff), shown above the tabs so it is visible everywhere. Built from the case and the emails
   // already recorded, following the policy's PROCESS section.
   const nextHtml = (c) => {
-    const n = UB.proc.nextStep(c, { commission: UB.proc.commissionOf(c, data), emails: cur?.emails || [] });
+    const n = UB.proc.nextStep(c, nextOpts(c));
     const tag = { todo: 'Next step', wait: 'Waiting', warn: 'Needs attention', done: 'Done' }[n.level];
     const act = [
       n.kind ? `<button type="button" class="btn primary ns-mail" data-kind="${esc(n.kind)}">Write: ${esc(UB.mail.KINDS[n.kind])}</button>` : '',
@@ -117,7 +125,7 @@ import { UB } from '../app.js';
     paintNext();
   };
   const mailboxHtml = (c) => {
-    const sug = UB.proc.suggestedKind(c, { commission: UB.proc.commissionOf(c, data), emails: cur?.emails || [] });
+    const sug = UB.proc.suggestedKind(c, nextOpts(c));
     return `<div class="mail-grid">
       <section class="card cc"><h3>Write an email</h3>
         <p class="muted">${UB.gmail.enabled ? 'Pick a message and edit it. Then save it as a draft in your Gmail, or open it in your email app, and send it yourself.' : 'Pick a message and edit it. Then open it in your email app and send it yourself.'} UBridge never sends mail. It keeps a record once you confirm that you sent it.</p>
@@ -153,7 +161,7 @@ import { UB } from '../app.js';
           ? `<label class="chk"><input type="checkbox" id="mInc" ${include ? 'checked' : ''}> Put the complaint statement in the message (Process step 2). The complainant’s name is never added. Keep the message under ${UB.mail.LIMITS.body} characters.</label>`
           : ''
       }${field('mBody', 'Message', d.body, 'textarea')}
-      ${['department', 'parents', 'copy'].includes(kind) ? '<p class="muted">No address is on file for this recipient. Type it in To.</p>' : ''}
+      ${['department', 'closure-dept', 'parents', 'copy'].includes(kind) ? '<p class="muted">No address is on file for this recipient. Type it in To.</p>' : ''}
       <p class="err" id="mErr" role="alert"></p>
       <div class="actions"><button class="btn" data-close>Cancel</button><button class="btn" id="mCopy" type="button">Copy text</button><button class="btn${gm ? '' : ' primary'}" id="mOpen" type="button">Open in my email app</button>${gm ? '<button class="btn primary" id="mGmail" type="button">Create Gmail draft</button>' : ''}</div>`;
     const m = UB.modal(editHtml(), UB.mail.KINDS[kind]);
@@ -302,10 +310,18 @@ import { UB } from '../app.js';
   const kv = (k, v) => (v ? `<dt>${k}</dt><dd>${v}</dd>` : '');
   const ccard = (title, body, cls = '') => (body ? `<section class="card cc ${cls}"><h3>${title}</h3><dl class="kv">${body}</dl></section>` : '');
 
-  const updateHtml = (c) => `<div class="uform">
+  // Not approved only exists at intake (Submitted or In review); a not-approved case can only be reopened to those two.
+  const statusChoices = (c) =>
+    Object.keys(UB.STATUS).filter((s) =>
+      s === 'rejected' ? ['submitted', 'review', 'rejected'].includes(c.status) : c.status === 'rejected' ? ['submitted', 'review'].includes(s) : true,
+    );
+  const updateHtml = (c) => `<div class="uform${c.status === 'rejected' ? ' is-rejecting' : ''}">
     <section class="card cc fsec"><h3>Status and note</h3>
       <div class="field"><label for="ns">Status</label>
-        <select id="ns">${UB.ORDER.map((s) => `<option value="${s}" ${s === c.status ? 'selected' : ''}>${UB.STATUS[s]}</option>`).join('')}</select></div>
+        <select id="ns">${statusChoices(c)
+          .map((s) => `<option value="${s}" ${s === c.status ? 'selected' : ''}>${UB.STATUS[s]}</option>`)
+          .join('')}</select>${c.status === 'submitted' || c.status === 'review' ? '<small class="muted">Choose Not approved if SAEP will not take this complaint forward.</small>' : ''}</div>
+      ${UB.proc.rejectFields(c)}
       <div class="field" id="hdF" ${c.status === 'hearing' ? '' : 'hidden'}><label for="hd" class="req">Hearing date</label><input id="hd" type="date" value="${esc(c.hearingDate || '')}"></div>
       <div class="field" id="rsF" ${c.status === 'resolved' ? '' : 'hidden'}><label for="rs" class="req">Resolution note</label><textarea id="rs" maxlength="2000">${esc(c.resolution || '')}</textarea></div>
       <div class="field"><label for="rm">Remark for the history</label><input id="rm" maxlength="500" placeholder="e.g. Both parties notified" aria-describedby="rmHint">
@@ -331,7 +347,7 @@ import { UB } from '../app.js';
           ? kv('E-signature', esc(c.signature))
           : '');
     const handling =
-      UB.proc.processRows(c, { staff, commission: UB.proc.commissionOf(c, data) }) + kv('Decision', c.resolution ? esc(c.resolution) : '');
+      UB.proc.processRows(c, { staff, commission: UB.proc.commissionOf(c, data) }) + kv(c.status === 'rejected' ? 'Why it was not approved' : 'Decision', c.resolution ? esc(c.resolution) : '');
     const respondent =
       kv('Student', `${esc(c.student)} <small class="muted">${esc(c.sid)}</small>`) +
       kv('Course', esc([c.program, c.section].filter(Boolean).join(' '))) +
@@ -460,20 +476,27 @@ import { UB } from '../app.js';
       v = (s) => el.querySelector(s)?.value ?? '';
     const status = v('#ns'),
       hearingDate = status === 'hearing' ? v('#hd') : c.hearingDate || '',
-      resolution = status === 'resolved' ? v('#rs').trim() : c.resolution || '',
+      resolution =
+        status === 'resolved'
+          ? v('#rs').trim()
+          : status === 'rejected'
+            ? v('#rj').trim()
+            : c.status === 'rejected'
+              ? '' // reopening: the old explanation no longer applies
+              : c.resolution || '',
       remark = v('#rm').trim();
     const pr = UB.proc.readProcess(el, c, status);
     if (pr.error) return UB.toast(pr.error, 'bad');
     const notes = UB.proc.describeChanges(c, pr.values),
       pChanged = UB.proc.processChanged(c, pr.values);
     // The process must hold together before it is saved (notice before conference, assessment first, and so on).
-    const mv = UB.proc.checkMove(c, pr.values, { status, hearingDate });
+    const mv = UB.proc.checkMove(c, pr.values, { status, hearingDate, resolution });
     if (mv.errors.length) return UB.toast(mv.errors[0], 'bad');
     if (status === 'hearing' && !hearingDate) return UB.toast('Choose the hearing date.', 'bad');
     if (status === 'resolved' && resolution.length < 5)
       return UB.toast('Add a resolution note (at least 5 characters).', 'bad');
     // Reopening or stepping back is allowed (mistakes happen) but must be explained in the history.
-    if (UB.ORDER.indexOf(status) < UB.ORDER.indexOf(c.status) && remark.length < 5)
+    if (UB.proc.rankOf(status) < UB.proc.rankOf(c.status) && remark.length < 5)
       return UB.toast('Add a remark (at least 5 characters) explaining why the case is moving back.', 'bad');
     if (
       status === c.status &&
@@ -486,7 +509,7 @@ import { UB } from '../app.js';
     if (
       !(await UB.confirm(
         'Save changes?',
-        `${c.id}: “${UB.STATUS[c.status]}” → “${UB.STATUS[status]}”. The filer will be notified in the app.${mv.warnings.length ? ` Check first: ${mv.warnings.join(' ')}` : ''}`,
+        `${c.id}: “${UB.STATUS[c.status]}” → “${UB.STATUS[status]}”. ${status === 'rejected' && c.status !== 'rejected' ? 'This closes the case at intake. The complainant is notified in the app, and you can email them the reason next.' : 'The filer will be notified in the app.'}${mv.warnings.length ? ` Check first: ${mv.warnings.join(' ')}` : ''}`,
         'Save',
       ))
     )
@@ -496,6 +519,8 @@ import { UB } from '../app.js';
       cur.dirty = false; // the dialog stays open and refreshes, so the next step and the Email tab use the saved case
       const d = caseView.querySelector('#dirtyMsg');
       if (d) d.hidden = true;
+      // The live update can arrive while the form still counts as unsaved (and is then skipped), so repaint here as well.
+      paintModal();
       UB.toast('Case updated');
     } catch (e) {
       UB.toast(
@@ -585,6 +610,11 @@ import { UB } from '../app.js';
     if (hdF) hdF.hidden = e.target.value !== 'hearing';
     if (rsF) rsF.hidden = e.target.value !== 'resolved';
     if (pDec) pDec.hidden = e.target.value !== 'resolved';
+    // Not approved: show the reason and explanation, and hide the notice, conference and decision sections that no longer apply.
+    const rejecting = e.target.value === 'rejected';
+    const rjF = caseView.querySelector('#rjF');
+    if (rjF) rjF.hidden = !rejecting;
+    caseView.querySelector('.uform')?.classList.toggle('is-rejecting', rejecting);
   });
   caseView.addEventListener('click', async (e) => {
     if (e.target.closest('[data-close]')) return leave();
@@ -608,10 +638,16 @@ import { UB } from '../app.js';
       (f) => UB.loadEvidence(c, f),
     );
   });
-  addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape' || !cur || document.querySelector('.overlay')) return;
-    leave();
-  });
+  // Capture phase: a dialog (such as the email editor) removes itself on Escape in the bubble phase, and by then this
+  // handler would no longer see it and would also leave the case. Checking first keeps Escape to the dialog.
+  addEventListener(
+    'keydown',
+    (e) => {
+      if (e.key !== 'Escape' || !cur || document.querySelector('.overlay')) return;
+      leave();
+    },
+    true,
+  );
 
   $('#q').oninput = render;
   $('#st').onchange = render;

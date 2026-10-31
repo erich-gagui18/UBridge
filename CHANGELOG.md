@@ -1,5 +1,44 @@
 # Changelog
 
+## v16 (31 October 2026)
+
+Fixes to the Not approved flow and the case view. **Deploy the rules first** (`firebase deploy --only firestore:rules`), because the new email kind `closure-dept` is validated there.
+
+### Fixed
+- **Each party is told the case is closed.** A not-approved case used to ask for one closing email and then show "Closed", even when the respondent and the department had both been told. The next-step box now asks for the respondent's notice first, then the Dean and Program Head's (new kind *Notice to the Dean and Program Head: complaint closed*, which never names the complainant). "Closed" appears only when everyone who was told has been told.
+- **A second rejection is told again.** Reject, email, reopen, reject again with a new reason: the complainant now gets asked for a fresh rejection email. Emails are counted from the latest rejection in the history.
+- **Escape in the email editor** closed the whole case. It now closes only the dialog; a second Escape leaves the case.
+
+### Added
+- A reminder on a reopened case that people were told it was closed, so staff tell them it is open again.
+- A warning in the reopen confirmation that the explanation shown to the complainant is cleared (it stays in the email record only if it was already sent).
+
+## v15 (31 October 2026)
+
+Staff can now mark a complaint **Not approved**, and the pages work more smoothly on phones, tablets and different browsers. **Deploy the rules first** (`firebase deploy --only firestore:rules`), then push to `main` for Hosting.
+
+### Added: Not approved
+- **A new outcome in Update Case.** Choose *Not approved* under Status (offered only for Submitted and In review cases). Staff pick a reason and write an explanation for the complainant (at least 10 characters). The notice, conference and decision sections are hidden while it is selected.
+- **Rules of the outcome.** Only before a conference or a decision. A case with a held conference or a recorded decision is resolved instead. A not-approved case can only be reopened to Submitted or In review, with a remark, and the reason and explanation are cleared.
+- **The complainant is told.** In-app notification at once, then the *Notice to the complainant* email (reason, explanation, how to file again). If a notice had already gone to the respondent, or the case was forwarded to the department, the next-step box asks for the *Notice that the complaint is closed* email.
+- **Everywhere it shows.** A "Not approved" chip, a two-step progress bar that ends there, an Outcome row with the reason, a "Why it was not approved" row, the dashboard pipeline, and the status filter. Not-approved cases are left out of the resolution rate.
+- **Not in the policy.** The College Student Discipline Policy has no intake rejection step. This is a UBridge addition for the SAEP Office to confirm (see `docs/case-flow.md`).
+
+### Fixed
+- After **Save changes** the case header and progress bar could keep showing the old status until another update arrived. The case now repaints as soon as the save succeeds.
+
+### Changed: look and feel across devices
+- **iPhone and iPad (Safari):** the page no longer zooms in when a field is tapped (every field is 16px, including the AI Guide box); selects and date fields look the same as on other browsers; dates are no longer auto-linked as phone numbers.
+- **Android and phones in general:** the layout uses the visible screen height (the address bar no longer hides the bottom of the login page and menu), round buttons are 44px on touch screens, and the grey tap flash is gone.
+- **All browsers:** date pickers, scrollbars and menus follow dark mode; status chips keep a background on older browsers; the browser toolbar takes the maroon colour on phones.
+- **Dashboard:** the greeting and title are left-aligned instead of drifting to the middle.
+- **Top bar:** the long university name is cut with an ellipsis instead of wrapping to two lines.
+- **Privacy banner:** "Got it" no longer wraps.
+- **Sign-in page:** the "Sign up" link matches the other links (it was default browser blue).
+
+### Tests
+- 14 new unit tests (`npm test` now runs 125) and 14 new rules tests in `tests/rules.test.mjs` (run `npm run test:rules`, needs the emulator).
+
 ## v14 (28 October 2026)
 
 The sidebar menu and the My profile page are tidied. No change to the rules, the data or what a saved profile contains.

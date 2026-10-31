@@ -16,10 +16,11 @@ import { UB } from '../app.js';
   $('#stats').innerHTML = [0, 1, 2, 3]
     .map(() => '<div class="card stat" data-reveal><b data-v="0">0</b><span></span><small></small></div>')
     .join('');
-  $('#stack').innerHTML = UB.ORDER.map(
+  const STAGES = Object.keys(UB.STATUS); // the four stages plus Not approved
+  $('#stack').innerHTML = STAGES.map(
     (s) => `<i class="seg ${s}" style="flex-grow:0" title="${UB.STATUS[s]}"></i>`,
   ).join('');
-  $('#legend').innerHTML = UB.ORDER.map(
+  $('#legend').innerHTML = STAGES.map(
     (s) => `<li><span class="chip ${s}">${UB.STATUS[s]}</span><b data-v="0">0</b></li>`,
   ).join('');
   UB.stagger(document);
@@ -29,7 +30,8 @@ import { UB } from '../app.js';
     trackKey = '';
   const render = () => {
     const n = (s) => list.filter((c) => c.status === s).length;
-    const pct = list.length ? Math.round((n('resolved') / list.length) * 100) : 0;
+    const decidable = list.length - n('rejected'); // not-approved cases never reach a decision
+    const pct = decidable ? Math.round((n('resolved') / decidable) * 100) : 0;
     const next = list
       .filter((c) => c.status === 'hearing' && c.hearingDate >= UB.todayPH())
       .map((c) => c.hearingDate)
@@ -48,10 +50,10 @@ import { UB } from '../app.js';
     // pipeline: ring + stacked bar grow with CSS transitions; legend numbers count up
     requestAnimationFrame(() => {
       $('#rgFg').style.strokeDashoffset = 100 - pct;
-      UB.$$('#stack .seg').forEach((el, k) => (el.style.flexGrow = n(UB.ORDER[k])));
+      UB.$$('#stack .seg').forEach((el, k) => (el.style.flexGrow = n(STAGES[k])));
     });
     UB.countUp($('#rgV'), pct, 1100, '%');
-    UB.$$('#legend b').forEach((el, k) => UB.countUp(el, n(UB.ORDER[k])));
+    UB.$$('#legend b').forEach((el, k) => UB.countUp(el, n(STAGES[k])));
     $('#pipeNote').textContent = list.length
       ? `${list.length} case${list.length === 1 ? '' : 's'} in total`
       : 'No cases yet';

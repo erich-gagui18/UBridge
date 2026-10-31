@@ -59,7 +59,14 @@ service cloud.firestore {
         // Off-campus / online offenses: SAEP reviews whether a ground for jurisdiction applies. Declining closes the case.
         && (!('jurisdictionReview' in n) || n.jurisdictionReview in ['', 'confirmed', 'declined'])
         && (!('jurisdictionReview' in n) || n.jurisdictionReview == '' || n.get('venue', 'campus') == 'offcampus')
-        && (!('jurisdictionReview' in n) || n.jurisdictionReview != 'declined' || n.status == 'resolved');
+        && (!('jurisdictionReview' in n) || n.jurisdictionReview != 'declined' || n.status == 'resolved')
+        // Not approved (UBridge intake outcome): a closed case with a reason. Only from Submitted or In review, only while no
+        // conference has been held and no decision recorded, and a not-approved case can only be reopened to Submitted or In review.
+        && (!('rejectReason' in n) || n.rejectReason in ['', 'not-covered', 'insufficient', 'not-student', 'duplicate', 'referred'])
+        && ((n.status == 'rejected') == (n.get('rejectReason', '') != ''))
+        && (n.status != 'rejected' || old.status in ['submitted', 'review', 'rejected'])
+        && (n.status != 'rejected' || (n.get('conferencesHeld', 0) == 0 && (old.status == 'rejected' || n.get('decisionDate', '') == '')))
+        && (old.status != 'rejected' || n.status in ['rejected', 'submitted', 'review']);
     }
 
     // "Others": no catalog entry and no category. SAEP classifies it later, so the complainant must describe it.
@@ -162,8 +169,8 @@ service cloud.firestore {
       function staffEdit() {
         let n = request.resource.data;
         return isStaff()
-          && n.diff(resource.data).affectedKeys().hasOnly(['status', 'hearingDate', 'resolution', 'updatedAt', 'updatedBy', 'hCount', 'route', 'noticeDate', 'answerDue', 'answer', 'parentsNotified', 'conferenceMode', 'conferencesHeld', 'decisionDate', 'interventions', 'appeal', 'appealDate', 'assessedDegree', 'deptDecisionDate', 'jurisdictionReview'])
-          && n.status in ['submitted', 'review', 'hearing', 'resolved']
+          && n.diff(resource.data).affectedKeys().hasOnly(['status', 'hearingDate', 'resolution', 'updatedAt', 'updatedBy', 'hCount', 'route', 'noticeDate', 'answerDue', 'answer', 'parentsNotified', 'conferenceMode', 'conferencesHeld', 'decisionDate', 'interventions', 'appeal', 'appealDate', 'assessedDegree', 'deptDecisionDate', 'jurisdictionReview', 'rejectReason'])
+          && n.status in ['submitted', 'review', 'hearing', 'resolved', 'rejected']
           && n.updatedAt == request.time && n.updatedBy == request.auth.uid
           && n.hCount == resource.data.get('hCount', 0) + 1
           && existsAfter(/databases/$(db)/documents/complaints/$(id)/history/$(string(n.hCount)))
@@ -171,6 +178,8 @@ service cloud.firestore {
           && (n.status != 'hearing' || n.hearingDate != '')
           && n.resolution is string && n.resolution.size() <= 2000
           && (n.status != 'resolved' || n.resolution.size() >= 5)
+          // Not approved: the complainant is given a written explanation.
+          && (n.status != 'rejected' || n.resolution.size() >= 10)
           && processOk(n, resource.data);
       }
       // Each evidence entry is {name, path} and the path must point into the filer's own folder for this case.
@@ -229,7 +238,7 @@ service cloud.firestore {
         allow create: if isStaff()
           && exists(/databases/$(db)/documents/complaints/$(id))
           && request.resource.data.keys().hasOnly(['kind', 'to', 'cc', 'subject', 'body', 'by', 'byName', 'at'])
-          && request.resource.data.kind in ['notice', 'followup', 'schedule', 'decision', 'department', 'parents', 'copy']
+          && request.resource.data.kind in ['notice', 'followup', 'schedule', 'decision', 'department', 'parents', 'copy', 'rejection', 'closure', 'closure-dept']
           && request.resource.data.to is string && request.resource.data.to.size() >= 5 && request.resource.data.to.size() <= 300
           && request.resource.data.cc is string && request.resource.data.cc.size() <= 300
           && request.resource.data.subject is string && request.resource.data.subject.size() >= 1 && request.resource.data.subject.size() <= 200
