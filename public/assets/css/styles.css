@@ -1111,3 +1111,533 @@ body[data-page="my-complaints"] main,#caseView,#caseView .case-inline{min-width:
 .uform.is-rejecting>.fsec:not(:first-child){display:none}
 /* Touch screens: bigger targets for the small round buttons. */
 @media (pointer:coarse){.icon-btn{width:44px;height:44px}}
+
+
+/* ==========================================
+   DESKTOP SIDEBAR COLLAPSE 03/11/26
+   ========================================== */
+
+@media (min-width: 861px) {
+  /* Animate the sidebar width and let content use the freed space */
+  #app.shell {
+    grid-template-columns: 240px minmax(0, 1fr);
+    transition: grid-template-columns 250ms ease;
+  }
+
+  #app.shell.sidebar-collapsed {
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
+
+  #app.shell > .side {
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  /* Expanded header: hamburger and UB branding aligned horizontally */
+  #side .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #side .sidebar-collapse-btn {
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+  }
+
+  #side .sidebar-collapse-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  #side .brand {
+    min-width: 0;
+    padding: 2px 4px;
+    align-items: center;
+  }
+
+  #side .brand .logo {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+  }
+
+  /* Collapsed state: hide text, preserve icons */
+  #app.sidebar-collapsed #side .brand > div,
+  #app.sidebar-collapsed #side .nav-label,
+  #app.sidebar-collapsed #side .nav-text,
+  #app.sidebar-collapsed #side .me > div,
+  #app.sidebar-collapsed #side .side-legal {
+    display: none;
+  }
+
+  /* Compact top row in collapsed mode */
+  #app.sidebar-collapsed #side .brand-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #app.sidebar-collapsed #side .brand {
+    flex: 0 0 auto;
+    justify-content: center;
+    padding: 0;
+  }
+
+  #app.sidebar-collapsed #side .brand .logo {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+
+  /* Center navigation icons */
+  #app.sidebar-collapsed #side .nav a {
+    justify-content: center;
+    gap: 0;
+    padding: 12px 8px;
+  }
+
+  #app.sidebar-collapsed #side .nav a svg {
+    flex: 0 0 20px;
+  }
+
+  /* Center profile avatar */
+  #app.sidebar-collapsed #side .me {
+    justify-content: center;
+    padding: 8px 0;
+  }
+
+  /* Sign out: keep icon, hide label */
+  #app.sidebar-collapsed #side .side-out {
+    justify-content: center;
+    gap: 0;
+    padding: 12px 8px;
+    font-size: 0;
+    text-align: center;
+  }
+
+  #app.sidebar-collapsed #side .side-out svg {
+    display: block;
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* The desktop collapse button is not part of the mobile drawer */
+@media (max-width: 860px) {
+  #side .sidebar-collapse-btn {
+    display: none;
+  }
+}
+
+#side .brand .logo {
+  background: transparent !important;
+  border-radius: 0;
+  object-fit: contain;
+}
+
+
+/* UBridge login: UB Lipa Campus photo background */
+  
+body.auth {
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.20),
+      rgba(107, 26, 28, 0.12)
+    ),
+    url("../image/UBLC.webp") center / cover no-repeat fixed;
+}
+           
+
+/* Keep the login card above the background */
+body.auth .auth-wrap {
+  position: relative;
+  z-index: 1;
+}
+
+/* Mobile-friendly background */
+@media (max-width: 820px) {
+  body.auth {
+    background-attachment: scroll;
+    padding: 12px;
+  }
+
+  .auth .auth-wrap {
+    height: auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+/* Google sign-in button */
+#google {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 48px;
+  background: #fff;
+  color: #202124;
+  border: 1px solid #dadce0;
+  border-radius: 9px;
+  font-weight: 600;
+  transition: background-color 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+#google .google-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+#google:hover {
+  background: #f8f9fa;
+  border-color: #c8cdd3;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.10);
+}
+
+#google:focus-visible {
+  outline: 2px solid #d9bd45;
+  outline-offset: 3px;
+}
+
+/* =========================================
+   UBRIDGE DASHBOARD — READABILITY UPDATE
+   ========================================= */
+
+/* Main dashboard heading */
+body[data-page="dashboard"] #main .hero h1 {
+  color: #351719;
+  font-size: clamp(1.65rem, 2.5vw, 2.15rem);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.035em;
+}
+
+/* Greeting above the heading */
+body[data-page="dashboard"] #main .hero .kick {
+  color: #6b1a1c;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+/* Supporting text */
+body[data-page="dashboard"] #main .hero .sub {
+  color: #514547;
+  font-size: 0.98rem;
+  font-weight: 500;
+  line-height: 1.65;
+}
+
+/* Panel headings */
+body[data-page="dashboard"] #main .panel header h2 {
+  color: #351719;
+  font-size: 1.1rem;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+/* Statistics cards */
+body[data-page="dashboard"] #main .stat b {
+  color: #6b1a1c;
+  font-size: clamp(1.8rem, 2.5vw, 2.25rem);
+  font-weight: 800;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-page="dashboard"] #main .stat span {
+  color: #352b2c;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+body[data-page="dashboard"] #main .stat small {
+  color: #625557;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* Recent complaint titles */
+body[data-page="dashboard"] #main #recent .row b {
+  color: #351719;
+  font-size: 0.96rem;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+/* Complaint details: student, case ID, and date */
+body[data-page="dashboard"] #main #recent .row small {
+  color: #5c5152;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.65;
+}
+
+/* Top offense type labels and percentages */
+body[data-page="dashboard"] #main #bars .bar > div:first-child {
+  color: #3e3334;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* Case pipeline and secondary information */
+body[data-page="dashboard"] #main .muted {
+  color: #625557;
+}
+
+/* Keep interactive complaint rows clear */
+body[data-page="dashboard"] #main #recent .row {
+  transition: background-color 0.18s ease;
+}
+
+body[data-page="dashboard"] #main #recent .row:hover {
+  background-color: #fbf4e7;
+}
+
+/* Keyboard accessibility */
+body[data-page="dashboard"] #main a:focus-visible,
+body[data-page="dashboard"] #main button:focus-visible {
+  outline: 3px solid #b69a25;
+  outline-offset: 3px;
+}
+
+/* Smaller screens */
+@media (max-width: 600px) {
+  body[data-page="dashboard"] #main .hero h1 {
+    font-size: 1.6rem;
+  }
+
+  body[data-page="dashboard"] #main .panel header h2 {
+    font-size: 1rem;
+  }
+
+  body[data-page="dashboard"] #main #recent .row small {
+    overflow-wrap: anywhere;
+  }
+}
+
+
+/* Dashboard welcome banner — improved contrast */
+body[data-page="dashboard"] #main .hero .kick {
+  color: #F1D65B;
+  font-weight: 700;
+}
+
+body[data-page="dashboard"] #main .hero h1 {
+  color: #FFFFFF;
+  font-weight: 800;
+}
+
+body[data-page="dashboard"] #main .hero .sub {
+  color: #F7E9E5;
+  font-weight: 500;
+}
+
+/* Preserve the gold CTA with readable text */
+body[data-page="dashboard"] #main .hero .btn,
+body[data-page="dashboard"] #main .hero button {
+  color: #451416;
+  font-weight: 700;
+}
+
+/* Keep the Live indicator readable */
+body[data-page="dashboard"] #main .hero .live {
+  color: #FFFFFF;
+}
+
+/* Recent Complaints — stronger text contrast */
+body[data-page="dashboard"] #main #recent .row b {
+  color: #351719;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+body[data-page="dashboard"] #main #recent .row small {
+  color: #514547;
+  font-weight: 500;
+  line-height: 1.65;
+}
+
+/* Submitted status badge */
+body[data-page="dashboard"] #main #recent .row .badge {
+  color: #494143;
+  font-weight: 650;
+}
+
+
+
+
+/* =========================================
+   UBRIDGE LEGAL PAGES
+   Campus background + centered document
+   ========================================= */
+
+/* Campus background */
+body.home.legal-page {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(247, 241, 231, 0.22),
+      rgba(107, 26, 28, 0.16)
+    ),
+    url("../image/UBLC.webp") center 60% / cover no-repeat fixed;
+}
+
+/* Page wrapper */
+body.legal-page .legal-wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-inline: clamp(20px, 4vw, 60px);
+  box-sizing: border-box;
+}
+
+/* Main document border / text box */
+body.legal-page .legal-doc {
+  display: block;
+  width: min(100%, 1200px);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(24px, 3vw, 42px);
+  box-sizing: border-box;
+
+  background: #FFFCF7;
+  color: #302526;
+  border: 1px solid #E4D8C9;
+  border-radius: 20px;
+  box-shadow: 0 8px 28px rgba(53, 23, 25, 0.12);
+}
+
+/* Main heading */
+body.legal-page .legal-doc h1 {
+  color: #351719;
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.2;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+/* Body text */
+body.legal-page .legal-doc p,
+body.legal-page .legal-doc li {
+  color: #352D2D;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+/* Section headings */
+body.legal-page .legal-doc h2 {
+  color: #6B1A1C;
+  font-size: 1.3rem;
+  font-weight: 750;
+  line-height: 1.4;
+  margin-top: 30px;
+  margin-bottom: 12px;
+}
+
+/* Gold notice box */
+body.legal-page .legal-doc .notice {
+  background: #F8EDC9;
+  color: #382B17;
+  border: 1px solid #D9BD45;
+  border-radius: 10px;
+  padding: 16px;
+  line-height: 1.7;
+}
+
+/* Links */
+body.legal-page .legal-doc a {
+  color: #781D22;
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+/* Mobile and tablet */
+@media (max-width: 700px) {
+  body.home.legal-page {
+    background-attachment: scroll;
+    background-position: center 55%;
+  }
+
+  body.legal-page .legal-wrap {
+    padding-inline: 14px;
+  }
+
+  body.legal-page .legal-doc {
+    width: 100%;
+    max-width: 100%;
+    padding: 22px 18px;
+    border-radius: 14px;
+  }
+
+  body.legal-page .legal-doc h1 {
+    font-size: 1.85rem;
+  }
+
+  body.legal-page .legal-doc h2 {
+    font-size: 1.15rem;
+  }
+
+  body.legal-page .legal-doc p,
+  body.legal-page .legal-doc li {
+    font-size: 0.95rem;
+    overflow-wrap: anywhere;
+  }
+}
+
+
+
+/* Improve footer link visibility on legal pages */
+body.legal-page .home-foot a {
+  color: #FFFFFF !important;
+  background: #6B1A1C;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+body.legal-page .home-foot a:hover {
+  background: #8A2529;
+  color: #FFFFFF !important;
+}
+
+/* Footer copyright text */
+body.legal-page .home-foot {
+  color: #FFFFFF;
+}
+
+
+
+
+
+
+.home-brand .logo {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  object-fit: contain;
+
+  background: #6B1A1C;
+  padding: 5px;
+  border-radius: 9px;
+  box-sizing: border-box;
+}
