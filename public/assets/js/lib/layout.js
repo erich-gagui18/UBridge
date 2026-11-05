@@ -123,9 +123,19 @@ export function shell({ me, local, isStaff, logout, missing = [] }) {
     app = $('#app');
   const roleLbl = { student: 'Student', faculty: 'Faculty', staff: 'SAEP Staff' }[me.role];
   app.className = 'shell';
-  app.innerHTML = `<aside class="side" id="side" aria-label="Main navigation"><div class="brand-row"><a class="brand" href="dashboard.html" aria-label="UBridge, go to the dashboard"><span class="logo">UB</span><div>UBridge<small>SAEP Complaints</small></div></a><button class="icon-btn side-x" id="sideX" type="button" aria-label="Close menu">${icon('x')}</button></div>
+  app.innerHTML = `<aside class="side" id="side" aria-label="Main navigation"><div class="brand-row">
+ <button
+  class="icon-btn sidebar-collapse-btn"
+  id="sidebarCollapseBtn"
+  type="button"
+  aria-label="Collapse sidebar"
+  aria-controls="side"
+  aria-expanded="true"
+>${icon('menu')}</button>
+
+<a class="brand" href="dashboard.html" aria-label="UBridge, go to the dashboard"><img class="logo" src="../assets/image/Logo%201.png" alt="University of Batangas logo"><div>UBridge<small>SAEP Complaints</small></div></a><button class="icon-btn side-x" id="sideX" type="button" aria-label="Close menu">${icon('x')}</button></div>
       <p class="nav-label" id="navLbl">Menu</p>
-      <nav class="nav" aria-labelledby="navLbl">${nav.map(([p, l, i]) => `<a href="${p}.html" ${p === page ? 'aria-current="page"' : ''}>${icon(i)}${l}${p === 'profile' && missing.length ? '<span class="warn-dot" role="img" aria-label="profile incomplete" title="Profile incomplete"></span>' : ''}</a>`).join('')}</nav>
+      <nav class="nav" aria-labelledby="navLbl">${nav.map(([p, l, i]) => `<a href="${p}.html" ${p === page ? 'aria-current="page"' : ''}>${icon(i)}<span class="nav-text">${l}</span>${p === 'profile' && missing.length ? '<span class="warn-dot" role="img" aria-label="profile incomplete" title="Profile incomplete"></span>' : ''}</a>`).join('')}</nav>
       <div class="me-wrap"><a class="me" href="profile.html" aria-label="Open my profile"><span class="avatar">${esc(me.name[0])}</span><div><b>${esc(me.name)}</b><small>${roleLbl}</small>${missing.length ? '<small class="warn">Profile incomplete</small>' : ''}</div></a>
       <button class="side-out" id="sideOut" type="button">${icon('out')}Sign out</button></div>
       <div class="side-legal"><a href="privacy.html" target="_blank" rel="noopener">Privacy Notice</a><a href="terms.html" target="_blank" rel="noopener">Terms of Use</a></div></aside>
@@ -150,6 +160,27 @@ export function shell({ me, local, isStaff, logout, missing = [] }) {
   // On a phone the sidebar is a drawer: it moves focus in, keeps Tab inside it, and gives focus back when it closes.
   const side = $('#side'),
     drawer = () => matchMedia('(max-width: 860px)').matches;
+
+     // Desktop sidebar collapse. Keep the mobile drawer behavior separate.
+  const collapseBtn = $('#sidebarCollapseBtn');
+  const appShell = $('#app');
+
+  const setSidebarCollapsed = (collapsed) => {
+    if (drawer()) return;
+
+    appShell.classList.toggle('sidebar-collapsed', collapsed);
+    collapseBtn?.setAttribute('aria-expanded', String(!collapsed));
+    collapseBtn?.setAttribute(
+      'aria-label',
+      collapsed ? 'Expand sidebar' : 'Collapse sidebar'
+    );
+  };
+
+  collapseBtn?.addEventListener('click', () => {
+    setSidebarCollapsed(
+      !appShell.classList.contains('sidebar-collapsed')
+    );
+  });
   $('#menuBtn').setAttribute('aria-expanded', 'false');
   const tog = (o) => {
     if (o === side.classList.contains('open')) return;
@@ -170,8 +201,14 @@ export function shell({ me, local, isStaff, logout, missing = [] }) {
     if (e.shiftKey && document.activeElement === f[0]) (e.preventDefault(), f[f.length - 1].focus());
     else if (!e.shiftKey && document.activeElement === f[f.length - 1]) (e.preventDefault(), f[0].focus());
   });
-  addEventListener('resize', () => {
-    if (!drawer()) tog(false);
-  });
+ addEventListener('resize', () => {
+  if (!drawer()) {
+    tog(false);
+  } else {
+    appShell.classList.remove('sidebar-collapsed');
+    collapseBtn?.setAttribute('aria-expanded', 'true');
+    collapseBtn?.setAttribute('aria-label', 'Collapse sidebar');
+  }
+});
   $$('.nav a, .me').forEach((a) => a.addEventListener('click', () => tog(false)));
 }
